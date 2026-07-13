@@ -231,6 +231,55 @@
             font-size: 11px; margin-top: 10px; font-weight: 600;
         }
 
+        /* ── Photo Gallery ── */
+        #gallery { background: var(--light-bg); }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .gallery-item {
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .gallery-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .gallery-item img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .lightbox {
+            display: none;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .lightbox.active { display: flex; }
+        .lightbox img {
+            max-width: 90vw; max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.5);
+        }
+        .lightbox-close {
+            position: absolute; top: 20px; right: 30px;
+            color: #fff; font-size: 40px; cursor: pointer;
+            z-index: 10000; font-weight: 300;
+            line-height: 1;
+        }
+        .lightbox-close:hover { color: var(--gold); }
+        @media (max-width: 768px) {
+            .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+        }
+
         /* ── Past Highlights ── */
         #highlights { background: #fff; }
         .highlight-grid {
@@ -378,6 +427,7 @@
         <li><a href="#schedule" data-en="Timetable" data-cn="课程表">Timetable</a></li>
         <li><a href="#courses" data-en="Courses" data-cn="课程介绍">Courses</a></li>
         <li><a href="#highlights" data-en="Highlights" data-cn="往期回顾">Highlights</a></li>
+        <li><a href="#gallery" data-en="Gallery" data-cn="活动相册">Gallery</a></li>
         <li><a href="#enrol" class="btn-nav" data-en="Enrol Now" data-cn="立即报名">Enrol Now</a></li>
         <li><a href="#contact" data-en="Contact" data-cn="联系我们">Contact</a></li>
     </ul>
@@ -670,6 +720,23 @@
     </div>
 </section>
 
+<!-- Photo Gallery -->
+<section id="gallery">
+    <div class="container">
+        <p class="section-label" data-en="Photo Gallery" data-cn="活动相册">Photo Gallery</p>
+        <h2 class="section-title" data-en="Our Community in Pictures" data-cn="我们的社区剪影">Our Community in Pictures</h2>
+        <p class="section-sub" data-en="Moments from our classes, performances, and community events. Click any photo to view full size." data-cn="课堂、演出和社区活动的精彩瞬间。点击照片查看大图。">Moments from our classes, performances, and community events. Click any photo to view full size.</p>
+        <div class="gallery-grid" id="galleryGrid">
+            <!-- Photos injected by JS -->
+        </div>
+    </div>
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+</section>
+
 <!-- Enrolment -->
 <section id="enrol">
     <div class="container">
@@ -845,6 +912,28 @@ function handleSubmit(e) {
     e.preventDefault();
     document.getElementById('enrolForm').style.display = 'none';
     document.getElementById('formSuccess').style.display = 'block';
+}
+
+// ── Photo Gallery ──
+(function() {
+    const totalPhotos = 32;
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    for (let i = 1; i <= totalPhotos; i++) {
+        const num = String(i).padStart(2, '0');
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox('gallery/gallery-${num}.jpg')">`;
+        grid.appendChild(item);
+    }
+})();
+
+function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
 }
 
 // Init
