@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adelaide Chinese Senior College — Lifelong Learning, Community Connection</title>
+    <style>
+        :root {
+            --red: #8B1A1A;
+            --gold: #C9A84C;
+            --navy: #1B2A4A;
+            --warm-bg: #FFF8F0;
+            --light-bg: #F8F9FA;
+            --text: #2D3436;
+            --muted: #636E72;
+            --border: #E0E0E0;
+            --white: #fff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            color: var(--text); line-height: 1.7; background: var(--white);
+        }
+
+        /* ── Language Toggle ── */
+        #lang-bar {
+            position: fixed; top: 0; width: 100%; z-index: 200;
+            background: var(--navy); color: #fff;
+            text-align: center; padding: 6px 20px; font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px;
+        }
+        #lang-bar button {
+            background: rgba(255,255,255,0.15); color: #fff;
+            border: 1px solid rgba(255,255,255,0.3); padding: 4px 14px;
+            border-radius: 4px; cursor: pointer; font-size: 13px;
+            transition: all 0.2s;
+        }
+        #lang-bar button:hover { background: rgba(255,255,255,0.25); }
+        #lang-bar button.active { background: var(--gold); color: #1a0a0a; border-color: var(--gold); font-weight: 600; }
+        .lang-hint { opacity: 0.7; font-size: 12px; }
+
+        /* ── Navigation ── */
+        nav {
+            position: fixed; top: 32px; width: 100%; z-index: 100;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 10px rgba(0,0,0,0.06);
+            padding: 0 40px; display: flex; align-items: center;
+            justify-content: space-between; height: 64px;
+        }
+        nav .logo-area { display: flex; align-items: center; gap: 12px; }
+        nav .logo-img {
+            width: 44px; height: 44px;
+            border-radius: 10px; object-fit: cover;
+        }
+        nav .logo-placeholder {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--red), #a52a2a);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; color: var(--gold);
+            font-size: 22px; font-weight: bold;
+        }
+        nav .logo-text { font-size: 18px; font-weight: 700; color: var(--red); }
+        nav .nav-links { display: flex; gap: 24px; list-style: none; }
+        nav .nav-links a {
+            text-decoration: none; color: var(--text);
+            font-size: 14px; font-weight: 500; transition: color 0.3s;
+        }
+        nav .nav-links a:hover { color: var(--red); }
+        .btn-nav {
+            background: var(--red); color: #fff !important;
+            padding: 8px 20px; border-radius: 6px; font-weight: 600;
+        }
+        .btn-nav:hover { opacity: 0.9; color: #fff !important; }
+
+        /* ── Hero ── */
+        .hero {
+            margin-top: 96px; min-height: 80vh;
+            background: linear-gradient(160deg, #1a0a0a 0%, #2d1010 30%, #8B1A1A 70%, #6e1515 100%);
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: #fff; padding: 60px 20px;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z' fill='%23C9A84C' opacity='0.05'/%3E%3C/svg%3E");
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .hero .badge {
+            display: inline-block; background: rgba(201,168,76,0.2);
+            border: 1px solid rgba(201,168,76,0.4);
+            color: var(--gold); padding: 6px 18px;
+            border-radius: 20px; font-size: 13px; margin-bottom: 20px;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 12px; letter-spacing: 2px; }
+        .hero .accent { color: var(--gold); }
+        .hero .subtitle {
+            font-size: 18px; color: rgba(255,255,255,0.8);
+            margin-bottom: 32px;
+        }
+        .hero .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero {
+            padding: 14px 32px; border-radius: 8px; font-size: 16px;
+            font-weight: 600; text-decoration: none; transition: all 0.3s;
+            display: inline-block;
+        }
+        .btn-hero-red { background: var(--red); color: #fff; }
+        .btn-hero-red:hover { background: #6e1515; transform: translateY(-2px); }
+        .btn-hero-outline {
+            border: 2px solid rgba(255,255,255,0.5); color: #fff;
+        }
+        .btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
+
+        /* ── Sections ── */
+        section { padding: 80px 40px; }
+        .section-label {
+            text-align: center; font-size: 12px; text-transform: uppercase;
+            letter-spacing: 3px; color: var(--gold); font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .section-title {
+            text-align: center; font-size: 34px; font-weight: 800;
+            color: var(--navy); margin-bottom: 12px;
+        }
+        .section-sub {
+            text-align: center; color: var(--muted); font-size: 16px;
+            margin-bottom: 48px; max-width: 600px; margin-left: auto; margin-right: auto;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* ── About / Mission ── */
+        #about { background: var(--light-bg); }
+        .about-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
+        }
+        .about-img {
+            background: linear-gradient(135deg, var(--navy), #2d4a6e);
+            border-radius: 16px; height: 360px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 64px;
+        }
+        .about-text h3 { font-size: 22px; color: var(--navy); margin-bottom: 14px; }
+        .about-text p { color: #555; margin-bottom: 10px; font-size: 15px; }
+        .stat-row { display: flex; gap: 40px; margin-top: 24px; }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 34px; font-weight: 800; color: var(--red); }
+        .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── Term Info ── */
+        #terms { background: linear-gradient(135deg, var(--navy), #1a2d4a); color: #fff; }
+        #terms .section-title { color: #fff; }
+        #terms .section-sub { color: rgba(255,255,255,0.7); }
+        #terms .section-label { color: var(--gold); }
+        .term-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+        }
+        .term-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px; padding: 24px 20px; text-align: center;
+        }
+        .term-card.current {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.12);
+            position: relative;
+        }
+        .term-card.current::after {
+            content: 'CURRENT'; position: absolute; top: -10px; right: 16px;
+            background: var(--gold); color: #1a0a0a; font-size: 10px;
+            font-weight: 800; padding: 2px 10px; border-radius: 10px;
+            letter-spacing: 1px;
+        }
+        .term-card h4 { font-size: 15px; color: var(--gold); margin-bottom: 8px; }
+        .term-card p { font-size: 13px; opacity: 0.8; }
+
+        /* ── Weekly Schedule ── */
+        #schedule { background: #fff; }
+        .schedule-table {
+            width: 100%; border-collapse: collapse;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+        }
+        .schedule-table th {
+            background: var(--navy); color: #fff;
+            padding: 14px 16px; font-size: 13px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .schedule-table td {
+            padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+            font-size: 14px; vertical-align: middle;
+        }
+        .schedule-table tr:hover td { background: #fafafa; }
+        .schedule-table .day-cell { font-weight: 700; color: var(--red); font-size: 15px; }
+        .schedule-table .time-cell { white-space: nowrap; color: var(--navy); font-weight: 600; }
+        .schedule-table .course-cell { font-weight: 600; }
+        .schedule-table .teacher-cell { font-size: 13px; color: var(--muted); }
+        .schedule-table .location-cell { font-size: 13px; color: #888; }
+        .note-box {
+            margin-top: 24px; padding: 18px 24px;
+            background: var(--warm-bg); border-radius: 12px;
+            font-size: 14px; color: #555; border-left: 4px solid var(--gold);
+        }
+
+        /* ── Courses Overview ── */
+        #courses { background: var(--light-bg); }
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        .course-card {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 28px 22px; text-align: center;
+            transition: all 0.3s;
+        }
+        .course-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            border-color: var(--gold);
+        }
+        .course-icon { font-size: 42px; margin-bottom: 12px; }
+        .course-card h4 { font-size: 17px; color: var(--navy); margin-bottom: 4px; }
+        .course-card .instructor { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        .course-card p { font-size: 13px; color: #666; line-height: 1.6; }
+        .course-card .tag {
+            display: inline-block; background: var(--warm-bg);
+            color: var(--red); padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; margin-top: 10px; font-weight: 600;
+        }
+
+        /* ── Past Highlights ── */
+        #highlights { background: #fff; }
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .highlight-card {
+            border-radius: 12px; overflow: hidden;
+            background: #fff; border: 1px solid var(--border);
+            transition: transform 0.3s;
+        }
+        .highlight-card:hover { transform: translateY(-3px); }
+        .highlight-img {
+            height: 200px; background: linear-gradient(135deg, #e8e0d0, #d4c8b0);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px;
+        }
+        .highlight-body { padding: 20px; }
+        .highlight-body h4 { font-size: 16px; color: var(--navy); margin-bottom: 6px; }
+        .highlight-body p { font-size: 13px; color: var(--muted); }
+        .highlight-body .date { font-size: 11px; color: #aaa; margin-bottom: 6px; }
+
+        /* ── Enrolment ── */
+        #enrol {
+            background: linear-gradient(135deg, var(--navy), #1a2d4a); color: #fff;
+        }
+        #enrol .section-title { color: #fff; }
+        #enrol .section-sub { color: rgba(255,255,255,0.7); }
+        #enrol .section-label { color: var(--gold); }
+        .form-card {
+            background: #fff; color: var(--text);
+            border-radius: 16px; padding: 40px;
+            max-width: 620px; margin: 0 auto;
+        }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-weight: 600; margin-bottom: 5px;
+            font-size: 13px; color: #555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 16px;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 15px; font-family: inherit; transition: border 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--navy);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn-submit {
+            width: 100%; padding: 14px;
+            background: var(--navy); color: #fff; border: none;
+            border-radius: 8px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn-submit:hover { background: #233d61; transform: translateY(-1px); }
+        .form-success {
+            display: none; text-align: center; padding: 40px 20px;
+        }
+        .form-success .icon { font-size: 56px; margin-bottom: 16px; }
+
+        /* ── Contact ── */
+        #contact { background: var(--light-bg); }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 32px; text-align: center;
+        }
+        .contact-item .icon { font-size: 28px; margin-bottom: 8px; }
+        .contact-item h5 { font-size: 15px; color: var(--navy); margin-bottom: 4px; }
+        .contact-item p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+        /* ── Footer ── */
+        footer {
+            background: #111; color: rgba(255,255,255,0.5);
+            text-align: center; padding: 28px 20px; font-size: 13px;
+        }
+        footer span { color: var(--gold); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            nav { padding: 0 16px; }
+            nav .nav-links { display: none; }
+            .hero { min-height: 60vh; }
+            .hero h1 { font-size: 28px; }
+            section { padding: 48px 16px; }
+            .section-title { font-size: 26px; }
+            .about-grid { grid-template-columns: 1fr; }
+            .about-img { height: 220px; }
+            .stat-row { flex-wrap: wrap; justify-content: center; gap: 24px; }
+            .term-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .schedule-table { font-size: 11px; }
+            .schedule-table th, .schedule-table td { padding: 8px 6px; }
+            #lang-bar { font-size: 11px; }
+        }
+
+        html { scroll-behavior: smooth; }
+
+        /* ── Chinese mode overrides ── */
+        body.cn { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+    </style>
+</head>
+<body>
+
+<!-- Language Bar -->
+<div id="lang-bar">
+    <span class="lang-hint">Language:</span>
+    <button id="btn-en" class="active" onclick="setLang('en')">English</button>
+    <button id="btn-cn" onclick="setLang('cn')">中文</button>
+    <span class="lang-hint" style="margin-left:8px;" id="lang-status">Displaying in English</span>
+    <button onclick="googleTranslate()" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);margin-left:8px;">🌐 Google Translate</button>
+</div>
+
+<!-- Navigation -->
+<nav>
+    <div class="logo-area">
+        <img src="logo.jpg" alt="Adelaide Chinese Senior College" class="logo-img">
+        <span class="logo-text">Adelaide Chinese Senior College</span>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#about" data-en="About" data-cn="关于我们">About</a></li>
+        <li><a href="#terms" data-en="School Terms" data-cn="学期安排">School Terms</a></li>
+        <li><a href="#schedule" data-en="Timetable" data-cn="课程表">Timetable</a></li>
+        <li><a href="#courses" data-en="Courses" data-cn="课程介绍">Courses</a></li>
+        <li><a href="#highlights" data-en="Highlights" data-cn="往期回顾">Highlights</a></li>
+        <li><a href="#enrol" class="btn-nav" data-en="Enrol Now" data-cn="立即报名">Enrol Now</a></li>
+        <li><a href="#contact" data-en="Contact" data-cn="联系我们">Contact</a></li>
+    </ul>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+    <div class="hero-content">
+        <p class="badge" data-en="Adelaide, South Australia" data-cn="南澳大利亚 · 阿德莱德">Adelaide, South Australia</p>
+        <h1>Adelaide Chinese<br><span class="accent">Senior College</span></h1>
+        <p class="subtitle" data-en="Lifelong Learning &middot; Community Connection &middot; Active Ageing" data-cn="老有所学 · 老有所乐 · 老有所为">Lifelong Learning &middot; Community Connection &middot; Active Ageing</p>
+        <div class="cta-group">
+            <a href="#enrol" class="btn-hero btn-hero-red" data-en="Enrol for Term 3" data-cn="报名第三学期">Enrol for Term 3</a>
+            <a href="#schedule" class="btn-hero btn-hero-outline" data-en="View Timetable" data-cn="查看课表">View Timetable</a>
+        </div>
+    </div>
+</header>
+
+<!-- About -->
+<section id="about">
+    <div class="container">
+        <p class="section-label" data-en="About Us" data-cn="关于我们">About Us</p>
+        <h2 class="section-title" data-en="Enriching Lives Through Culture & Education" data-cn="以文化教育丰富长者生活">Enriching Lives Through Culture &amp; Education</h2>
+        <p class="section-sub" data-en="A not-for-profit community organisation serving Adelaide's Chinese-speaking senior community through educational programs, cultural activities, and social connection." data-cn="非营利社区组织，通过教育课程、文化活动和社交联系服务阿德莱德华裔长者社区。">A not-for-profit community organisation serving Adelaide's Chinese-speaking senior community through educational programs, cultural activities, and social connection.</p>
+        <div class="about-grid">
+            <div class="about-img">🏫</div>
+            <div class="about-text">
+                <h3 data-en="Our Mission" data-cn="我们的使命">Our Mission</h3>
+                <p data-en="Adelaide Chinese Senior College is dedicated to promoting active ageing within culturally and linguistically diverse communities. We provide accessible, high-quality educational and recreational programs that foster wellbeing, social inclusion, and cultural connection." data-cn="阿德莱德老年大学致力于在多元文化语言社区中推广积极老龄化。我们提供可及且优质的教育和文娱项目，促进身心健康、社会包容和文化联结。">Adelaide Chinese Senior College is dedicated to promoting active ageing within culturally and linguistically diverse communities. We provide accessible, high-quality educational and recreational programs that foster wellbeing, social inclusion, and cultural connection.</p>
+                <p data-en="Our programs are designed to reduce social isolation, promote physical and mental health, and celebrate Chinese cultural heritage within the broader Australian community." data-cn="我们的项目旨在减少社交孤立、促进身心健康，并在澳大利亚多元社区中弘扬中华文化遗产。">Our programs are designed to reduce social isolation, promote physical and mental health, and celebrate Chinese cultural heritage within the broader Australian community.</p>
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <div class="stat-num">10+</div>
+                        <div class="stat-label" data-en="Programs" data-cn="课程项目">Programs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">8</div>
+                        <div class="stat-label" data-en="Qualified Instructors" data-cn="专业教师">Instructors</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">6</div>
+                        <div class="stat-label" data-en="Venues Across Adelaide" data-cn="教学场地">Venues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- School Terms -->
+<section id="terms">
+    <div class="container">
+        <p class="section-label" data-en="School Terms" data-cn="学期安排">School Terms</p>
+        <h2 class="section-title" data-en="Aligned with SA School Terms" data-cn="与南澳学校学期同步">Aligned with SA School Terms</h2>
+        <p class="section-sub" data-en="Our programs follow the South Australian public school term calendar. We operate during all four terms each year." data-cn="我们的课程遵循南澳公立学校学期日历，每年四个学期均开课。">Our programs follow the South Australian public school term calendar. We operate during all four terms each year.</p>
+        <div class="term-grid">
+            <div class="term-card">
+                <h4>Term 1</h4>
+                <p>Late Jan – Early Apr</p>
+            </div>
+            <div class="term-card">
+                <h4>Term 2</h4>
+                <p>Late Apr – Early Jul</p>
+            </div>
+            <div class="term-card current">
+                <h4>Term 3</h4>
+                <p>Mid Jul – Late Sep</p>
+            </div>
+            <div class="term-card">
+                <h4>Term 4</h4>
+                <p>Mid Oct – Mid Dec</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Weekly Timetable -->
+<section id="schedule">
+    <div class="container">
+        <p class="section-label" data-en="Weekly Timetable" data-cn="每周课表">Weekly Timetable</p>
+        <h2 class="section-title" data-en="Recurring Weekly Schedule" data-cn="固定每周课程">Recurring Weekly Schedule</h2>
+        <p class="section-sub" data-en="These classes run every week during school terms. No classes during school holidays or public holidays." data-cn="以下课程于学期内每周固定进行，学校假期及公共假日停课。">These classes run every week during school terms. No classes during school holidays or public holidays.</p>
+        <div style="overflow-x:auto;">
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th data-en="Day" data-cn="星期">Day</th>
+                    <th data-en="Time" data-cn="时间">Time</th>
+                    <th data-en="Class" data-cn="课程">Class</th>
+                    <th data-en="Instructor" data-cn="教师">Instructor</th>
+                    <th data-en="Venue" data-cn="地点">Venue</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="day-cell" data-en="Monday" data-cn="周一">Monday</td>
+                    <td class="time-cell">9:30 – 11:00</td>
+                    <td>☯️ Yang Style Tai Chi <span style="font-size:11px;color:#999">(cancelled if raining)</span></td>
+                    <td class="teacher-cell">Ms. Zhou Ping</td>
+                    <td class="location-cell">Adelaide City Rose Garden</td>
+                </tr>
+                <tr>
+                    <td class="day-cell" rowspan="4" data-en="Tuesday" data-cn="周二">Tuesday</td>
+                    <td class="time-cell">10:00 – 11:00</td>
+                    <td>📸 Photography</td>
+                    <td class="teacher-cell">Mr. Xu Jiashu</td>
+                    <td class="location-cell">Austral-Asian Christian Church<br>294–300 Morphett St, Adelaide SA 5000</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">10:30 – 11:30</td>
+                    <td>💃 Square Dancing (Eastern)</td>
+                    <td class="teacher-cell">Ms. Duo Duo</td>
+                    <td class="location-cell">Campbelltown Memorial Oval</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">11:30 – 12:30</td>
+                    <td>🎤 Pop Vocal Singing</td>
+                    <td class="teacher-cell">Ms. Wei Lan</td>
+                    <td class="location-cell">Austral-Asian Christian Church Hall<br>294–300 Morphett St, Adelaide SA 5000</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">2:00 – 3:00</td>
+                    <td>🎬 Short Video Production</td>
+                    <td class="teacher-cell">Ms. Li Na</td>
+                    <td class="location-cell">168 South Terrace, Adelaide</td>
+                </tr>
+                <tr>
+                    <td class="day-cell" rowspan="4" data-en="Wednesday" data-cn="周三">Wednesday</td>
+                    <td class="time-cell">9:30 – 11:00</td>
+                    <td>🇬🇧 English — Intermediate</td>
+                    <td class="teacher-cell">Ms. Li Li</td>
+                    <td class="location-cell">168 South Terrace, Adelaide</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">10:00 – 11:00</td>
+                    <td>💃 Square Dancing (Northern) <span style="font-size:11px;color:#999">(extendable to 12:00 for board games)</span></td>
+                    <td class="teacher-cell">Ms. Duo Duo</td>
+                    <td class="location-cell">Mawson Centre, MC2-03<br>(upstairs, University library building)</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">11:10 – 12:10</td>
+                    <td>🇬🇧 English — Beginner</td>
+                    <td class="teacher-cell">Ms. Li Li</td>
+                    <td class="location-cell">168 South Terrace, Adelaide</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">11:45 – 12:45</td>
+                    <td>☯️ Tai Chi (Southern)</td>
+                    <td class="teacher-cell">Ms. Zhou Ping</td>
+                    <td class="location-cell">139 Bradley Grove, Mitchell Park</td>
+                </tr>
+                <tr>
+                    <td class="day-cell" data-en="Thursday" data-cn="周四">Thursday</td>
+                    <td class="time-cell">10:30 – 11:30</td>
+                    <td>💃 Square Dancing (Southern)</td>
+                    <td class="teacher-cell">Ms. Duo Duo</td>
+                    <td class="location-cell">139 Bradley Grove, Mitchell Park</td>
+                </tr>
+                <tr>
+                    <td class="day-cell" rowspan="2" data-en="Friday" data-cn="周五">Friday</td>
+                    <td class="time-cell">1:45 – 2:45</td>
+                    <td>🪈 Hulusi (Gourd Flute)</td>
+                    <td class="teacher-cell">Ms. Gao Cuiping</td>
+                    <td class="location-cell">168 South Terrace, Adelaide</td>
+                </tr>
+                <tr>
+                    <td class="time-cell">2:45 – 3:45</td>
+                    <td>🎤 Vocal Music (Choir)</td>
+                    <td class="teacher-cell">Ms. Xiao Liping</td>
+                    <td class="location-cell">168 South Terrace, Adelaide</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="note-box">
+            <p><strong>💡 Notes:</strong> Please arrive on time. Bring your own equipment for board game sessions. All are welcome to join classes and social activities — a great opportunity to meet new friends and enrich your retirement lifestyle!</p>
+        </div>
+    </div>
+</section>
+
+<!-- Courses Overview -->
+<section id="courses">
+    <div class="container">
+        <p class="section-label" data-en="Our Programs" data-cn="课程项目">Our Programs</p>
+        <h2 class="section-title" data-en="Programs for Every Interest" data-cn="丰富多彩的课程">Programs for Every Interest</h2>
+        <p class="section-sub" data-en="From physical exercise to creative arts, language learning to digital skills — we offer something for everyone." data-cn="从体育锻炼到创意艺术，从语言学习到数字技能——总有一款适合您。">From physical exercise to creative arts, language learning to digital skills — we offer something for everyone.</p>
+        <div class="course-grid">
+            <div class="course-card">
+                <div class="course-icon">☯️</div>
+                <h4>Yang Style Tai Chi</h4>
+                <p class="instructor">Ms. Zhou Ping</p>
+                <p>Traditional Chinese martial art for balance, flexibility and mindfulness. Two sessions weekly at different venues.</p>
+                <span class="tag">Mon &amp; Wed</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">💃</div>
+                <h4>Square Dancing</h4>
+                <p class="instructor">Ms. Duo Duo</p>
+                <p>Vibrant group dancing across eastern, northern and southern Adelaide. Board game sessions available after northern class.</p>
+                <span class="tag">Tue · Wed · Thu</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">🎤</div>
+                <h4>Vocal Music</h4>
+                <p class="instructor">Ms. Wei Lan &amp; Ms. Xiao Liping</p>
+                <p>Pop vocal singing and choir-style music classes. Build confidence and joy through music.</p>
+                <span class="tag">Tue &amp; Fri</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">🪈</div>
+                <h4>Hulusi (Gourd Flute)</h4>
+                <p class="instructor">Ms. Gao Cuiping</p>
+                <p>Learn this beautiful traditional Chinese wind instrument. Beginner-friendly — no prior musical experience required.</p>
+                <span class="tag">Fri</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">🇬🇧</div>
+                <h4>Practical English</h4>
+                <p class="instructor">Ms. Li Li</p>
+                <p>Beginner and intermediate levels available. Build everyday English skills for more confident living in Australia.</p>
+                <span class="tag">Wed</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">📸</div>
+                <h4>Photography</h4>
+                <p class="instructor">Mr. Xu Jiashu</p>
+                <p>Master camera techniques and composition. Capture life's beautiful moments through the lens.</p>
+                <span class="tag">Tue</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">🎬</div>
+                <h4>Short Video Production</h4>
+                <p class="instructor">Ms. Li Na</p>
+                <p>Beginner-friendly! Learn to shoot, edit and produce short videos. Perfect for keeping up with the digital age.</p>
+                <span class="tag">Tue</span>
+            </div>
+            <div class="course-card">
+                <div class="course-icon">🀄</div>
+                <h4>Social Activities</h4>
+                <p class="instructor">Self-organised</p>
+                <p>Board games, tea gatherings and community socials following select classes. Bring your own equipment.</p>
+                <span class="tag">Wed</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Past Highlights -->
+<section id="highlights">
+    <div class="container">
+        <p class="section-label" data-en="Past Highlights" data-cn="往期回顾">Past Highlights</p>
+        <h2 class="section-title" data-en="Moments from Previous Terms" data-cn="往期精彩瞬间">Moments from Previous Terms</h2>
+        <p class="section-sub" data-en="A look back at the activities, performances, and community events that make our college special." data-cn="回顾那些让我们的学校独具魅力的活动、演出和社区聚会。">A look back at the activities, performances, and community events that make our college special.</p>
+        <div class="highlight-grid">
+            <div class="highlight-card">
+                <div class="highlight-img">💃</div>
+                <div class="highlight-body">
+                    <p class="date">Term 2, 2026</p>
+                    <h4>Square Dance Showcase</h4>
+                    <p>Our dancers performed at the Campbelltown community event, showcasing traditional and modern routines.</p>
+                </div>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-img">🎵</div>
+                <div class="highlight-body">
+                    <p class="date">Term 2, 2026</p>
+                    <h4>Vocal &amp; Hulusi Recital</h4>
+                    <p>Students from the vocal and hulusi classes presented a beautiful end-of-term performance at 168 South Terrace.</p>
+                </div>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-img">🧧</div>
+                <div class="highlight-body">
+                    <p class="date">Term 1, 2026</p>
+                    <h4>Lunar New Year Celebration</h4>
+                    <p>Over 100 members gathered to celebrate the Year of the Horse with food, music, and cultural activities.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enrolment -->
+<section id="enrol">
+    <div class="container">
+        <p class="section-label" data-en="Enrolment" data-cn="在线报名">Enrolment</p>
+        <h2 class="section-title" data-en="Join Us for Term 3" data-cn="加入第三学期">Join Us for Term 3</h2>
+        <p class="section-sub" data-en="Complete the form below and we'll be in touch. All seniors welcome — no prior experience needed for most classes." data-cn="填写下方表格，我们将尽快联系您。欢迎所有长者参加——大多数课程无需基础。">Complete the form below and we'll be in touch. All seniors welcome — no prior experience needed for most classes.</p>
+        <div class="form-card">
+            <form id="enrolForm" onsubmit="handleSubmit(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-en="Full Name *" data-cn="姓名 *">Full Name *</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-en="Phone *" data-cn="电话 *">Phone *</label>
+                        <input type="tel" name="phone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-en="Email" data-cn="邮箱">Email</label>
+                    <input type="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label data-en="Program(s) of Interest *" data-cn="感兴趣课程 *">Program(s) of Interest *</label>
+                    <select name="course" required>
+                        <option value="" data-en="Select a program" data-cn="请选择课程">Select a program</option>
+                        <option value="taichi">☯️ Yang Style Tai Chi</option>
+                        <option value="dance">💃 Square Dancing</option>
+                        <option value="vocal-pop">🎤 Pop Vocal Singing</option>
+                        <option value="vocal">🎤 Vocal Music (Choir)</option>
+                        <option value="hulusi">🪈 Hulusi (Gourd Flute)</option>
+                        <option value="english-intermediate">🇬🇧 English — Intermediate</option>
+                        <option value="english-beginner">🇬🇧 English — Beginner</option>
+                        <option value="photography">📸 Photography</option>
+                        <option value="video">🎬 Short Video Production</option>
+                        <option value="multiple">Multiple programs</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-en="Message (optional)" data-cn="留言（选填）">Message (optional)</label>
+                    <textarea name="message" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn-submit" data-en="Submit Enrolment" data-cn="提交报名">Submit Enrolment</button>
+            </form>
+            <div class="form-success" id="formSuccess">
+                <div class="icon">✅</div>
+                <h3 style="color:var(--navy)">Thank you for enrolling!</h3>
+                <p style="color:#666">We will contact you shortly. Please keep your phone available.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+    <div class="container">
+        <p class="section-label" data-en="Contact" data-cn="联系我们">Contact</p>
+        <h2 class="section-title" data-en="Get in Touch" data-cn="联系我们">Get in Touch</h2>
+        <p class="section-sub" data-en="We welcome enquiries from prospective students, community partners, and funding bodies." data-cn="欢迎准学员、社区合作伙伴和资助机构的咨询。">We welcome enquiries from prospective students, community partners, and funding bodies.</p>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <div class="icon">📍</div>
+                <h5>Primary Venue</h5>
+                <p>168 South Terrace<br>Adelaide SA 5000</p>
+            </div>
+            <div class="contact-item">
+                <div class="icon">🏛️</div>
+                <h5>Secondary Venue</h5>
+                <p>Austral-Asian Christian Church<br>294–300 Morphett St<br>Adelaide SA 5000</p>
+            </div>
+            <div class="contact-item">
+                <div class="icon">📞</div>
+                <h5>Phone</h5>
+                <p>(to be added)</p>
+            </div>
+            <div class="contact-item">
+                <div class="icon">📧</div>
+                <h5>Email</h5>
+                <p>(to be added)</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2026 <span>Adelaide Chinese Senior College</span> &nbsp;|&nbsp; Lifelong Learning · Community Connection · Active Ageing</p>
+    <p style="margin-top:4px;font-size:11px;">Aligned with South Australian public school terms &nbsp;|&nbsp; ABN: (to be added)</p>
+</footer>
+
+<!-- Google Translate Widget -->
+<div id="google_translate_element" style="display:none;"></div>
+
+<script>
+// ── Built-in Chinese translation (manual toggle) ──
+const translations = {};
+
+function collectTranslations() {
+    document.querySelectorAll('[data-cn]').forEach(el => {
+        const key = el.getAttribute('data-en') || el.textContent.trim();
+        if (key && el.getAttribute('data-cn')) {
+            // Store both versions
+            if (!el._enText && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && el.tagName !== 'SELECT') {
+                el._enText = el.innerHTML;
+            }
+        }
+    });
+}
+
+function setLang(lang) {
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('btn-cn').classList.toggle('active', lang === 'cn');
+    document.getElementById('lang-status').textContent = lang === 'cn' ? '显示中文' : 'Displaying in English';
+    document.body.classList.toggle('cn', lang === 'cn');
+
+    document.querySelectorAll('[data-cn]').forEach(el => {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = lang === 'cn' ? (el.getAttribute('data-cn') || el.placeholder) : (el.getAttribute('data-en') || el.placeholder);
+        } else if (el.tagName === 'OPTION') {
+            el.textContent = lang === 'cn' ? (el.getAttribute('data-cn') || el.textContent) : (el.getAttribute('data-en') || el.textContent);
+        } else if (el.getAttribute('data-en') && el.getAttribute('data-cn')) {
+            // For elements with both attributes, swap text
+            if (lang === 'cn') {
+                if (!el._enText) el._enText = el.innerHTML;
+                el.innerHTML = el.getAttribute('data-cn');
+            } else {
+                if (el._enText) el.innerHTML = el._enText;
+            }
+        }
+    });
+
+    // Reset form success message
+    const success = document.getElementById('formSuccess');
+    if (success && success.style.display === 'block') {
+        const h3 = success.querySelector('h3');
+        const p = success.querySelector('p');
+        if (lang === 'cn') {
+            if (h3) h3.textContent = '报名成功！';
+            if (p) p.textContent = '我们会尽快与您联系，请保持电话畅通。';
+        } else {
+            if (h3) h3.textContent = 'Thank you for enrolling!';
+            if (p) p.textContent = 'We will contact you shortly. Please keep your phone available.';
+        }
+    }
+}
+
+// ── Google Translate fallback ──
+function googleTranslate() {
+    // Remove any existing translate banner
+    const existing = document.getElementById('google_translate_element');
+    existing.style.display = 'block';
+    
+    // Load Google Translate
+    if (!window.googleTranslateLoaded) {
+        window.googleTranslateLoaded = true;
+        const script = document.createElement('script');
+        script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateInit';
+        document.head.appendChild(script);
+    }
+    alert('Google Translate will appear at the top of the page. You can select any language from the dropdown.');
+}
+
+function googleTranslateInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'zh-CN,en',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: true
+    }, 'google_translate_element');
+}
+
+// ── Enrolment form ──
+function handleSubmit(e) {
+    e.preventDefault();
+    document.getElementById('enrolForm').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+}
+
+// Init
+collectTranslations();
+</script>
+
+</body>
+</html>
