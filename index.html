@@ -625,14 +625,15 @@ const T={
 'Language:':'语言：',
 };
 function setLang(lang){
+    var els=document.querySelectorAll('[data-i18n]');
+    console.log('setLang',lang,'elements:',els.length);
     document.getElementById('btn-en').classList.toggle('active',lang==='en');
     document.getElementById('btn-cn').classList.toggle('active',lang==='cn');
     document.body.style.fontFamily = lang==='cn' ? '"Microsoft YaHei","PingFang SC",sans-serif' : '';
-    var els = document.querySelectorAll('[data-i18n]');
     for(var i=0;i<els.length;i++){
         var el=els[i];
-        if(!el._en) el._en = el.innerText || el.textContent;
-        var key = el._en.replace(/\s+/g,' ').trim();
+        if(!el._en) el._en = (el.innerText || el.textContent).replace(/\s+/g,' ').trim();
+        var key = el._en;
         if(T[key]) el.textContent = lang==='cn' ? T[key] : el._en;
     }
 }
