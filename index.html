@@ -296,8 +296,7 @@
 <!-- Language Bar -->
 <div class="lang-bar">
     <span style="color:var(--gray)">Language:</span>
-    <button id="btn-en" class="active" onclick="setLang('en')">English</button>
-    <button id="btn-cn" onclick="setLang('cn')">中文</button>
+    <div id="google_translate_element"></div>
 </div>
 
 <!-- Navigation -->
@@ -576,67 +575,18 @@ function handleSubmit(e){
     document.getElementById('formSuccess').style.display='block';
 }
 
-// ── Lang toggle ──
-const T={
-'About':'关于我们','Terms':'学期安排','Timetable':'课程表','Courses':'课程介绍','Gallery':'活动相册','Enrol':'立即报名',
-'Aligned with SA Public School Terms':'与南澳公立学校学期同步','Enrol for Term 3 →':'报名第三学期 →',
-'Adelaide, South Australia':'南澳大利亚 · 阿德莱德',
-'Empowering seniors through education, culture, and community connection in the heart of Adelaide.':'在阿德莱德市中心，通过教育、文化和社区联结，赋能长者生活。',
-'View Timetable':'查看课表','Enrol for Term 3':'报名第三学期',
-'About Us':'关于我们','Enriching lives through culture and education':'以文化教育丰富生活',
-'Adelaide Chinese Senior College is a not-for-profit community organisation dedicated to promoting active ageing within culturally and linguistically diverse communities across Adelaide.':'阿德莱德老年大学是一个非营利社区组织，致力于在阿德莱德多元文化语言社区中推广积极老龄化。',
-'We provide accessible, high-quality educational and recreational programs that foster wellbeing, social inclusion, and cultural connection — helping seniors stay active, engaged, and connected.':'我们提供可及且优质的教育和文娱项目，促进身心健康、社会包容和文化联结——帮助长者保持活力、参与和联系。',
-'Programs':'课程项目','Instructors':'专业教师','Venues':'教学场地','Members':'在册学员',
-'School Terms':'学期安排','Aligned with SA school terms':'与南澳学校学期同步',
-'Our programs operate during all four terms of the South Australian public school calendar.':'我们的课程遵循南澳公立学校学期日历，四个学期均开课。',
-'Weekly Timetable':'每周课表','Recurring weekly classes':'固定每周课程',
-'These classes run during school terms. No classes on public holidays or during school breaks.':'以下课程于学期内每周进行，公共假日及学校假期停课。',
-'Day':'星期','Time':'时间','Class':'课程','Instructor':'教师','Venue':'地点',
-'Please note:':'温馨提示：',
-'Please arrive on time. Bring your own equipment for board game sessions. All are welcome — a great opportunity to meet new friends!':'请准时到课。棋牌活动请自带用具。欢迎大家积极参与，认识新朋友，丰富退休生活！',
-'Our Programs':'课程项目','Programs for every interest':'丰富多彩的课程',
-'From physical exercise to creative arts, language learning to digital skills — we offer something for everyone.':'从体育锻炼到创意艺术，从语言学习到数字技能——总有一款适合您。',
-'Photo Gallery':'活动相册','Our community in pictures':'我们的社区剪影',
-'Moments from our classes, performances, and community events. Click any photo to view full size.':'课堂、演出和社区活动的精彩瞬间。点击照片查看大图。',
-'Past Highlights':'往期回顾','Moments from previous terms':'往期精彩瞬间',
-'A look back at the activities and events that make our college special.':'回顾让我们的学校独具魅力的活动和演出。',
-'Enrolment':'在线报名','Join us for Term 3':'加入第三学期',
-'Ready to get started?':'准备好开始了吗？',
-'All seniors welcome — no prior experience needed for most classes. Complete the form and we will be in touch.':'欢迎所有长者参加——大多数课程无需基础。填表后我们将与您联系。',
-'Full Name *':'姓名 *','Phone *':'电话 *','Email':'邮箱','Program(s) of Interest *':'感兴趣课程 *',
-'Select a program':'请选择课程','Message':'留言','Submit Enrolment':'提交报名',
-'Thank you!':'谢谢！','We will contact you shortly.':'我们会尽快与您联系。',
-'FAQ':'常见问题','Frequently asked questions':'常见问题解答',
-'Who can join the classes?':'谁可以参加课程？',
-'All seniors are welcome! Most classes require no prior experience. Just bring your enthusiasm.':'欢迎所有长者！大多数课程无需基础，带上热情即可。',
-'Are there any fees?':'有费用吗？',
-'We are a not-for-profit community organisation. Some classes may have a small fee to cover materials. Contact us for details.':'我们是非营利社区组织。部分课程可能收取少量材料费。详情请联系我们。',
-'Do classes run during school holidays?':'学校假期上课吗？',
-'No. Our terms are aligned with SA public school terms. Classes pause during school holidays and public holidays.':'不。我们的学期与南澳公立学校同步。学校假期及公共假日停课。',
-'Can I try a class before enrolling?':'可以先试课再报名吗？',
-'Absolutely! You are welcome to attend a trial session. Just contact us or drop by during class time.':'当然可以！欢迎参加试听课。联系我们或在上课时间直接来访。',
-'Contact':'联系我们','Get in touch':'联系我们',
-'We welcome enquiries from prospective students, community partners, and funding bodies.':'欢迎准学员、社区合作伙伴和资助机构的咨询。',
-'Address':'地址','Phone':'电话','(to be added)':'（待补充）',
-'Lifelong Learning · Community Connection · Active Ageing':'老有所学 · 老有所乐 · 老有所为',
-'Aligned with SA public school terms':'与南澳公立学校学期同步','ABN: (to be added)':'ABN：（待补充）',
-'Mon':'周一','Tue':'周二','Wed':'周三','Thu':'周四','Fri':'周五',
-'(rain cancels)':'（如下雨停课）','(+board games to 12:00)':'（可延长至12:00棋牌）',
-'Language:':'语言：',
-};
-function setLang(lang){
-    var els=document.querySelectorAll('[data-i18n]');
-    console.log('setLang',lang,'elements:',els.length);
-    document.getElementById('btn-en').classList.toggle('active',lang==='en');
-    document.getElementById('btn-cn').classList.toggle('active',lang==='cn');
-    document.body.style.fontFamily = lang==='cn' ? '"Microsoft YaHei","PingFang SC",sans-serif' : '';
-    for(var i=0;i<els.length;i++){
-        var el=els[i];
-        if(!el._en) el._en = (el.innerText || el.textContent).replace(/\s+/g,' ').trim();
-        var key = el._en;
-        if(T[key]) el.textContent = lang==='cn' ? T[key] : el._en;
-    }
+// ── Google Translate ──
+function googleTranslateInit(){
+    new google.translate.TranslateElement({
+        pageLanguage:'en',
+        includedLanguages:'zh-CN,en',
+        layout:google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay:false
+    },'google_translate_element');
 }
+var gt=document.createElement('script');
+gt.src='https://translate.google.com/translate_a/element.js?cb=googleTranslateInit';
+document.head.appendChild(gt);
 
 // ── Back to top ──
 const backTop = document.getElementById('backTop');
