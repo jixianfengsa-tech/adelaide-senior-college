@@ -174,7 +174,27 @@
         .lightbox-nav:hover{color:var(--gold)}
         .lightbox-prev{left:16px}.lightbox-next{right:16px}
 
-        /* ── Highlights ── */
+        /* ── Scroll animations ── */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── News ── */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; }
+        .news-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: all 0.3s; }
+        .news-card:hover { border-color: var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .news-date { font-size: 12px; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        .news-card h4 { font-size: 17px; color: var(--navy); margin-bottom: 6px; }
+        .news-card p { font-size: 14px; color: var(--gray); }
+
+        /* ── Testimonials ── */
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; }
+        .testimonial-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; transition: all 0.3s; }
+        .testimonial-card:hover { border-color: var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .testimonial-stars { color: var(--gold); font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
+        .testimonial-card p { font-size: 15px; color: #555; font-style: italic; line-height: 1.7; margin-bottom: 12px; }
+        .testimonial-author { font-size: 13px; color: var(--gray); font-weight: 600; }
+
+        /* ── Past Highlights ── */
         .highlight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
         .highlight-card{
             border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
@@ -308,7 +328,8 @@
         </a>
         <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
         <ul class="nav-links">
-            <li><a href="#about" data-i18n>About</a></li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#about">About</a></li>
             <li><a href="#terms" data-i18n>Terms</a></li>
             <li><a href="#schedule" data-i18n>Timetable</a></li>
             <li><a href="#courses" data-i18n>Courses</a></li>
@@ -330,6 +351,31 @@
         </div>
     </div>
 </header>
+
+<!-- News -->
+<section id="news">
+    <div class="container">
+        <p class="section-label" data-i18n>News & Announcements</p>
+        <h2 class="section-title" data-i18n>Latest updates</h2>
+        <div class="news-grid">
+            <div class="news-card">
+                <div class="news-date">Jul 2026</div>
+                <h4>Term 3 Enrolments Now Open</h4>
+                <p>Enrolments for Term 3 (mid-July to late September) are now open. New students welcome!</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">Jun 2026</div>
+                <h4>End of Term 2 Celebrations</h4>
+                <p>Thank you to all students and instructors for a wonderful Term 2. See you after the break!</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">May 2026</div>
+                <h4>New Photography Class Added</h4>
+                <p>We've introduced a new photography class on Tuesdays with Mr. Xu Jiashu. All levels welcome.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- About -->
 <section id="about">
@@ -496,6 +542,31 @@
     </div>
 </section>
 
+<!-- Testimonials -->
+<section id="testimonials" style="background:var(--light)">
+    <div class="container">
+        <p class="section-label" data-i18n>Testimonials</p>
+        <h2 class="section-title" data-i18n>What our members say</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>"The tai chi class has been wonderful for my health. Ms. Zhou is an excellent teacher and the group is so welcoming."</p>
+                <div class="testimonial-author">— Mei L., Member since 2023</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>"I love the square dancing! It keeps me active and I've made so many new friends. The best part of my week."</p>
+                <div class="testimonial-author">— Jenny W., Member since 2024</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>"Learning English here has given me confidence to talk to my neighbours and doctors. Ms. Li Li is so patient."</p>
+                <div class="testimonial-author">— Mr. Chen, Member since 2022</div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Contact -->
 <section id="contact" style="background:var(--light)">
     <div class="container">
@@ -507,6 +578,7 @@
             <div class="contact-item"><div class="icon">📞</div><h5 data-i18n>Phone</h5><p>(to be added)</p></div>
             <div class="contact-item"><div class="icon">📧</div><h5 data-i18n>Email</h5><p>admin@adelaideseniorlearningcentre.org.au</p></div>
         </div>
+        <div class="map-wrap"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.5!2d138.6!3d-34.93!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ab0ced4e6c7e2a9%3A0xf00c8bfb80c5c0!2s168%20South%20Terrace%2C%20Adelaide%20SA%205000!5e0!3m2!1sen!2sau!4v1" width="100%" height="400" style="border:0;border-radius:12px;margin-top:32px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
     </div>
 </section>
 
@@ -619,6 +691,11 @@ const observer = new IntersectionObserver((entries)=>{
 },{threshold:0.5});
 const statsSection = document.querySelector('.stats');
 if(statsSection) observer.observe(statsSection);
+
+// ── Scroll reveal animations ──
+document.querySelectorAll('section').forEach(s=>s.classList.add('reveal'));
+var ro=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
 </script>
 </body>
 </html>
