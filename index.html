@@ -575,7 +575,7 @@ function handleSubmit(e){
     document.getElementById('formSuccess').style.display='block';
 }
 
-// ── Google Translate ──
+// ── Google Translate (async, non-blocking) ──
 function googleTranslateInit(){
     new google.translate.TranslateElement({
         pageLanguage:'en',
@@ -584,8 +584,11 @@ function googleTranslateInit(){
         autoDisplay:false
     },'google_translate_element');
 }
+window.googleTranslateInit = googleTranslateInit;
 var gt=document.createElement('script');
 gt.src='https://translate.google.com/translate_a/element.js?cb=googleTranslateInit';
+gt.async=true;
+gt.defer=true;
 document.head.appendChild(gt);
 
 // ── Back to top ──
