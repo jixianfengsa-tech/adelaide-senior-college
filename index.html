@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adelaide Chinese Senior College — Lifelong Learning, Community Connection</title>
+    <title>Adelaide Senior Learning Centre — Connecting Seniors Through Learning, Health and Community</title>
+    <meta name="description" content="Adelaide Senior Learning Centre is a community-based not-for-profit organisation supporting healthy ageing and lifelong learning. 260+ members, 30+ monthly activities across Adelaide.">
     <style>
         :root {
             --navy: #0A1628;
@@ -15,6 +16,8 @@
             --text: #1F2937;
             --border: #E5E7EB;
             --radius: 8px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
         }
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         html{scroll-behavior:smooth}
@@ -27,10 +30,14 @@
 
         /* ── Top Bar ── */
         .topbar{
-            background: var(--navy); color: rgba(255,255,255,0.7);
-            font-size: 12px; padding: 6px 0; text-align: center;
+            background: var(--navy); color: rgba(255,255,255,0.85);
+            font-size: 13px; padding: 8px 24px; display:flex; justify-content:center; align-items:center;
+            gap: 24px; flex-wrap:wrap;
         }
-        .topbar a{color: var(--gold); text-decoration: none; margin: 0 8px; font-weight: 500}
+        .topbar .stat-pill{display:inline-flex;align-items:center;gap:6px}
+        .topbar .stat-pill .dot{width:6px;height:6px;background:var(--gold);border-radius:50%}
+        .topbar .enrol-link{color:var(--gold);text-decoration:none;font-weight:700;margin-left:8px}
+        .topbar .enrol-link:hover{text-decoration:underline}
 
         /* ── Nav ── */
         nav{
@@ -39,13 +46,13 @@
             padding: 0 24px; transition: all 0.3s;
         }
         nav .container{display:flex;align-items:center;justify-content:space-between;height:72px}
-        nav .brand{display:flex;align-items:center;gap:14px;text-decoration:none}
+        nav .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
         nav .brand img{width:44px;height:44px;border-radius:8px;object-fit:cover}
-        nav .brand span{font-size:18px;font-weight:700;color:var(--navy)}
-        nav .nav-links{display:flex;gap:8px;list-style:none;align-items:center}
+        nav .brand span{font-size:17px;font-weight:700;color:var(--navy);line-height:1.2}
+        nav .nav-links{display:flex;gap:4px;list-style:none;align-items:center}
         nav .nav-links a{
-            text-decoration:none;color:var(--text);font-size:14px;font-weight:500;
-            padding:8px 14px;border-radius:6px;transition:all 0.2s
+            text-decoration:none;color:var(--text);font-size:13px;font-weight:500;
+            padding:8px 12px;border-radius:6px;transition:all 0.2s;white-space:nowrap
         }
         nav .nav-links a:hover{background:var(--light);color:var(--navy)}
         nav .nav-cta{background:var(--navy)!important;color:#fff!important;font-weight:600}
@@ -63,47 +70,69 @@
 
         /* ── Hero ── */
         .hero{
-            min-height:88vh;display:flex;align-items:center;
+            min-height:90vh;display:flex;align-items:center;
             background: linear-gradient(160deg, #0A1628 0%, #132238 40%, #1B3A5C 100%);
             color:#fff;position:relative;overflow:hidden
         }
-        .hero::after{
+        .hero::before{
             content:'';position:absolute;inset:0;
-            background: radial-gradient(ellipse at 70% 30%, rgba(196,164,74,0.08) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 70% 20%, rgba(196,164,74,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 30% 80%, rgba(27,58,92,0.3) 0%, transparent 50%);
         }
-        .hero .container{position:relative;z-index:1;max-width:800px}
+        .hero .container{position:relative;z-index:1;max-width:900px}
         .hero .badge{
             display:inline-block;border:1px solid rgba(196,164,74,0.5);
             color:var(--gold);padding:6px 18px;border-radius:20px;
-            font-size:13px;margin-bottom:24px;letter-spacing:1px
+            font-size:13px;margin-bottom:28px;letter-spacing:1px
         }
-        .hero h1{font-size:56px;font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+        .hero h1{font-size:58px;font-weight:900;line-height:1.1;margin-bottom:24px;letter-spacing:-1px}
         .hero h1 span{color:var(--gold)}
-        .hero p{font-size:20px;color:rgba(255,255,255,0.8);margin-bottom:36px;line-height:1.6}
-        .hero-btns{display:flex;gap:16px;flex-wrap:wrap}
-        .btn{padding:14px 32px;border-radius:6px;font-size:16px;font-weight:600;text-decoration:none;transition:all 0.3s;display:inline-block}
+        .hero .tagline{font-size:22px;color:rgba(255,255,255,0.85);margin-bottom:16px;line-height:1.5;font-weight:500}
+        .hero .hero-stats{display:flex;gap:32px;margin-bottom:36px;flex-wrap:wrap}
+        .hero .hero-stat{display:flex;align-items:center;gap:10px}
+        .hero .hero-stat .icon{font-size:20px}
+        .hero .hero-stat .text{font-size:15px;color:rgba(255,255,255,0.75);line-height:1.4}
+        .hero .hero-stat strong{color:#fff;display:block;font-size:16px}
+        .hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+        .btn{padding:14px 32px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;transition:all 0.3s;display:inline-block;text-align:center}
         .btn-primary{background:var(--navy);color:#fff}
         .btn-primary:hover{background:var(--blue);transform:translateY(-1px)}
         .btn-outline{border:2px solid rgba(255,255,255,0.4);color:#fff}
         .btn-outline:hover{border-color:#fff;background:rgba(255,255,255,0.05)}
         .btn-gold{background:var(--gold);color:var(--navy)}
         .btn-gold:hover{background:#d4b85a;transform:translateY(-1px)}
+        .btn-white{background:#fff;color:var(--navy)}
+        .btn-white:hover{background:#e8e8e8;transform:translateY(-1px)}
+
+        /* ── Why Choose Us ── */
+        .bg-navy{background:var(--navy);color:#fff}
+        .bg-navy .section-title{color:#fff}
+        .bg-navy .section-lead{color:rgba(255,255,255,0.7)}
+        .why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+        .why-card{
+            background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+            border-radius:var(--radius);padding:32px;transition:all 0.3s
+        }
+        .why-card:hover{border-color:var(--gold);background:rgba(196,164,74,0.06);transform:translateY(-2px)}
+        .why-card .why-icon{font-size:36px;margin-bottom:16px}
+        .why-card h4{font-size:18px;color:var(--gold);margin-bottom:8px}
+        .why-card p{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6}
 
         /* ── About ── */
         .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
         .about-img{border-radius:12px;overflow:hidden;aspect-ratio:4/3}
         .about-img img{width:100%;height:100%;object-fit:cover}
         .about-text h3{font-size:24px;color:var(--navy);margin-bottom:16px}
-        .about-text p{color:var(--gray);margin-bottom:12px;font-size:16px}
-        .stats{display:flex;gap:40px;margin-top:32px}
-        .stat{text-align:center}
-        .stat-num{font-size:36px;font-weight:800;color:var(--navy)}
-        .stat-label{font-size:13px;color:var(--gray);text-transform:uppercase;letter-spacing:1px}
+        .about-text p{color:var(--gray);margin-bottom:12px;font-size:15px;line-height:1.8}
+        .stats{display:flex;gap:32px;margin-top:32px;flex-wrap:wrap}
+        .stat{text-align:center;min-width:80px}
+        .stat-num{font-size:40px;font-weight:800;color:var(--navy)}
+        .stat-label{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:1px}
+        .achievement-list{list-style:none;margin-top:20px}
+        .achievement-list li{padding:8px 0;font-size:15px;color:var(--text);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+        .achievement-list li::before{content:'✓';color:var(--gold);font-weight:700;font-size:18px}
 
         /* ── Terms ── */
-        .bg-navy{background:var(--navy);color:#fff}
-        .bg-navy .section-title,.bg-navy .section-lead{color:#fff}
-        .bg-navy .section-lead{color:rgba(255,255,255,0.7)}
         .term-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
         .term-card{
             background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
@@ -114,6 +143,42 @@
         .term-card h4{font-size:18px;color:var(--gold);margin-bottom:6px}
         .term-card p{font-size:14px;opacity:0.7}
 
+        /* ── Programs / Courses ── */
+        .program-category{margin-bottom:48px}
+        .program-category h3{font-size:22px;color:var(--navy);margin-bottom:20px;padding-bottom:10px;border-bottom:3px solid var(--gold);display:inline-block}
+        .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+        .course-card{
+            background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+            padding:28px;transition:all 0.3s;display:flex;flex-direction:column;gap:8px
+        }
+        .course-card:hover{border-color:var(--gold);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+        .course-card .cc-icon{font-size:32px}
+        .course-card h4{font-size:17px;color:var(--navy)}
+        .course-card .cc-instructor{font-size:13px;color:var(--gray)}
+        .course-card p{font-size:14px;color:#555;line-height:1.5;flex:1}
+        .course-card .cc-tags{display:flex;gap:6px;flex-wrap:wrap}
+        .course-card .cc-tag{display:inline-block;background:var(--light);color:var(--navy);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600}
+        .course-card .cc-tag.gold{background:rgba(196,164,74,0.15);color:#8B6914}
+
+        /* ── Teachers ── */
+        .teacher-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
+        .teacher-card{
+            background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+            overflow:hidden;transition:all 0.3s;text-align:center
+        }
+        .teacher-card:hover{border-color:var(--gold);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+        .teacher-photo{
+            width:100%;height:240px;background:linear-gradient(135deg,#0A1628,#1B3A5C);
+            display:flex;align-items:center;justify-content:center;font-size:64px;color:#fff
+        }
+        .teacher-photo img{width:100%;height:100%;object-fit:cover}
+        .teacher-body{padding:24px}
+        .teacher-body h4{font-size:18px;color:var(--navy);margin-bottom:4px}
+        .teacher-body .role{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .teacher-body p{font-size:14px;color:var(--gray);line-height:1.6}
+        .teacher-body .specialties{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+        .teacher-body .spec-tag{background:var(--light);color:var(--navy);padding:4px 12px;border-radius:20px;font-size:11px}
+
         /* ── Schedule ── */
         .schedule-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
         .schedule-table{width:100%;border-collapse:collapse;font-size:14px}
@@ -123,25 +188,23 @@
         .schedule-table tr:hover td{background:#fafbfc}
         .schedule-table .day{font-weight:700;color:var(--navy)}
         .schedule-table .time{color:var(--blue);font-weight:600;white-space:nowrap}
-        .schedule-table .course{font-weight:600}
+        .schedule-table .course-name{font-weight:600}
         .schedule-table .teacher,.schedule-table .venue{font-size:13px;color:var(--gray)}
         .note{margin-top:24px;padding:18px 24px;background:var(--light);border-radius:var(--radius);font-size:14px;color:var(--gray);border-left:4px solid var(--gold)}
 
-        /* ── Courses ── */
-        .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
-        .course-card{
+        /* ── News ── */
+        .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px}
+        .news-card{
             background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-            padding:32px;transition:all 0.3s
+            padding:28px;transition:all 0.3s
         }
-        .course-card:hover{border-color:var(--gold);box-shadow:0 8px 30px rgba(0,0,0,0.06);transform:translateY(-2px)}
-        .course-card .icon{font-size:36px;margin-bottom:16px}
-        .course-card h4{font-size:18px;color:var(--navy);margin-bottom:4px}
-        .course-card .instructor{font-size:13px;color:var(--gray);margin-bottom:10px}
-        .course-card p{font-size:14px;color:#555;line-height:1.6}
-        .course-card .tag{display:inline-block;background:var(--light);color:var(--navy);padding:4px 12px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:600}
+        .news-card:hover{border-color:var(--gold);box-shadow:var(--shadow);transform:translateY(-2px)}
+        .news-date{font-size:12px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+        .news-card h4{font-size:17px;color:var(--navy);margin-bottom:6px}
+        .news-card p{font-size:14px;color:var(--gray);line-height:1.6}
 
         /* ── Gallery ── */
-        .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+        .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
         .gallery-item{
             aspect-ratio:4/3;overflow:hidden;border-radius:6px;cursor:pointer;
             transition:all 0.3s;position:relative
@@ -161,58 +224,63 @@
         }
         .lightbox.active{display:flex}
         .lightbox img{max-width:92vw;max-height:85vh;border-radius:4px}
-        .lightbox-close{
-            position:absolute;top:24px;right:32px;color:#fff;font-size:36px;
-            cursor:pointer;font-weight:300;line-height:1;z-index:10000
-        }
+        .lightbox-close{position:absolute;top:24px;right:32px;color:#fff;font-size:36px;cursor:pointer;font-weight:300;line-height:1;z-index:10000}
         .lightbox-close:hover{color:var(--gold)}
-        .lightbox-nav{
-            position:absolute;top:50%;transform:translateY(-50%);
-            color:#fff;font-size:40px;cursor:pointer;padding:16px;
-            user-select:none;transition:color 0.2s
-        }
+        .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:40px;cursor:pointer;padding:16px;user-select:none;transition:color 0.2s}
         .lightbox-nav:hover{color:var(--gold)}
         .lightbox-prev{left:16px}.lightbox-next{right:16px}
 
-        /* ── Scroll animations ── */
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
+        /* ── Advocacy ── */
+        .advocacy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
+        .advocacy-card{
+            background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+            padding:32px;transition:all 0.3s;text-align:center
+        }
+        .advocacy-card:hover{border-color:var(--gold);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+        .advocacy-card .adv-icon{font-size:42px;margin-bottom:16px}
+        .advocacy-card h4{font-size:17px;color:var(--navy);margin-bottom:6px}
+        .advocacy-card p{font-size:14px;color:var(--gray);line-height:1.6}
+        .bg-light-gold{background:#fdfaf3}
 
-        /* ── News ── */
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; }
-        .news-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: all 0.3s; }
-        .news-card:hover { border-color: var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .news-date { font-size: 12px; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
-        .news-card h4 { font-size: 17px; color: var(--navy); margin-bottom: 6px; }
-        .news-card p { font-size: 14px; color: var(--gray); }
+        /* ── Volunteer ── */
+        .volunteer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
+        .volunteer-card{
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+            border-radius:var(--radius);padding:32px;transition:all 0.3s
+        }
+        .volunteer-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+        .volunteer-card .vol-icon{font-size:32px;margin-bottom:12px}
+        .volunteer-card h4{font-size:17px;color:var(--gold);margin-bottom:6px}
+        .volunteer-card p{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6}
+
+        /* ── Donate ── */
+        .donate-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+        .donate-info h3{font-size:28px;color:var(--navy);margin-bottom:16px}
+        .donate-info p{font-size:16px;color:var(--gray);line-height:1.8;margin-bottom:12px}
+        .donate-amounts{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+        .donate-amt{
+            padding:14px 24px;border:2px solid var(--border);border-radius:var(--radius);
+            font-size:18px;font-weight:700;color:var(--navy);cursor:pointer;transition:all 0.3s;background:#fff
+        }
+        .donate-amt:hover,.donate-amt.active{border-color:var(--gold);background:rgba(196,164,74,0.08)}
+
+        /* ── Partners ── */
+        .partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:24px;align-items:center}
+        .partner-item{
+            background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+            padding:24px;text-align:center;transition:all 0.3s;
+            display:flex;align-items:center;justify-content:center;min-height:80px
+        }
+        .partner-item:hover{border-color:var(--gold);box-shadow:var(--shadow)}
+        .partner-item span{font-size:14px;color:var(--gray);font-weight:600}
 
         /* ── Testimonials ── */
-        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; }
-        .testimonial-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; transition: all 0.3s; }
-        .testimonial-card:hover { border-color: var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .testimonial-stars { color: var(--gold); font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
-        .testimonial-card p { font-size: 15px; color: #555; font-style: italic; line-height: 1.7; margin-bottom: 12px; }
-        .testimonial-author { font-size: 13px; color: var(--gray); font-weight: 600; }
-
-        /* ── Past Highlights ── */
-        .highlight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
-        .highlight-card{
-            border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
-            transition:all 0.3s;background:#fff;text-decoration:none;color:inherit;display:block
-        }
-        .highlight-card:hover{box-shadow:0 8px 30px rgba(0,0,0,0.08);transform:translateY(-2px)}
-        .highlight-thumb{height:220px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:48px}
-        .highlight-body{padding:24px}
-        .highlight-body .date{font-size:12px;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
-        .highlight-body h4{font-size:18px;color:var(--navy);margin-bottom:6px}
-        .highlight-body p{font-size:14px;color:var(--gray)}
-        .video-thumb{background:linear-gradient(135deg,#0A1628,#1B3A5C);position:relative}
-        .play-btn{
-            width:64px;height:64px;background:rgba(255,255,255,0.9);border-radius:50%;
-            display:flex;align-items:center;justify-content:center;font-size:24px;
-            color:var(--navy);transition:all 0.3s;padding-left:4px
-        }
-        .highlight-card:hover .play-btn{background:var(--gold);color:var(--navy);transform:scale(1.1)}
+        .testimonial-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+        .testimonial-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:all 0.3s}
+        .testimonial-card:hover{border-color:var(--gold);box-shadow:var(--shadow)}
+        .testimonial-stars{color:var(--gold);font-size:18px;margin-bottom:12px;letter-spacing:2px}
+        .testimonial-card > p{font-size:15px;color:#555;font-style:italic;line-height:1.7;margin-bottom:12px}
+        .testimonial-author{font-size:13px;color:var(--gray);font-weight:600}
 
         /* ── Enrol ── */
         .enrol-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
@@ -229,11 +297,7 @@
         .form-group input:focus,.form-group select:focus,.form-group textarea:focus{
             outline:none;border-color:var(--navy);background:#fff
         }
-        .btn-submit{
-            width:100%;padding:14px;background:var(--navy);color:#fff;
-            border:none;border-radius:6px;font-size:16px;font-weight:700;
-            cursor:pointer;transition:all 0.3s
-        }
+        .btn-submit{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s}
         .btn-submit:hover{background:var(--blue)}
         .form-success{display:none;text-align:center;padding:40px 20px}
         .form-success .icon{font-size:56px;margin-bottom:16px}
@@ -241,11 +305,7 @@
         /* ── FAQ ── */
         .faq-list{max-width:760px;margin:0 auto}
         .faq-item{border-bottom:1px solid var(--border)}
-        .faq-q{
-            width:100%;background:none;border:none;text-align:left;
-            padding:20px 0;font-size:17px;font-weight:600;color:var(--navy);
-            cursor:pointer;display:flex;justify-content:space-between;align-items:center
-        }
+        .faq-q{width:100%;background:none;border:none;text-align:left;padding:20px 0;font-size:17px;font-weight:600;color:var(--navy);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
         .faq-q::after{content:'+';font-size:24px;color:var(--gold);font-weight:300;transition:transform 0.3s}
         .faq-item.open .faq-q::after{content:'−'}
         .faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease;color:var(--gray);font-size:15px}
@@ -259,49 +319,56 @@
 
         /* ── Footer ── */
         footer{background:var(--navy);color:rgba(255,255,255,0.6);padding:48px 24px;font-size:14px}
-        footer .container{display:flex;justify-content:space-between;flex-wrap:wrap;gap:32px}
+        footer .container{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px}
         footer .footer-brand{font-size:18px;font-weight:700;color:#fff}
         footer a{color:rgba(255,255,255,0.5);text-decoration:none}
         footer a:hover{color:var(--gold)}
+        footer h5{color:#fff;font-size:14px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
 
         /* ── Back to top ── */
-        .back-top{
-            position:fixed;bottom:32px;right:32px;width:48px;height:48px;
-            background:var(--navy);color:#fff;border:none;border-radius:50%;
-            font-size:20px;cursor:pointer;opacity:0;transform:translateY(20px);
-            transition:all 0.3s;z-index:99;box-shadow:0 4px 16px rgba(0,0,0,0.2)
-        }
+        .back-top{position:fixed;bottom:32px;right:32px;width:48px;height:48px;background:var(--navy);color:#fff;border:none;border-radius:50%;font-size:20px;cursor:pointer;opacity:0;transform:translateY(20px);transition:all 0.3s;z-index:99;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
         .back-top.visible{opacity:1;transform:translateY(0)}
         .back-top:hover{background:var(--blue)}
 
         /* ── Lang bar ── */
-        .lang-bar{
-            display:flex;align-items:center;justify-content:center;
-            gap:8px;padding:8px 0;background:var(--light);font-size:13px
-        }
-        .lang-bar button{
-            background:#fff;border:1px solid var(--border);padding:4px 14px;
-            border-radius:4px;cursor:pointer;font-size:13px;transition:all 0.2s
-        }
+        .lang-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0;background:var(--light);font-size:13px}
+        .lang-bar button{background:#fff;border:1px solid var(--border);padding:4px 14px;border-radius:4px;cursor:pointer;font-size:13px;transition:all 0.2s}
         .lang-bar button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+        /* ── CTA Banner ── */
+        .cta-banner{background:linear-gradient(135deg,var(--navy),var(--blue));padding:60px 0;text-align:center;color:#fff}
+        .cta-banner h2{font-size:36px;font-weight:800;margin-bottom:12px}
+        .cta-banner p{font-size:18px;color:rgba(255,255,255,0.75);margin-bottom:28px}
+        .cta-banner .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+        /* ── Scroll reveal ── */
+        .reveal{opacity:0;transform:translateY(30px);transition:all 0.8s ease}
+        .reveal.visible{opacity:1;transform:translateY(0)}
 
         /* ── Responsive ── */
         @media(max-width:768px){
-            nav .nav-links{display:none;position:absolute;top:72px;left:0;width:100%;
-                background:#fff;flex-direction:column;padding:16px;border-top:1px solid var(--border);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
+            nav .nav-links{
+                display:none;position:absolute;top:72px;left:0;width:100%;
+                background:#fff;flex-direction:column;padding:16px;
+                border-top:1px solid var(--border);box-shadow:0 8px 20px rgba(0,0,0,0.1);
+                overflow-y:auto;max-height:70vh
+            }
             nav .nav-links.open{display:flex}
             .nav-toggle{display:block}
             .hero h1{font-size:34px}
-            .hero p{font-size:16px}
+            .hero .tagline{font-size:17px}
+            .hero .hero-stats{flex-direction:column;gap:16px}
             section{padding:64px 0}
             .section-title{font-size:28px}
-            .about-grid,.enrol-grid{grid-template-columns:1fr}
+            .about-grid,.enrol-grid,.donate-grid{grid-template-columns:1fr}
             .term-grid{grid-template-columns:repeat(2,1fr)}
             .form-row{grid-template-columns:1fr}
             .contact-grid{grid-template-columns:1fr}
-            .highlight-grid{grid-template-columns:1fr}
             .gallery-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
-            .stats{flex-wrap:wrap;gap:24px}
+            .stats{justify-content:center;gap:24px}
+            .news-grid{grid-template-columns:1fr}
+            .teacher-grid{grid-template-columns:1fr}
+            .topbar{font-size:12px;gap:12px}
         }
     </style>
 </head>
@@ -309,8 +376,11 @@
 
 <!-- Top Bar -->
 <div class="topbar">
-    <span data-i18n>Aligned with SA Public School Terms</span>
-    <a href="#enrol" data-i18n>Enrol for Term 3 →</a>
+    <span class="stat-pill"><span class="dot"></span> Since 2025</span>
+    <span class="stat-pill"><span class="dot"></span> 260+ Registered Members</span>
+    <span class="stat-pill"><span class="dot"></span> Based in Adelaide CBD</span>
+    <span class="stat-pill"><span class="dot"></span> Multicultural Community Organisation</span>
+    <a href="#enrol" class="enrol-link">Enrol for Term 3 →</a>
 </div>
 
 <!-- Language Bar -->
@@ -323,18 +393,20 @@
 <nav>
     <div class="container">
         <a href="#" class="brand">
-            <img src="logo.jpg" alt="ACSC">
-            <span>Adelaide Chinese Senior College</span>
+            <img src="logo.jpg" alt="ASLC">
+            <span>Adelaide Senior<br>Learning Centre</span>
         </a>
         <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
         <ul class="nav-links">
-            <li><a href="#news">News</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#terms" data-i18n>Terms</a></li>
-            <li><a href="#schedule" data-i18n>Timetable</a></li>
-            <li><a href="#courses" data-i18n>Courses</a></li>
-            <li><a href="#gallery" data-i18n>Gallery</a></li>
-            <li><a href="#enrol" class="nav-cta" data-i18n>Enrol</a></li>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="#teachers">Teachers</a></li>
+            <li><a href="#schedule">Timetable</a></li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#advocacy">Advocacy</a></li>
+            <li><a href="#volunteer">Volunteer</a></li>
+            <li><a href="#enrol" class="nav-cta">Enrol</a></li>
         </ul>
     </div>
 </nav>
@@ -342,68 +414,340 @@
 <!-- Hero -->
 <header class="hero">
     <div class="container">
-        <p class="badge" data-i18n>Adelaide, South Australia</p>
-        <h1>Adelaide Chinese<br><span>Senior College</span></h1>
-        <p>Empowering seniors through education, culture, and community connection in the heart of Adelaide.</p>
+        <p class="badge">Adelaide, South Australia</p>
+        <h1>Adelaide Senior<br><span>Learning Centre</span></h1>
+        <p class="tagline">Connecting Seniors Through Learning, Health and Community.</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="icon">👥</span>
+                <span class="text"><strong>260+</strong> Registered Members</span>
+            </div>
+            <div class="hero-stat">
+                <span class="icon">🌏</span>
+                <span class="text"><strong>Chinese &amp; Multicultural</strong> Community Programs</span>
+            </div>
+            <div class="hero-stat">
+                <span class="icon">📚</span>
+                <span class="text"><strong>Education · Wellness</strong> · Social Inclusion</span>
+            </div>
+            <div class="hero-stat">
+                <span class="icon">🤝</span>
+                <span class="text"><strong>Supported by</strong> Local Community Partners</span>
+            </div>
+        </div>
         <div class="hero-btns">
-            <a href="#enrol" class="btn btn-gold" data-i18n>Enrol for Term 3</a>
-            <a href="#schedule" class="btn btn-outline" data-i18n>View Timetable</a>
+            <a href="#enrol" class="btn btn-gold">Join Us</a>
+            <a href="#volunteer" class="btn btn-outline">Become a Volunteer</a>
+            <a href="#donate" class="btn btn-outline">Donate</a>
         </div>
     </div>
 </header>
 
-<!-- News -->
-<section id="news">
+<!-- Why Choose Us -->
+<section id="why" class="bg-navy">
     <div class="container">
-        <p class="section-label" data-i18n>News & Announcements</p>
-        <h2 class="section-title" data-i18n>Latest updates</h2>
-        <div class="news-grid">
-            <div class="news-card">
-                <div class="news-date">Jul 2026</div>
-                <h4>Term 3 Enrolments Now Open</h4>
-                <p>Enrolments for Term 3 (mid-July to late September) are now open. New students welcome!</p>
+        <p class="section-label">Why Choose Us</p>
+        <h2 class="section-title">Adelaide's dedicated platform for Chinese-speaking seniors</h2>
+        <p class="section-lead">Adelaide currently has almost no comprehensive learning platforms specifically designed for Chinese-speaking seniors. We fill this gap — and we do it with heart.</p>
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="why-icon">🎯</div>
+                <h4>Built for Our Community</h4>
+                <p>The only organisation in Adelaide offering a full suite of Chinese-language programs — from Tai Chi to English, Hulusi to smartphone classes.</p>
             </div>
-            <div class="news-card">
-                <div class="news-date">Jun 2026</div>
-                <h4>End of Term 2 Celebrations</h4>
-                <p>Thank you to all students and instructors for a wonderful Term 2. See you after the break!</p>
+            <div class="why-card">
+                <div class="why-icon">🌐</div>
+                <h4>Bilingual & Culturally Attuned</h4>
+                <p>All instructors speak Mandarin and understand the cultural needs of Chinese-Australian seniors. No language barriers.</p>
             </div>
-            <div class="news-card">
-                <div class="news-date">May 2026</div>
-                <h4>New Photography Class Added</h4>
-                <p>We've introduced a new photography class on Tuesdays with Mr. Xu Jiashu. All levels welcome.</p>
+            <div class="why-card">
+                <div class="why-icon">📍</div>
+                <h4>Multiple Locations</h4>
+                <p>Classes across Adelaide CBD, north, and south — so there's always a class near you.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">💛</div>
+                <h4>Not-for-Profit, Heart-Led</h4>
+                <p>We are a community organisation first. Every dollar goes back into programs that benefit our members.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- About -->
+<!-- About Us -->
 <section id="about">
     <div class="container">
         <div class="about-grid">
             <div class="about-img"><img src="gallery/gallery-01.jpg" alt="Community" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=background:linear-gradient(135deg,#0A1628,#1B3A5C);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;color:#fff>🏫</div>'"></div>
             <div class="about-text">
                 <p class="section-label">About Us</p>
-                <h2 class="section-title" style="font-size:32px" data-i18n>Enriching lives through culture and education</h2>
-                <p>Adelaide Chinese Senior College is a not-for-profit community organisation dedicated to promoting active ageing within culturally and linguistically diverse communities across Adelaide.</p>
-                <p>We provide accessible, high-quality educational and recreational programs that foster wellbeing, social inclusion, and cultural connection — helping seniors stay active, engaged, and connected.</p>
+                <h2 class="section-title" style="font-size:32px">Enriching lives through culture, education and community</h2>
+                <p>Adelaide Senior Learning Centre is a community-based not-for-profit organisation established in 2025. We promote healthy ageing, lifelong learning and social inclusion for culturally and linguistically diverse seniors across Adelaide.</p>
+                <p>From humble beginnings with a few tai chi sessions, we've grown into a vibrant community of 260+ members participating in over 30 activities every month.</p>
+                <ul class="achievement-list">
+                    <li>260+ registered senior members</li>
+                    <li>30+ activities every month</li>
+                    <li>Harmony Week performances</li>
+                    <li>Parliament House visit</li>
+                    <li>Chinese cultural programs</li>
+                    <li>Multicultural partnerships</li>
+                </ul>
                 <div class="stats">
-                    <div class="stat"><div class="stat-num" data-count="10">0</div><div class="stat-label" data-i18n>Programs</div></div>
-                    <div class="stat"><div class="stat-num" data-count="8">0</div><div class="stat-label" data-i18n>Instructors</div></div>
-                    <div class="stat"><div class="stat-num" data-count="6">0</div><div class="stat-label" data-i18n>Venues</div></div>
-                    <div class="stat"><div class="stat-num" data-count="200">0</div><div class="stat-label" data-i18n>Members</div></div>
+                    <div class="stat"><div class="stat-num" data-count="260">0</div><div class="stat-label">Members</div></div>
+                    <div class="stat"><div class="stat-num" data-count="10">0</div><div class="stat-label">Programs</div></div>
+                    <div class="stat"><div class="stat-num" data-count="8">0</div><div class="stat-label">Instructors</div></div>
+                    <div class="stat"><div class="stat-num" data-count="6">0</div><div class="stat-label">Venues</div></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Terms -->
+<!-- Programs & Courses -->
+<section id="programs" style="background:var(--light)">
+    <div class="container">
+        <p class="section-label">Programs &amp; Courses</p>
+        <h2 class="section-title">Something for every interest</h2>
+        <p class="section-lead">From physical wellness to creative arts, language learning to digital skills — explore our four program categories below.</p>
+
+        <!-- Health & Wellness -->
+        <div class="program-category">
+            <h3>💪 Health &amp; Wellness</h3>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="cc-icon">☯️</div>
+                    <h4>Yang Style Tai Chi</h4>
+                    <div class="cc-instructor">Ms. Zhou Ping</div>
+                    <p>Traditional Chinese martial art for balance, flexibility and mindfulness. Suitable for all fitness levels.</p>
+                    <div class="cc-tags"><span class="cc-tag">Mon 9:30 AM</span><span class="cc-tag">Wed 11:45 AM</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">💃</div>
+                    <h4>Square Dancing</h4>
+                    <div class="cc-instructor">Ms. Duo Duo</div>
+                    <p>Vibrant group dancing at three locations across Adelaide. Stay active, socialise, and have fun!</p>
+                    <div class="cc-tags"><span class="cc-tag">Tue 10:30 AM</span><span class="cc-tag">Wed 10:00 AM</span><span class="cc-tag">Thu 10:30 AM</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">🧘</div>
+                    <h4>Senior Fitness</h4>
+                    <div class="cc-instructor">Ms. Lina</div>
+                    <p>Gentle exercise focused on stretching, mobility and fall prevention — tailored specifically for seniors.</p>
+                    <div class="cc-tags"><span class="cc-tag gold">New Program</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arts & Culture -->
+        <div class="program-category">
+            <h3>🎨 Arts &amp; Culture</h3>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="cc-icon">🎤</div>
+                    <h4>Vocal Music</h4>
+                    <div class="cc-instructor">Ms. Xiao Liping</div>
+                    <p>Build confidence and joy through music in a supportive choir environment. All levels welcome.</p>
+                    <div class="cc-tags"><span class="cc-tag">Fri 2:45 PM</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">🪈</div>
+                    <h4>Hulusi (Gourd Flute)</h4>
+                    <div class="cc-instructor">Ms. Gao Cuiping</div>
+                    <p>Learn this beautiful traditional Chinese instrument — no prior musical experience required!</p>
+                    <div class="cc-tags"><span class="cc-tag">Fri 1:45 PM</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">💃</div>
+                    <h4>Chinese Dance</h4>
+                    <div class="cc-instructor">Mr. Shuo Zhang</div>
+                    <p>Traditional and contemporary Chinese dance. Mr. Zhang brings 15+ years of teaching experience from Sure Dance School.</p>
+                    <div class="cc-tags"><span class="cc-tag gold">Featured</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">📸</div>
+                    <h4>Photography</h4>
+                    <div class="cc-instructor">Mr. Xu Jiashu</div>
+                    <p>Master camera techniques and capture life's beautiful moments. From basics to creative composition.</p>
+                    <div class="cc-tags"><span class="cc-tag">Tue 10:00 AM</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning -->
+        <div class="program-category">
+            <h3>📖 Learning</h3>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="cc-icon">🇬🇧</div>
+                    <h4>Practical English</h4>
+                    <div class="cc-instructor">Ms. Li Li</div>
+                    <p>Beginner and intermediate levels. Build everyday English skills for life in Australia — doctors, shops, neighbours.</p>
+                    <div class="cc-tags"><span class="cc-tag">Mon 11:10 AM (Beginner)</span><span class="cc-tag">Wed 9:30 AM (Intermediate)</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">🎬</div>
+                    <h4>Short Video Production</h4>
+                    <div class="cc-instructor">Ms. Li Na</div>
+                    <p>Beginner-friendly! Learn to shoot, edit and share short videos on your phone. Great for keeping up with the grandkids.</p>
+                    <div class="cc-tags"><span class="cc-tag">Tue 2:00 PM</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">📱</div>
+                    <h4>Smartphone Classes</h4>
+                    <div class="cc-instructor">Various instructors</div>
+                    <p>Master your smartphone — WeChat, maps, photos, online shopping and more. One-on-one help available.</p>
+                    <div class="cc-tags"><span class="cc-tag gold">Popular</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Activities -->
+        <div class="program-category">
+            <h3>🤝 Community Activities</h3>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="cc-icon">🚌</div>
+                    <h4>Excursions &amp; Day Trips</h4>
+                    <div class="cc-instructor">Self-organised</div>
+                    <p>Regular outings to local attractions — German Village (Hahndorf), Barossa Valley, beaches, and more.</p>
+                    <div class="cc-tags"><span class="cc-tag">Monthly</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">🀄</div>
+                    <h4>Social Gatherings</h4>
+                    <div class="cc-instructor">Self-organised</div>
+                    <p>Board games, tea gatherings, festive celebrations. Bring your own equipment and meet new friends.</p>
+                    <div class="cc-tags"><span class="cc-tag">Wed (after dance)</span></div>
+                </div>
+                <div class="course-card">
+                    <div class="cc-icon">🙋</div>
+                    <h4>Volunteer Programs</h4>
+                    <div class="cc-instructor">Community-led</div>
+                    <p>Give back to the community. Opportunities in photography, event support, teaching assistance, and more.</p>
+                    <div class="cc-tags"><span class="cc-tag"><a href="#volunteer" style="color:inherit;text-decoration:none">Learn more →</a></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Teachers -->
+<section id="teachers">
+    <div class="container">
+        <p class="section-label">Meet Our Teachers</p>
+        <h2 class="section-title">Qualified instructors who care</h2>
+        <p class="section-lead">Our instructors bring years of professional experience and a genuine passion for working with seniors. Every teacher is committed to creating a welcoming, supportive environment.</p>
+        <div class="teacher-grid">
+            <div class="teacher-card">
+                <div class="teacher-photo">🧘</div>
+                <div class="teacher-body">
+                    <h4>Ms. Zhou Ping</h4>
+                    <div class="role">Tai Chi Instructor</div>
+                    <p>Experienced Yang Style Tai Chi practitioner with over 10 years of teaching experience. Specialises in senior-friendly adaptations for balance and mobility.</p>
+                    <div class="specialties"><span class="spec-tag">Tai Chi</span><span class="spec-tag">Balance Training</span><span class="spec-tag">Mindfulness</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">💃</div>
+                <div class="teacher-body">
+                    <h4>Ms. Duo Duo</h4>
+                    <div class="role">Square Dance Instructor</div>
+                    <p>Energetic and beloved instructor leading square dancing across three Adelaide locations. Known for making every session fun and inclusive.</p>
+                    <div class="specialties"><span class="spec-tag">Square Dance</span><span class="spec-tag">Group Fitness</span><span class="spec-tag">Community Building</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">🇬🇧</div>
+                <div class="teacher-body">
+                    <h4>Ms. Li Li</h4>
+                    <div class="role">English Teacher</div>
+                    <p>Patient and dedicated English instructor teaching both beginner and intermediate levels. Focuses on practical, everyday English for life in Australia.</p>
+                    <div class="specialties"><span class="spec-tag">ESL</span><span class="spec-tag">Conversation</span><span class="spec-tag">Practical English</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">💃</div>
+                <div class="teacher-body">
+                    <h4>Mr. Shuo Zhang</h4>
+                    <div class="role">Chinese Dance Educator</div>
+                    <p>Founder of Sure Dance School with over 15 years of teaching experience. Brings professional-level choreography to community dance programs.</p>
+                    <div class="specialties"><span class="spec-tag">Chinese Dance</span><span class="spec-tag">Choreography</span><span class="spec-tag">Performance</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">🪈</div>
+                <div class="teacher-body">
+                    <h4>Ms. Gao Cuiping</h4>
+                    <div class="role">Hulusi Instructor</div>
+                    <p>Skilled Hulusi player who makes learning this traditional Chinese instrument accessible and enjoyable for complete beginners.</p>
+                    <div class="specialties"><span class="spec-tag">Hulusi</span><span class="spec-tag">Music Theory</span><span class="spec-tag">Performance</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">🎤</div>
+                <div class="teacher-body">
+                    <h4>Ms. Xiao Liping</h4>
+                    <div class="role">Vocal Music Instructor</div>
+                    <p>Passionate vocal coach who creates a joyful, supportive choir environment. Believes everyone can sing — and should!</p>
+                    <div class="specialties"><span class="spec-tag">Vocal Training</span><span class="spec-tag">Choir</span><span class="spec-tag">Music Appreciation</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">📸</div>
+                <div class="teacher-body">
+                    <h4>Mr. Xu Jiashu</h4>
+                    <div class="role">Photography Instructor</div>
+                    <p>Professional photographer who teaches seniors how to use cameras and smartphones to capture beautiful moments.</p>
+                    <div class="specialties"><span class="spec-tag">Photography</span><span class="spec-tag">Composition</span><span class="spec-tag">Photo Editing</span></div>
+                </div>
+            </div>
+            <div class="teacher-card">
+                <div class="teacher-photo">🧘</div>
+                <div class="teacher-body">
+                    <h4>Ms. Lina</h4>
+                    <div class="role">Senior Fitness Coach</div>
+                    <p>Specialises in gentle exercise programs for older adults — stretching, mobility, and fall prevention tailored to individual abilities.</p>
+                    <div class="specialties"><span class="spec-tag">Senior Exercise</span><span class="spec-tag">Stretching</span><span class="spec-tag">Fall Prevention</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Weekly Schedule -->
+<section id="schedule" style="background:var(--light)">
+    <div class="container">
+        <p class="section-label">Weekly Timetable</p>
+        <h2 class="section-title">Recurring weekly classes</h2>
+        <p class="section-lead">These classes run during school terms. No classes on public holidays or during school breaks.</p>
+        <div class="schedule-wrap">
+        <table class="schedule-table">
+            <thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Instructor</th><th>Venue</th></tr></thead>
+            <tbody>
+                <tr><td class="day" rowspan="2">Mon</td><td class="time">9:30–11:00</td><td class="course-name">☯️ Yang Style Tai Chi <small style="color:#999">(rain cancels)</small></td><td class="teacher">Ms. Zhou Ping</td><td class="venue">Adelaide City Rose Garden</td></tr>
+                <tr><td class="time">11:10–12:10</td><td class="course-name">🇬🇧 English — Beginner</td><td class="teacher">Ms. Li Li</td><td class="venue">168 South Terrace, Adelaide</td></tr>
+                <tr><td class="day" rowspan="3">Tue</td><td class="time">10:00–11:00</td><td class="course-name">📸 Photography</td><td class="teacher">Mr. Xu Jiashu</td><td class="venue">294–300 Morphett St, Adelaide</td></tr>
+                <tr><td class="time">10:30–11:30</td><td class="course-name">💃 Square Dancing (Eastern)</td><td class="teacher">Ms. Duo Duo</td><td class="venue">Campbelltown Memorial Oval</td></tr>
+                <tr><td class="time">2:00–3:00</td><td class="course-name">🎬 Short Video Production</td><td class="teacher">Ms. Li Na</td><td class="venue">168 South Terrace, Adelaide</td></tr>
+                <tr><td class="day" rowspan="3">Wed</td><td class="time">9:30–11:00</td><td class="course-name">🇬🇧 English — Intermediate</td><td class="teacher">Ms. Li Li</td><td class="venue">168 South Terrace, Adelaide</td></tr>
+                <tr><td class="time">10:00–11:00</td><td class="course-name">💃 Square Dancing (Northern) <small style="color:#999">(+board games to 12:00)</small></td><td class="teacher">Ms. Duo Duo</td><td class="venue">Mawson Centre, MC2-03</td></tr>
+                <tr><td class="time">11:45–12:45</td><td class="course-name">☯️ Tai Chi (Southern)</td><td class="teacher">Ms. Zhou Ping</td><td class="venue">139 Bradley Grove, Mitchell Park</td></tr>
+                <tr><td class="day">Thu</td><td class="time">10:30–11:30</td><td class="course-name">💃 Square Dancing (Southern)</td><td class="teacher">Ms. Duo Duo</td><td class="venue">139 Bradley Grove, Mitchell Park</td></tr>
+                <tr><td class="day" rowspan="2">Fri</td><td class="time">1:45–2:45</td><td class="course-name">🪈 Hulusi (Gourd Flute)</td><td class="teacher">Ms. Gao Cuiping</td><td class="venue">168 South Terrace, Adelaide</td></tr>
+                <tr><td class="time">2:45–3:45</td><td class="course-name">🎤 Vocal Music</td><td class="teacher">Ms. Xiao Liping</td><td class="venue">168 South Terrace, Adelaide</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="note"><strong>💡 Please note:</strong> Arrive on time. Bring your own equipment for board game sessions. All are welcome — a great opportunity to meet new friends!</div>
+    </div>
+</section>
+
+<!-- School Terms -->
 <section id="terms" class="bg-navy">
     <div class="container">
         <p class="section-label">School Terms</p>
-        <h2 class="section-title" data-i18n>Aligned with SA school terms</h2>
-        <p class="section-lead" data-i18n>Our programs operate during all four terms of the South Australian public school calendar.</p>
+        <h2 class="section-title">Aligned with SA school terms</h2>
+        <p class="section-lead">Our programs operate during all four terms of the South Australian public school calendar.</p>
         <div class="term-grid">
             <div class="term-card"><h4>Term 1</h4><p>Late Jan – Early Apr</p></div>
             <div class="term-card"><h4>Term 2</h4><p>Late Apr – Early Jul</p></div>
@@ -413,59 +757,53 @@
     </div>
 </section>
 
-<!-- Schedule -->
-<section id="schedule">
+<!-- News & Events -->
+<section id="news">
     <div class="container">
-        <p class="section-label">Weekly Timetable</p>
-        <h2 class="section-title" data-i18n>Recurring weekly classes</h2>
-        <p class="section-lead" data-i18n>These classes run during school terms. No classes on public holidays or during school breaks.</p>
-        <div class="schedule-wrap">
-        <table class="schedule-table">
-            <thead><tr><th data-i18n>Day</th><th data-i18n>Time</th><th data-i18n>Class</th><th data-i18n>Instructor</th><th data-i18n>Venue</th></tr></thead>
-            <tbody>
-                <tr><td class="day" rowspan="2" data-i18n>Mon</td><td class="time">9:30–11:00</td><td>☯️ Yang Style Tai Chi <small style="color:#999">(rain cancels)</small></td><td class="teacher">Ms. Zhou Ping</td><td class="venue">Adelaide City Rose Garden</td></tr>
-                <tr><td class="time">11:10–12:10</td><td>🇬🇧 English — Beginner</td><td class="teacher">Ms. Li Li</td><td class="venue">168 South Terrace, Adelaide</td></tr>
-                <tr><td class="day" rowspan="3" data-i18n>Tue</td><td class="time">10:00–11:00</td><td>📸 Photography</td><td class="teacher">Mr. Xu Jiashu</td><td class="venue">294–300 Morphett St, Adelaide</td></tr>
-                <tr><td class="time">10:30–11:30</td><td>💃 Square Dancing (Eastern)</td><td class="teacher">Ms. Duo Duo</td><td class="venue">Campbelltown Memorial Oval</td></tr>
-                <tr><td class="time">2:00–3:00</td><td>🎬 Short Video Production</td><td class="teacher">Ms. Li Na</td><td class="venue">168 South Terrace, Adelaide</td></tr>
-                <tr><td class="day" rowspan="3" data-i18n>Wed</td><td class="time">9:30–11:00</td><td>🇬🇧 English — Intermediate</td><td class="teacher">Ms. Li Li</td><td class="venue">168 South Terrace, Adelaide</td></tr>
-                <tr><td class="time">10:00–11:00</td><td>💃 Square Dancing (Northern) <small style="color:#999">(+board games to 12:00)</small></td><td class="teacher">Ms. Duo Duo</td><td class="venue">Mawson Centre, MC2-03</td></tr>
-                <tr><td class="time">11:45–12:45</td><td>☯️ Tai Chi (Southern)</td><td class="teacher">Ms. Zhou Ping</td><td class="venue">139 Bradley Grove, Mitchell Park</td></tr>
-                <tr><td class="day" data-i18n>Thu</td><td class="time">10:30–11:30</td><td>💃 Square Dancing (Southern)</td><td class="teacher">Ms. Duo Duo</td><td class="venue">139 Bradley Grove, Mitchell Park</td></tr>
-                <tr><td class="day" rowspan="2" data-i18n>Fri</td><td class="time">1:45–2:45</td><td>🪈 Hulusi (Gourd Flute)</td><td class="teacher">Ms. Gao Cuiping</td><td class="venue">168 South Terrace, Adelaide</td></tr>
-                <tr><td class="time">2:45–3:45</td><td>🎤 Vocal Music</td><td class="teacher">Ms. Xiao Liping</td><td class="venue">168 South Terrace, Adelaide</td></tr>
-            </tbody>
-        </table>
-        </div>
-        <div class="note"><strong>💡 <span data-i18n>Please note:</span></strong> Please arrive on time. Bring your own equipment for board game sessions. All are welcome — a great opportunity to meet new friends!</div>
-    </div>
-</section>
-
-<!-- Courses -->
-<section id="courses" style="background:var(--light)">
-    <div class="container">
-        <p class="section-label">Our Programs</p>
-        <h2 class="section-title" data-i18n>Programs for every interest</h2>
-        <p class="section-lead" data-i18n>From physical exercise to creative arts, language learning to digital skills — we offer something for everyone.</p>
-        <div class="course-grid">
-            <div class="course-card"><div class="icon">☯️</div><h4>Yang Style Tai Chi</h4><p class="instructor">Ms. Zhou Ping</p><p>Traditional Chinese martial art for balance, flexibility and mindfulness.</p><span class="tag">Mon & Wed</span></div>
-            <div class="course-card"><div class="icon">💃</div><h4>Square Dancing</h4><p class="instructor">Ms. Duo Duo</p><p>Vibrant group dancing across three Adelaide locations. Board games included.</p><span class="tag">Tue · Wed · Thu</span></div>
-            <div class="course-card"><div class="icon">🎤</div><h4>Vocal Music</h4><p class="instructor">Ms. Xiao Liping</p><p>Build confidence and joy through music in a supportive choir environment.</p><span class="tag" data-i18n>Fri</span></div>
-            <div class="course-card"><div class="icon">🪈</div><h4>Hulusi (Gourd Flute)</h4><p class="instructor">Ms. Gao Cuiping</p><p>Learn this beautiful traditional Chinese instrument — no experience required.</p><span class="tag" data-i18n>Fri</span></div>
-            <div class="course-card"><div class="icon">🇬🇧</div><h4>Practical English</h4><p class="instructor">Ms. Li Li</p><p>Beginner and intermediate levels. Build everyday English skills for life in Australia.</p><span class="tag">Mon & Wed</span></div>
-            <div class="course-card"><div class="icon">📸</div><h4>Photography</h4><p class="instructor">Mr. Xu Jiashu</p><p>Master camera techniques and capture life's beautiful moments.</p><span class="tag" data-i18n>Tue</span></div>
-            <div class="course-card"><div class="icon">🎬</div><h4>Short Video Production</h4><p class="instructor">Ms. Li Na</p><p>Beginner-friendly! Learn to shoot, edit and produce short videos.</p><span class="tag" data-i18n>Tue</span></div>
-            <div class="course-card"><div class="icon">🀄</div><h4>Social Activities</h4><p class="instructor">Self-organised</p><p>Board games, tea gatherings and socials. Bring your own equipment.</p><span class="tag" data-i18n>Wed</span></div>
+        <p class="section-label">News &amp; Events</p>
+        <h2 class="section-title">What's happening at ASLC</h2>
+        <p class="section-lead">Stay up to date with our latest activities, new programs, and community events.</p>
+        <div class="news-grid">
+            <div class="news-card">
+                <div class="news-date">July 2026</div>
+                <h4>Term 3 Enrolments Now Open</h4>
+                <p>New semester commenced mid-July. New students welcome — come try a class for free!</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">July 2026</div>
+                <h4>Senior Fitness Program Launch</h4>
+                <p>Introducing our new gentle exercise program with Ms. Lina — focused on stretching, mobility, and fall prevention.</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">July 2026</div>
+                <h4>Mid-Autumn Festival Preparation</h4>
+                <p>Planning underway for our annual Mid-Autumn celebration. Performers and volunteers wanted!</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">June 2026</div>
+                <h4>End of Term 2 Celebrations</h4>
+                <p>Thank you to all students and instructors for a wonderful Term 2. Over 180 members attended the end-of-term gathering.</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">May 2026</div>
+                <h4>New Photography Class Added</h4>
+                <p>We've introduced a photography class on Tuesdays with Mr. Xu Jiashu. All skill levels welcome.</p>
+            </div>
+            <div class="news-card">
+                <div class="news-date">April 2026</div>
+                <h4>Harmony Week Performance</h4>
+                <p>Our dance and music groups performed at the SA Harmony Week celebrations — a proud moment for our community.</p>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Gallery -->
-<section id="gallery">
+<section id="gallery" style="background:var(--light)">
     <div class="container">
         <p class="section-label">Photo Gallery</p>
-        <h2 class="section-title" data-i18n>Our community in pictures</h2>
-        <p class="section-lead" data-i18n>Moments from our classes, performances, and community events. Click any photo to view full size.</p>
+        <h2 class="section-title">Our community in pictures</h2>
+        <p class="section-lead">Moments from classes, performances, excursions, and celebrations. Click any photo to view full size.</p>
         <div class="gallery-grid" id="galleryGrid"></div>
     </div>
     <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -476,77 +814,134 @@
     </div>
 </section>
 
-<!-- Highlights -->
-<section id="highlights" style="background:var(--light)">
+<!-- Advocacy & Support Services -->
+<section id="advocacy" class="bg-light-gold">
     <div class="container">
-        <p class="section-label">Past Highlights</p>
-        <h2 class="section-title" data-i18n>Moments from previous terms</h2>
-        <p class="section-lead" data-i18n>A look back at the activities and events that make our college special.</p>
-        <div class="highlight-grid">
-            <div class="highlight-card"><div class="highlight-thumb">💃</div><div class="highlight-body"><p class="date">Term 2, 2026</p><h4>Square Dance Showcase</h4><p>Dancers performed at the Campbelltown community event.</p></div></div>
-            <div class="highlight-card"><div class="highlight-thumb">🎵</div><div class="highlight-body"><p class="date">Term 2, 2026</p><h4>Vocal & Hulusi Recital</h4><p>End-of-term performance at 168 South Terrace.</p></div></div>
-            <a href="https://weixin.qq.com/sph/Ae6vZYfJt9" target="_blank" rel="noopener" class="highlight-card"><div class="highlight-thumb video-thumb"><div class="play-btn">▶</div></div><div class="highlight-body"><p class="date">Term 2, 2026</p><h4>📹 Activity Video</h4><p>Watch on WeChat Channels →</p></div></a>
-            <div class="highlight-card"><div class="highlight-thumb">🧧</div><div class="highlight-body"><p class="date">Term 1, 2026</p><h4>Lunar New Year Celebration</h4><p>100+ members celebrated the Year of the Horse.</p></div></div>
-        </div>
-    </div>
-</section>
-
-<!-- Enrol -->
-<section id="enrol" class="bg-navy">
-    <div class="container">
-        <p class="section-label">Enrolment</p>
-        <h2 class="section-title" data-i18n>Join us for Term 3</h2>
-        <div class="enrol-grid">
-            <div class="enrol-info">
-                <h3>Ready to get started?</h3>
-                <p data-i18n>All seniors welcome — no prior experience needed for most classes. Complete the form and we'll be in touch.</p>
-                <p style="margin-top:16px">📍 168 South Terrace, Adelaide SA 5000</p>
+        <p class="section-label">Advocacy &amp; Support Services</p>
+        <h2 class="section-title">More than just classes</h2>
+        <p class="section-lead">We support seniors beyond the classroom — helping navigate aged care, digital literacy, and wellbeing services. We are a genuine community service organisation.</p>
+        <div class="advocacy-grid">
+            <div class="advocacy-card">
+                <div class="adv-icon">🏥</div>
+                <h4>My Aged Care Assistance</h4>
+                <p>Help understanding and accessing My Aged Care services, including home care packages and residential care options.</p>
             </div>
-            <div class="form-card">
-                <form id="enrolForm" onsubmit="handleSubmit(event)">
-                    <div class="form-row">
-                        <div class="form-group"><label>Full Name *</label><input type="text" name="name" required></div>
-                        <div class="form-group"><label>Phone *</label><input type="tel" name="phone" required></div>
-                    </div>
-                    <div class="form-group"><label data-i18n>Email</label><input type="email" name="email"></div>
-                    <div class="form-group">
-                        <label>Program(s) of Interest *</label>
-                        <select name="course" required>
-                            <option value="" data-i18n>Select a program</option>
-                            <option>☯️ Yang Style Tai Chi</option><option>💃 Square Dancing</option>
-                            <option>🎤 Vocal Music</option><option>🪈 Hulusi</option>
-                            <option>🇬🇧 English</option><option>📸 Photography</option>
-                            <option>🎬 Short Video Production</option><option>Multiple programs</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label data-i18n>Message</label><textarea name="message" rows="3"></textarea></div>
-                    <button type="submit" class="btn-submit" data-i18n>Submit Enrolment</button>
-                </form>
-                <div class="form-success" id="formSuccess"><div class="icon">✅</div><h3 style="color:var(--navy)">Thank you!</h3><p data-i18n>We will contact you shortly.</p></div>
+            <div class="advocacy-card">
+                <div class="adv-icon">🏠</div>
+                <h4>Support at Home Guidance</h4>
+                <p>Information and referrals for in-home support services — cleaning, meal delivery, personal care, and home modifications.</p>
+            </div>
+            <div class="advocacy-card">
+                <div class="adv-icon">💻</div>
+                <h4>Digital Literacy</h4>
+                <p>One-on-one help with smartphones, computers, online banking, MyGov, and staying connected with family online.</p>
+            </div>
+            <div class="advocacy-card">
+                <div class="adv-icon">🛡️</div>
+                <h4>Elder Abuse Awareness</h4>
+                <p>Information and referral pathways for seniors experiencing financial, emotional, or physical abuse. You are not alone.</p>
+            </div>
+            <div class="advocacy-card">
+                <div class="adv-icon">🤝</div>
+                <h4>Social Isolation Support</h4>
+                <p>Programs designed to connect isolated seniors with community activities, peer support groups, and social outings.</p>
+            </div>
+            <div class="advocacy-card">
+                <div class="adv-icon">📞</div>
+                <h4>Information &amp; Referral</h4>
+                <p>Not sure where to turn? We can point you to the right government and community services for your situation.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq">
+<!-- Volunteer -->
+<section id="volunteer" class="bg-navy">
     <div class="container">
-        <p class="section-label">FAQ</p>
-        <h2 class="section-title" data-i18n>Frequently asked questions</h2>
-        <div class="faq-list">
-            <div class="faq-item"><button class="faq-q" data-i18n onclick="this.parentElement.classList.toggle('open')">Who can join the classes?</button><div class="faq-a"><p data-i18n>All seniors are welcome! Most classes require no prior experience. Just bring your enthusiasm.</p></div></div>
-            <div class="faq-item"><button class="faq-q" data-i18n onclick="this.parentElement.classList.toggle('open')">Are there any fees?</button><div class="faq-a"><p data-i18n>We are a not-for-profit community organisation. Some classes may have a small fee to cover materials. Contact us for details.</p></div></div>
-            <div class="faq-item"><button class="faq-q" data-i18n onclick="this.parentElement.classList.toggle('open')">Do classes run during school holidays?</button><div class="faq-a"><p data-i18n>No. Our terms are aligned with SA public school terms. Classes pause during school holidays and public holidays.</p></div></div>
-            <div class="faq-item"><button class="faq-q" data-i18n onclick="this.parentElement.classList.toggle('open')">Can I try a class before enrolling?</button><div class="faq-a"><p data-i18n>Absolutely! You're welcome to attend a trial session. Just contact us or drop by during class time.</p></div></div>
+        <p class="section-label">Get Involved</p>
+        <h2 class="section-title">Volunteer With Us</h2>
+        <p class="section-lead">Volunteers are the heart of our organisation. Your time and skills can make a real difference in the lives of Adelaide seniors. Community participation is at the core of everything we do.</p>
+        <div class="volunteer-grid">
+            <div class="volunteer-card">
+                <div class="vol-icon">📸</div>
+                <h4>Photography Volunteers</h4>
+                <p>Capture special moments at our events and classes. Help us build our visual story.</p>
+            </div>
+            <div class="volunteer-card">
+                <div class="vol-icon">🎉</div>
+                <h4>Event Volunteers</h4>
+                <p>Help organise and run our community events — festivals, performances, excursions, and celebrations.</p>
+            </div>
+            <div class="volunteer-card">
+                <div class="vol-icon">📚</div>
+                <h4>Teaching Assistants</h4>
+                <p>Support our instructors in the classroom. Help students who need a little extra attention.</p>
+            </div>
+            <div class="volunteer-card">
+                <div class="vol-icon">🌏</div>
+                <h4>Community Ambassadors</h4>
+                <p>Spread the word about our programs in the community. Help us reach more seniors who could benefit.</p>
+            </div>
+        </div>
+        <div style="text-align:center;margin-top:40px">
+            <a href="#enrol" class="btn btn-gold">Register as a Volunteer →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Support Us / Donate -->
+<section id="donate">
+    <div class="container">
+        <div class="donate-grid">
+            <div class="donate-info">
+                <p class="section-label">Support Us</p>
+                <h3>Help seniors stay connected and active</h3>
+                <p>Your donation helps us keep programs affordable, expand to new locations, and reach more isolated seniors in our community.</p>
+                <p>We are working towards DGR (Deductible Gift Recipient) status. In the meantime, every contribution — big or small — makes a difference.</p>
+                <p><strong>Ways to support:</strong> One-time donation, monthly giving, corporate sponsorship, or in-kind support (venue space, equipment, printing).</p>
+                <div class="donate-amounts">
+                    <div class="donate-amt">$20</div>
+                    <div class="donate-amt">$50</div>
+                    <div class="donate-amt active">$100</div>
+                    <div class="donate-amt">$200</div>
+                    <div class="donate-amt">Other</div>
+                </div>
+                <p style="margin-top:16px;font-size:14px;color:var(--gray)">For sponsorship and partnership enquiries, please contact us directly.</p>
+            </div>
+            <div style="text-align:center">
+                <div style="background:linear-gradient(135deg,#0A1628,#1B3A5C);border-radius:16px;padding:48px;color:#fff">
+                    <div style="font-size:48px;margin-bottom:16px">💛</div>
+                    <h3 style="font-size:24px;margin-bottom:8px">Make a Difference</h3>
+                    <p style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:24px">Your support helps us provide accessible programs for Adelaide seniors.</p>
+                    <a href="mailto:admin@adelaideseniorlearningcentre.org.au?subject=Donation%20Enquiry" class="btn btn-gold">Contact Us to Donate</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners -->
+<section id="partners" style="background:var(--light)">
+    <div class="container">
+        <p class="section-label">Our Partners</p>
+        <h2 class="section-title">Working together for our community</h2>
+        <p class="section-lead">We collaborate with local organisations, community centres, and businesses to deliver quality programs across Adelaide.</p>
+        <div class="partner-grid">
+            <div class="partner-item"><span>Senior Helpers<br><small style="color:#999">Community Partner</small></span></div>
+            <div class="partner-item"><span>Ausdance SA<br><small style="color:#999">Arts Partner</small></span></div>
+            <div class="partner-item"><span>Community Centres<br><small style="color:#999">Venue Partners</small></span></div>
+            <div class="partner-item"><span>Local Councils<br><small style="color:#999">Government</small></span></div>
+            <div class="partner-item"><span>Sure Dance School<br><small style="color:#999">Program Partner</small></span></div>
+            <div class="partner-item" style="border-style:dashed"><span style="color:#999">Become a Partner<br><small>Contact us →</small></span></div>
         </div>
     </div>
 </section>
 
 <!-- Testimonials -->
-<section id="testimonials" style="background:var(--light)">
+<section id="testimonials">
     <div class="container">
-        <p class="section-label" data-i18n>Testimonials</p>
-        <h2 class="section-title" data-i18n>What our members say</h2>
+        <p class="section-label">Testimonials</p>
+        <h2 class="section-title">What our members say</h2>
         <div class="testimonial-grid">
             <div class="testimonial-card">
                 <div class="testimonial-stars">★★★★★</div>
@@ -567,18 +962,100 @@
     </div>
 </section>
 
+<!-- FAQ -->
+<section id="faq" style="background:var(--light)">
+    <div class="container">
+        <p class="section-label">FAQ</p>
+        <h2 class="section-title">Frequently asked questions</h2>
+        <div class="faq-list">
+            <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Who can join the classes?</button><div class="faq-a"><p>All seniors are welcome! Most classes require no prior experience. Just bring your enthusiasm.</p></div></div>
+            <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Are there any fees?</button><div class="faq-a"><p>We are a not-for-profit community organisation. Some classes may have a small fee to cover venue and materials. Contact us for details.</p></div></div>
+            <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Do classes run during school holidays?</button><div class="faq-a"><p>No. Our terms are aligned with SA public school terms. Classes pause during school holidays and public holidays.</p></div></div>
+            <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I try a class before enrolling?</button><div class="faq-a"><p>Absolutely! You're welcome to attend a trial session. Just contact us or drop by during class time.</p></div></div>
+            <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Do I need to speak English?</button><div class="faq-a"><p>No — most of our instructors speak Mandarin. Our English classes are designed specifically for Chinese-speaking seniors who want to build confidence.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Banner -->
+<div class="cta-banner">
+    <div class="container">
+        <h2>Ready to join our community?</h2>
+        <p>New members are always welcome. Come try a class for free — no obligation.</p>
+        <div class="cta-btns">
+            <a href="#enrol" class="btn btn-gold">Enrol Now</a>
+            <a href="#volunteer" class="btn btn-outline">Volunteer</a>
+            <a href="#donate" class="btn btn-outline">Support Us</a>
+        </div>
+    </div>
+</div>
+
+<!-- Enrol -->
+<section id="enrol" class="bg-navy">
+    <div class="container">
+        <p class="section-label">Enrolment</p>
+        <h2 class="section-title">Join us for Term 3</h2>
+        <div class="enrol-grid">
+            <div class="enrol-info">
+                <h3>Ready to get started?</h3>
+                <p>All seniors welcome — no prior experience needed for most classes. Complete the form and we'll be in touch within 48 hours.</p>
+                <p style="margin-top:16px">📍 168 South Terrace, Adelaide SA 5000</p>
+                <p style="margin-top:8px">📧 admin@adelaideseniorlearningcentre.org.au</p>
+            </div>
+            <div class="form-card">
+                <form id="enrolForm" onsubmit="handleSubmit(event)">
+                    <div class="form-row">
+                        <div class="form-group"><label>Full Name *</label><input type="text" name="name" required></div>
+                        <div class="form-group"><label>Phone *</label><input type="tel" name="phone" required></div>
+                    </div>
+                    <div class="form-group"><label>Email</label><input type="email" name="email"></div>
+                    <div class="form-group">
+                        <label>Program(s) of Interest *</label>
+                        <select name="course" required>
+                            <option value="">Select a program</option>
+                            <option>☯️ Yang Style Tai Chi</option>
+                            <option>💃 Square Dancing</option>
+                            <option>🎤 Vocal Music</option>
+                            <option>🪈 Hulusi</option>
+                            <option>🇬🇧 English</option>
+                            <option>📸 Photography</option>
+                            <option>🎬 Short Video Production</option>
+                            <option>🧘 Senior Fitness</option>
+                            <option>📱 Smartphone Classes</option>
+                            <option>Multiple programs / Not sure</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Message</label><textarea name="message" rows="3" placeholder="Tell us about yourself or ask a question..."></textarea></div>
+                    <div class="form-group">
+                        <label>I'm interested in</label>
+                        <select name="interest_type">
+                            <option value="enrol">Enrolling as a student</option>
+                            <option value="volunteer">Volunteering</option>
+                            <option value="partner">Partnership / Sponsorship</option>
+                            <option value="donate">Making a donation</option>
+                            <option value="other">Other enquiry</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Enrolment</button>
+                </form>
+                <div class="form-success" id="formSuccess"><div class="icon">✅</div><h3 style="color:var(--navy)">Thank you!</h3><p>We will contact you shortly.</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Contact -->
 <section id="contact" style="background:var(--light)">
     <div class="container">
         <p class="section-label">Contact</p>
-        <h2 class="section-title" data-i18n>Get in touch</h2>
-        <p class="section-lead" style="margin-left:auto;margin-right:auto" data-i18n>We welcome enquiries from prospective students, community partners, and funding bodies.</p>
+        <h2 class="section-title">Get in touch</h2>
+        <p class="section-lead" style="margin-left:auto;margin-right:auto">We welcome enquiries from prospective students, community partners, volunteers, and funding bodies.</p>
         <div class="contact-grid">
-            <div class="contact-item"><div class="icon">📍</div><h5 data-i18n>Address</h5><p>168 South Terrace<br>Adelaide SA 5000</p></div>
-            <div class="contact-item"><div class="icon">📞</div><h5 data-i18n>Phone</h5><p>(to be added)</p></div>
-            <div class="contact-item"><div class="icon">📧</div><h5 data-i18n>Email</h5><p>admin@adelaideseniorlearningcentre.org.au</p></div>
+            <div class="contact-item"><div class="icon">📍</div><h5>Address</h5><p>168 South Terrace<br>Adelaide SA 5000</p></div>
+            <div class="contact-item"><div class="icon">📞</div><h5>Phone</h5><p>(to be added)</p></div>
+            <div class="contact-item"><div class="icon">📧</div><h5>Email</h5><p>admin@adelaideseniorlearningcentre.org.au</p></div>
         </div>
-        <div class="map-wrap"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.5!2d138.6!3d-34.93!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ab0ced4e6c7e2a9%3A0xf00c8bfb80c5c0!2s168%20South%20Terrace%2C%20Adelaide%20SA%205000!5e0!3m2!1sen!2sau!4v1" width="100%" height="400" style="border:0;border-radius:12px;margin-top:32px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.5!2d138.6!3d-34.93!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ab0ced4e6c7e2a9%3A0xf00c8bfb80c5c0!2s168%20South%20Terrace%2C%20Adelaide%20SA%205000!5e0!3m2!1sen!2sau!4v1" width="100%" height="400" style="border:0;border-radius:12px;margin-top:32px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
 </section>
 
@@ -586,15 +1063,30 @@
 <footer>
     <div class="container">
         <div>
-            <div class="footer-brand">Adelaide Chinese Senior College</div>
-            <p style="margin-top:8px" data-i18n>Lifelong Learning · Community Connection · Active Ageing</p>
+            <div class="footer-brand">Adelaide Senior Learning Centre</div>
+            <p style="margin-top:8px;line-height:1.6">Connecting Seniors Through<br>Learning, Health and Community.</p>
         </div>
         <div>
-            <p data-i18n>Aligned with SA public school terms</p>
-            <p style="margin-top:4px">ABN: (to be added)</p>
+            <h5>Quick Links</h5>
+            <p><a href="#about">About Us</a></p>
+            <p><a href="#programs">Programs</a></p>
+            <p><a href="#teachers">Teachers</a></p>
+            <p><a href="#news">News</a></p>
+        </div>
+        <div>
+            <h5>Get Involved</h5>
+            <p><a href="#enrol">Enrol</a></p>
+            <p><a href="#volunteer">Volunteer</a></p>
+            <p><a href="#donate">Donate</a></p>
+            <p><a href="#advocacy">Advocacy</a></p>
+        </div>
+        <div>
+            <h5>Contact</h5>
+            <p>168 South Terrace, Adelaide SA 5000</p>
+            <p>admin@adelaideseniorlearningcentre.org.au</p>
         </div>
     </div>
-    <p style="text-align:center;margin-top:32px;font-size:12px">&copy; 2026 Adelaide Chinese Senior College</p>
+    <p style="text-align:center;margin-top:40px;font-size:12px">&copy; 2025–2026 Adelaide Senior Learning Centre. A community-based not-for-profit organisation. Aligned with SA public school terms.</p>
 </footer>
 
 <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -609,7 +1101,7 @@
         const num = String(i).padStart(2,'0');
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
+        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="ASLC Activity Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
         grid.appendChild(div);
     }
 })();
@@ -647,7 +1139,7 @@ function handleSubmit(e){
     document.getElementById('formSuccess').style.display='block';
 }
 
-// ── Google Translate (async, non-blocking) ──
+// ── Google Translate ──
 function googleTranslateInit(){
     new google.translate.TranslateElement({
         pageLanguage:'en',
@@ -692,10 +1184,17 @@ const observer = new IntersectionObserver((entries)=>{
 const statsSection = document.querySelector('.stats');
 if(statsSection) observer.observe(statsSection);
 
-// ── Scroll reveal animations ──
+// ── Scroll reveal ──
 document.querySelectorAll('section').forEach(s=>s.classList.add('reveal'));
 var ro=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.15});
 document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── Close mobile nav on link click ──
+document.querySelectorAll('.nav-links a').forEach(link=>{
+    link.addEventListener('click',()=>{
+        document.querySelector('.nav-links').classList.remove('open');
+    });
+});
 </script>
 </body>
 </html>
