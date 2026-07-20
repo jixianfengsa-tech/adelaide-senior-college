@@ -149,9 +149,13 @@
         .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
         .course-card{
             background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-            padding:28px;transition:all 0.3s;display:flex;flex-direction:column;gap:8px
+            padding:28px;padding-top:0;transition:all 0.3s;display:flex;flex-direction:column;overflow:hidden
         }
         .course-card:hover{border-color:var(--gold);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+        .course-card .cc-photo{width:calc(100% + 56px);height:160px;overflow:hidden;background:var(--light);margin:0 -28px 16px -28px}
+        .course-card .cc-photo:first-child{border-radius:var(--radius) var(--radius) 0 0}
+        .course-card .cc-photo img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s}
+        .course-card:hover .cc-photo img{transform:scale(1.05)}
         .course-card .cc-icon{font-size:32px}
         .course-card h4{font-size:17px;color:var(--navy)}
         .course-card .cc-instructor{font-size:13px;color:var(--gray)}
@@ -518,6 +522,7 @@
             <h3>💪 Health &amp; Wellness</h3>
             <div class="course-grid">
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-12.jpg" alt="Tai Chi" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">☯️</div>
                     <h4>Yang Style Tai Chi</h4>
                     <div class="cc-instructor">Ms. Zhou Ping</div>
@@ -525,6 +530,7 @@
                     <div class="cc-tags"><span class="cc-tag">Mon 9:30 AM</span><span class="cc-tag">Wed 11:45 AM</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-16.jpg" alt="Square Dancing" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">💃</div>
                     <h4>Square Dancing</h4>
                     <div class="cc-instructor">Ms. Duo Duo</div>
@@ -532,6 +538,7 @@
                     <div class="cc-tags"><span class="cc-tag">Tue 10:30 AM</span><span class="cc-tag">Wed 10:00 AM</span><span class="cc-tag">Thu 10:30 AM</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-20.jpg" alt="Senior Fitness" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🧘</div>
                     <h4>Senior Fitness</h4>
                     <div class="cc-instructor">Ms. Lina</div>
@@ -546,6 +553,7 @@
             <h3>🎨 Arts &amp; Culture</h3>
             <div class="course-grid">
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-07.jpg" alt="Vocal Music" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🎤</div>
                     <h4>Vocal Music</h4>
                     <div class="cc-instructor">Ms. Xiao Liping</div>
@@ -553,6 +561,7 @@
                     <div class="cc-tags"><span class="cc-tag">Fri 2:45 PM</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-10.jpg" alt="Hulusi" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🪈</div>
                     <h4>Hulusi (Gourd Flute)</h4>
                     <div class="cc-instructor">Ms. Gao Cuiping</div>
@@ -560,6 +569,7 @@
                     <div class="cc-tags"><span class="cc-tag">Fri 1:45 PM</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-17.jpg" alt="Chinese Dance" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">💃</div>
                     <h4>Chinese Dance</h4>
                     <div class="cc-instructor">Mr. Shuo Zhang</div>
@@ -567,6 +577,7 @@
                     <div class="cc-tags"><span class="cc-tag gold">Featured</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-06.jpg" alt="Photography" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">📸</div>
                     <h4>Photography</h4>
                     <div class="cc-instructor">Mr. Xu Jiashu</div>
@@ -581,6 +592,7 @@
             <h3>📖 Learning</h3>
             <div class="course-grid">
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-05.jpg" alt="English Class" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🇬🇧</div>
                     <h4>Practical English</h4>
                     <div class="cc-instructor">Ms. Li Li</div>
@@ -588,6 +600,7 @@
                     <div class="cc-tags"><span class="cc-tag">Mon 11:10 AM (Beginner)</span><span class="cc-tag">Wed 9:30 AM (Intermediate)</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-24.jpg" alt="Video Production" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🎬</div>
                     <h4>Short Video Production</h4>
                     <div class="cc-instructor">Ms. Li Na</div>
@@ -595,6 +608,7 @@
                     <div class="cc-tags"><span class="cc-tag">Tue 2:00 PM</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-23.jpg" alt="Smartphone Class" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">📱</div>
                     <h4>Smartphone Classes</h4>
                     <div class="cc-instructor">Various instructors</div>
@@ -609,6 +623,7 @@
             <h3>🤝 Community Activities</h3>
             <div class="course-grid">
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-28.jpg" alt="Excursion" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🚌</div>
                     <h4>Excursions &amp; Day Trips</h4>
                     <div class="cc-instructor">Self-organised</div>
@@ -616,6 +631,7 @@
                     <div class="cc-tags"><span class="cc-tag">Monthly</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-09.jpg" alt="Social Gathering" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🀄</div>
                     <h4>Social Gatherings</h4>
                     <div class="cc-instructor">Self-organised</div>
@@ -623,6 +639,7 @@
                     <div class="cc-tags"><span class="cc-tag">Wed (after dance)</span></div>
                 </div>
                 <div class="course-card">
+                    <div class="cc-photo"><img src="gallery/gallery-32.jpg" alt="Volunteer" loading="lazy" onerror="this.style.display='none'"></div>
                     <div class="cc-icon">🙋</div>
                     <h4>Volunteer Programs</h4>
                     <div class="cc-instructor">Community-led</div>
