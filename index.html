@@ -345,9 +345,9 @@
         .cta-banner p{font-size:18px;color:rgba(255,255,255,0.75);margin-bottom:28px}
         .cta-banner .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 
-        /* ── Scroll reveal ── */
-        .reveal{opacity:0;transform:translateY(30px);transition:all 0.8s ease}
-        .reveal.visible{opacity:1;transform:translateY(0)}
+        /* ── Scroll reveal (subtle, never hides content) ── */
+        .reveal { transform: translateY(16px); transition: all 0.5s ease; }
+        .reveal.visible { transform: translateY(0); }
 
         /* ── Responsive ── */
         @media(max-width:768px){
