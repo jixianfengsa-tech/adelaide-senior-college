@@ -52,8 +52,8 @@
 <div class="forum-header"><h1>🏫 <span>校园交友</span></h1><p class="sub">阿德莱德老年大学社区论坛 · 连接·分享·互助·交友</p></div>
 
 <div class="user-bar" id="userBar">
-    <div class="avatar" id="userAvatar">🐼</div>
-    <div class="user-info"><div class="user-name" id="userName">游客</div></div>
+    <div class="avatar" id="userAvatar" style="cursor:pointer" onclick="me&&showProfile()">🐼</div>
+    <div class="user-info"><div class="user-name" id="userName" style="cursor:pointer" onclick="me&&showProfile()">游客</div></div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">输入昵称</button>
 </div>
 
@@ -115,6 +115,16 @@
 </div></div>
 
 <div id="toast"></div>
+
+<!-- Profile Modal -->
+<div class="modal-overlay" id="profileModal"><div class="modal" style="text-align:center">
+    <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+    <h2>✏️ 编辑个人资料</h2>
+    <p style="color:var(--gray);margin-bottom:4px">点击头像选择</p>
+    <div id="avatarPicker" style="font-size:36px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px"></div>
+    <input id="profileNickname" placeholder="你的昵称" maxlength="20" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:12px">
+    <button onclick="saveProfile()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer">保存</button>
+</div></div>
 
 <script>
 const API = 'https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1';
@@ -281,6 +291,29 @@ function updateBar(){
     else{$('userAvatar').textContent='🐼';$('userName').textContent='游客';$('loginBtn').textContent='输入昵称';$('loginBtn').onclick=doLogin}
 }
 function logout(){me=null;isAdmin=false;localStorage.removeItem('forum_user');updateBar();toast('已退出')}
+
+function showProfile(){
+    if(!me) return;
+    $('profileNickname').value = me.nickname || '';
+    const avatars = ['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🐙','🦋','🐬','🦉','🐝','🌐','📱','💚','🌟','👑','🎯'];
+    $('avatarPicker').innerHTML = avatars.map(a => 
+        `<span onclick="pickAvatar('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`
+    ).join('');
+    $('profileModal').classList.add('active');
+}
+
+function pickAvatar(a){
+    me.avatar_emoji = a;
+    showProfile();
+}
+
+function saveProfile(){
+    me.nickname = $('profileNickname').value.trim() || me.nickname;
+    localStorage.setItem('forum_user', JSON.stringify(me));
+    updateBar();
+    closeModal('profileModal');
+    toast('✅ 已保存');
+}
 
 async function delPost(id){
     if(!isAdmin) return;
