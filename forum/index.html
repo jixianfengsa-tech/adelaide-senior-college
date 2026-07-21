@@ -198,9 +198,25 @@ async function loadPosts(){
 }
 
 function showNewPost(){if(!me){doLogin();return}$('postAs').textContent=me.nickname;$('newPostModal').classList.add('active')}
+let submitting = false;
+
 async function submitPost(e){e.preventDefault();
+    if(submitting) return;
     const d={category_id:parseInt($('postCategory').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
-    try{await api('/posts',{method:'POST',body:JSON.stringify(d),headers:{...H,Prefer:'return=minimal'}});$('newPostModal').classList.remove('active');$('postTitle').value='';$('postContent').value='';toast('✅ 发布成功');loadPosts()}catch(e){toast('❌ '+e.message)}
+    if(!d.title||!d.content) return;
+    submitting = true;
+    $('newPostModal').querySelector('button[type=submit]').textContent = '发布中...';
+    $('newPostModal').querySelector('button[type=submit]').disabled = true;
+    try{
+        await api('/posts',{method:'POST',body:JSON.stringify(d),headers:{...H,Prefer:'return=minimal'}});
+        $('newPostModal').classList.remove('active');
+        $('postTitle').value='';$('postContent').value='';
+        toast('✅ 发布成功！');
+        loadPosts();
+    }catch(e){toast('❌ '+e.message)}
+    submitting = false;
+    const btn = $('newPostModal').querySelector('button[type=submit]');
+    if(btn){btn.textContent='发布帖子';btn.disabled=false;}
 }
 
 async function showDetail(id){
