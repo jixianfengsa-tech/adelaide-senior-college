@@ -407,6 +407,7 @@
             <li><a href="#teachers">Teachers</a></li>
             <li><a href="#schedule">Timetable</a></li>
             <li><a href="#news">News</a></li>
+            <li><a href="news/">All News →</a></li>
             <li><a href="#gallery">Gallery</a></li>
             <li><a href="#advocacy">Advocacy</a></li>
             <li><a href="#volunteer">Volunteer</a></li>
@@ -809,37 +810,11 @@
         <p class="section-label">News &amp; Events</p>
         <h2 class="section-title">What's happening at ASLC</h2>
         <p class="section-lead">Stay up to date with our latest activities, new programs, and community events.</p>
-        <div class="news-grid">
-            <div class="news-card">
-                <div class="news-date">July 2026</div>
-                <h4>Term 3 Enrolments Now Open</h4>
-                <p>New semester commenced mid-July. New students welcome — come try a class for free!</p>
-            </div>
-            <div class="news-card">
-                <div class="news-date">July 2026</div>
-                <h4>Senior Fitness Program Launch</h4>
-                <p>Introducing our new gentle exercise program with Ms. Lina — focused on stretching, mobility, and fall prevention.</p>
-            </div>
-            <div class="news-card">
-                <div class="news-date">July 2026</div>
-                <h4>Mid-Autumn Festival Preparation</h4>
-                <p>Planning underway for our annual Mid-Autumn celebration. Performers and volunteers wanted!</p>
-            </div>
-            <div class="news-card">
-                <div class="news-date">June 2026</div>
-                <h4>End of Term 2 Celebrations</h4>
-                <p>Thank you to all students and instructors for a wonderful Term 2. Over 180 members attended the end-of-term gathering.</p>
-            </div>
-            <div class="news-card">
-                <div class="news-date">May 2026</div>
-                <h4>New Photography Class Added</h4>
-                <p>We've introduced a photography class on Tuesdays with Mr. Xu Jiashu. All skill levels welcome.</p>
-            </div>
-            <div class="news-card">
-                <div class="news-date">April 2026</div>
-                <h4>Harmony Week Performance</h4>
-                <p>Our dance and music groups performed at the SA Harmony Week celebrations — a proud moment for our community.</p>
-            </div>
+        <div class="news-grid" id="homeNewsGrid">
+            <p style="color:var(--gray)">Loading...</p>
+        </div>
+        <div style="text-align:center;margin-top:32px">
+            <a href="news/" class="btn btn-primary" style="background:var(--navy);color:#fff">View All News →</a>
         </div>
     </div>
 </section>
@@ -1277,6 +1252,27 @@ document.querySelectorAll('.nav-links a').forEach(link=>{
         document.querySelector('.nav-links').classList.remove('open');
     });
 });
+
+// ── Load homepage news from JSON ──
+(function(){
+    var grid = document.getElementById('homeNewsGrid');
+    if(!grid) return;
+    fetch('news/data.json')
+        .then(function(r){return r.json()})
+        .then(function(news){
+            news.sort(function(a,b){return new Date(b.date) - new Date(a.date)});
+            var latest = news.slice(0, 6);
+            grid.innerHTML = latest.map(function(item){
+                var d = new Date(item.date);
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                var dateStr = months[d.getMonth()] + ' ' + d.getFullYear();
+                return '<div class="news-card"><div class="news-date">'+dateStr+'</div><h4><a href="news/?id='+item.id+'" style="color:inherit;text-decoration:none">'+item.title+'</a></h4><p>'+item.summary+'</p></div>';
+            }).join('');
+        })
+        .catch(function(){
+            grid.innerHTML = '<div class="news-card"><h4>News loading...</h4><p>Please check back soon for latest updates.</p></div>';
+        });
+})();
 </script>
 </body>
 </html>
