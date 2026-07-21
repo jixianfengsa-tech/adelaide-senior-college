@@ -408,16 +408,36 @@ async function showDetail(id){
         <div style="font-size:17px;line-height:1.9;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
         ${isMine?`<button onclick="editPost(${id})" style="padding:8px 18px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:15px;margin-bottom:12px">✏️ 编辑</button>`:''}
         <h3 style="font-size:18px;margin-bottom:12px">回复 (${p.reply_count||0})</h3>${rh}
-        <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:12px;border:2px solid var(--warm);border-radius:12px;font-size:16px"><button onclick="submitReply(${id})" style="padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer">回复</button></div>`;
+        <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:12px;border:2px solid var(--warm);border-radius:12px;font-size:16px"><button onclick="submitReply(${id})" style="padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer">回复</button></div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+            <span onclick="quickReply(${id},'❤️')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="爱心">❤️</span>
+            <span onclick="quickReply(${id},'🌹')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="玫瑰">🌹</span>
+            <span onclick="quickReply(${id},'👏')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(243,156,18,0.08)" title="鼓掌">👏</span>
+            <span onclick="quickReply(${id},'🙏')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(46,204,113,0.08)" title="感谢">🙏</span>
+            <span onclick="quickReply(${id},'🥰')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="喜欢">🥰</span>
+            <span onclick="quickReply(${id},'😊')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(52,152,219,0.08)" title="微笑">😊</span>
+            <span onclick="quickReply(${id},'😂')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(241,196,15,0.08)" title="大笑">😂</span>
+            <span onclick="quickReply(${id},'🎉')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(155,89,182,0.08)" title="庆祝">🎉</span>
+        </div>
+        <p style="font-size:12px;color:var(--gray);margin-top:4px">👆 点表情快捷回复，无需打字</p>`;
     $('detailModal').classList.add('active');
 }
 
 async function submitReply(pid){
     const c=$('replyInput').value.trim();if(!c)return;
     closeM('detailModal');toast('📨 发送中...');
-    try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
+    await doReply(pid,c);
+}
+
+async function quickReply(pid,emoji){
+    closeM('detailModal');toast(emoji+' 已发送！');
+    await doReply(pid,emoji);
+}
+
+async function doReply(pid,content){
+    try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
         me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-        toast('💬 回复成功！');loadPosts();loadHot();
+        loadPosts();loadHot();
     }catch(e){toast('❌ 失败')}
 }
 
