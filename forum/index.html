@@ -45,7 +45,8 @@
         @keyframes fadeInOut{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}
         @media(max-width:480px){.forum-header h1{font-size:22px}.post-card h3{font-size:15px}.cat-tab{padding:6px 12px;font-size:13px}}
     </style>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    </head>
 <body>
 
 <div class="forum-header"><h1>🏫 <span>校园交友</span></h1><p class="sub">阿德莱德老年大学社区论坛 · 连接·分享·互助·交友</p></div>
@@ -79,10 +80,38 @@
 
 <div class="modal-overlay" id="loginModal"><div class="modal" style="text-align:center">
     <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
-    <h2>👋 输入昵称</h2>
-    <p style="color:var(--gray);margin-bottom:16px">取一个名字就能发帖啦</p>
-    <input id="guestNickname" placeholder="你的昵称" maxlength="20" style="text-align:center;font-size:18px">
-    <button onclick="loginAsGuest()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px">进入论坛</button>
+    <h2>👋 登录校园交友</h2>
+    <p style="color:var(--gray);margin-bottom:20px;font-size:14px">登录后解锁成就和积分</p>
+    
+    <button onclick="loginGoogle()" style="width:100%;padding:14px;background:#fff;color:#444;border:2px solid #ddd;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:20px">🌐</span> Google 账号登录
+    </button>
+    
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
+        <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
+    </div>
+    
+    <p style="font-weight:600;color:var(--navy);margin-bottom:8px">📱 手机号登录</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select id="phoneCountry" style="width:100px;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:14px">
+            <option value="+61">🇦🇺 +61</option>
+            <option value="+86">🇨🇳 +86</option>
+        </select>
+        <input id="phoneNumber" placeholder="手机号码" style="flex:1;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px">
+    </div>
+    <button onclick="loginPhone()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">发送验证码</button>
+    <div id="phoneCodeArea" style="display:none;margin-top:12px">
+        <input id="phoneCode" placeholder="输入6位验证码" maxlength="6" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
+        <button onclick="verifyPhone()" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">验证并登录</button>
+    </div>
+    
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
+        <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
+    </div>
+    
+    <p style="color:var(--gray);font-size:14px;margin-bottom:8px">不想注册？</p>
+    <input id="guestNickname" placeholder="输入昵称直接发帖" maxlength="20" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
+    <button onclick="loginAsGuest()" style="width:100%;padding:14px;background:var(--light);color:var(--navy);border:2px solid var(--border);border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">以游客身份进入</button>
 </div></div>
 
 <div id="toast"></div>
@@ -93,6 +122,23 @@ const KEY = 'sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
 const H = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
 
 let me = null, cat = 'all', cats = [], posts = [];
+let sbAuth = null;
+
+function getSB(){
+    if(!sbAuth && window.supabase) sbAuth = window.supabase.createClient('https://nkvavgmvbmzrnwurazgq.supabase.co', KEY);
+    return sbAuth;
+}
+
+// Check for Google OAuth redirect
+async function checkGoogleRedirect(){
+    const sb = getSB(); if(!sb) return;
+    const {data:{session}} = await sb.auth.getSession();
+    if(session?.user){
+        me = {id:session.user.id, nickname:session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Google用户', login_type:'google', avatar_emoji:'🌐'};
+        localStorage.setItem('forum_user', JSON.stringify(me));
+        updateBar();
+    }
+}
 
 function D(m){const e=document.getElementById('debug');if(e)e.textContent='🔍 '+m;console.log(m)}
 function $(id){return document.getElementById(id)}
@@ -108,6 +154,7 @@ async function api(path, opt={}){
     D('启动中...');
     const s = localStorage.getItem('forum_user');
     if(s){me=JSON.parse(s);updateBar()}
+    await checkGoogleRedirect();
     try{ cats = await api('/categories?order=sort_order'); D('分类:'+cats.length); }
     catch(e){ cats=[{id:1,name:'活动报名',icon:'📢'},{id:2,name:'生活互助',icon:'🏠'},{id:3,name:'健康养生',icon:'🩺'},{id:4,name:'儿孙天地',icon:'👨‍👩‍👧‍👦'},{id:5,name:'才艺晒晒',icon:'🎨'},{id:6,name:'二手转让',icon:'🛒'}]; D('离线模式'); }
     renderTabs();
@@ -163,6 +210,33 @@ async function showDetail(id){
 async function submitReply(pid){
     const c=$('replyInput').value.trim();if(!c)return;
     try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});$('replyInput').value='';toast('✅ 回复成功');showDetail(pid);loadPosts()}catch(e){toast('❌ '+e.message)}
+}
+
+// ======== AUTH ========
+async function loginGoogle(){
+    const sb = getSB(); if(!sb){toast('请刷新页面后重试');return}
+    const {error} = await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/forum/'}});
+    if(error) toast('❌ '+error.message);
+}
+async function loginPhone(){
+    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
+    if(phone.length<8){toast('请输入正确的手机号');return}
+    const sb = getSB(); if(!sb){toast('请刷新后重试');return}
+    const {error} = await sb.auth.signInWithOtp({phone});
+    if(error){toast('❌ 短信发送失败：'+error.message);return}
+    $('phoneCodeArea').style.display='block';
+    toast('📱 验证码已发送');
+}
+async function verifyPhone(){
+    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
+    const code = $('phoneCode').value.trim();
+    if(!code){toast('请输入验证码');return}
+    const sb = getSB(); if(!sb) return;
+    const {data:{session},error} = await sb.auth.verifyOtp({phone,token:code,type:'sms'});
+    if(error){toast('❌ 验证失败');return}
+    me = {id:session.user.id, nickname:'用户'+phone.slice(-4), login_type:'phone', avatar_emoji:'📱'};
+    localStorage.setItem('forum_user', JSON.stringify(me));
+    updateBar(); closeModal('loginModal'); toast('✅ 登录成功！');
 }
 
 function doLogin(){$('loginModal').classList.add('active')}
