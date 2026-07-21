@@ -421,7 +421,10 @@ async function likePost(id){
     if(localStorage.getItem(key)){toast('已经点过赞了 ❤️');return}
     localStorage.setItem(key,'1');
     const p=posts.find(x=>x.id===id);if(!p)return;
-    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:(p.likes||0)+1}),headers:{...H,Prefer:'return=minimal'}});loadPosts()}catch(e){}
+    p.likes=(p.likes||0)+1;
+    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}
+    // Update card inline without full reload
+    updatePostCard(id);
 }
 
 // ==== DETAIL ====
@@ -429,6 +432,7 @@ async function showDetail(id){
     const p=posts.find(x=>x.id===id);if(!p)return;
     p.views=(p.views||0)+1;
     api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});
+    updatePostCard(id); // Real-time view update
     const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
     const isMine=me&&me.nickname===p.guest_nickname;
     let rh='<p style="color:var(--gray)">暂无回复</p>';
@@ -474,8 +478,30 @@ async function quickReply(pid,emoji){
 async function doReply(pid,content){
     try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
         me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-        loadPosts();loadHot();
+        const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid)}
+        // Also refresh hot list silently
+        setTimeout(loadHot,1000);
     }catch(e){toast('❌ 失败')}
+}
+
+// Update a single post card without full page reload
+function updatePostCard(id){
+    const p=posts.find(x=>x.id===id);if(!p)return;
+    const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
+    const isMine=me&&me.nickname===p.guest_nickname;
+    // Find the card in DOM and update just the stats
+    const cards=document.querySelectorAll('.post-card');
+    cards.forEach(card=>{
+        const h3=card.querySelector('.post-title');
+        if(h3&&h3.textContent.includes(p.title)){
+            const actions=card.querySelector('.post-actions');
+            if(actions){
+                actions.innerHTML=`<button class="react-btn" onclick="event.stopPropagation();likePost(${p.id})">❤️ ${p.likes||0}</button>
+                    <span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>
+                    ${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}`;
+            }
+        }
+    });
 }
 
 async function editPost(id){
