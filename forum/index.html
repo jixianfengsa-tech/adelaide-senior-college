@@ -234,7 +234,19 @@
 // ============ SUPABASE CLIENT ============
 const SUPABASE_URL = 'https://nkvavgmvbmzrnwurazgq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Wait for Supabase CDN to load, then init
+function waitForSupabase(cb) {
+    if (window.supabase && window.supabase.createClient) {
+        window._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('Supabase connected');
+        cb();
+    } else {
+        console.log('Waiting for Supabase CDN...');
+        setTimeout(() => waitForSupabase(cb), 200);
+    }
+}
+function sb() { return window._sb; }
 
 // ============ STATE ============
 let currentUser = null;
@@ -261,7 +273,7 @@ const DEFAULT_CATEGORIES = [
 
 async function loadCategories() {
     try {
-        const { data, error } = await sb.from('categories').select('*').order('sort_order');
+        const { data, error } = await sb().from('categories').select('*').order('sort_order');
         if (error) throw error;
         categories = data || [];
     } catch(e) {
@@ -287,7 +299,7 @@ async function loadPosts() {
     list.innerHTML = '<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
     
     try {
-        let query = sb.from('posts').select('*').order('created_at', { ascending: false }).limit(50);
+        let query = sb().from('posts').select('*').order('created_at', { ascending: false }).limit(50);
         if (currentCategory !== 'all') query = query.eq('category_id', parseInt(currentCategory));
         const { data, error } = await query;
         if (error) throw error;
@@ -337,7 +349,7 @@ async function submitPost(e) {
     const postData = { category_id: parseInt(catId), title, content, guest_nickname: currentUser?.nickname || '游客' };
     
     try {
-        const { error } = await sb.from('posts').insert(postData);
+        const { error } = await sb().from('posts').insert(postData);
         if (error) throw error;
         document.getElementById('newPostModal').classList.remove('active');
         document.getElementById('postTitle').value = '';
@@ -356,7 +368,7 @@ async function showDetail(postId) {
     
     let repliesHtml = '<p style="color:var(--gray)">暂无回复</p>';
     try {
-        const { data: replies } = await sb.from('replies').select('*').eq('post_id',postId).order('created_at');
+        const { data: replies } = await sb().from('replies').select('*').eq('post_id',postId).order('created_at');
         if (replies?.length) {
             repliesHtml = replies.map(r => `<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;margin-bottom:4px">${r.guest_nickname||'匿名'} · ${timeAgo(r.created_at)}</div><div style="font-size:14px;line-height:1.6">${escapeHtml(r.content)}</div></div>`).join('');
         }
@@ -377,7 +389,7 @@ async function submitReply(postId) {
     const content = input.value.trim();
     if (!content) return;
     try {
-        const { error } = await sb.from('replies').insert({ post_id:postId, content, guest_nickname: currentUser?.nickname || '游客' });
+        const { error } = await sb().from('replies').insert({ post_id:postId, content, guest_nickname: currentUser?.nickname || '游客' });
         if (error) throw error;
         input.value = '';
         toast('✅ 回复成功');
@@ -409,7 +421,7 @@ async function loginByPhone() {
     if (!phone) { toast('请输入手机号'); return; }
     toast('📱 验证码已发送');
     try {
-        const { data, error } = await sb.from('users').insert({
+        const { data, error } = await sb().from('users').insert({
             phone, nickname: '用户'+phone.slice(-4), login_type:'phone',
             avatar_emoji: randomAvatar(phone), last_login: new Date().toISOString()
         }).select().single();
@@ -462,7 +474,7 @@ function escapeHtml(s) { const d = document.createElement('div'); d.textContent 
 function randomAvatar(seed) { const a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🐙','🦋','🐬','🦉','🐝']; let h=0; for(let i=0;i<seed.length;i++)h=seed.charCodeAt(i)+((h<<5)-h); return a[Math.abs(h)%a.length]; }
 
 // Go!
-init();
+waitForSupabase(init);
 </script>
 
 </body>
