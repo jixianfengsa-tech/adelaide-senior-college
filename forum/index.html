@@ -212,22 +212,34 @@ let submitting = false;
 
 async function submitPost(){
     if(submitting) return;
-    const d={category_id:parseInt($('postCategory').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
-    if(!d.title||!d.content){toast('请填写标题和内容');return}
     
-    // Close modal immediately
+    // Friendly rate limit
+    const lastPost = parseInt(localStorage.getItem('last_post_time')||'0');
+    const wait = 300000 - (Date.now() - lastPost);
+    if(wait > 0){
+        const min = Math.ceil(wait/60000);
+        const tips = ['慢慢来，休息一下 ☕','好东西值得等待 🌸','让其他人也聊聊呗 💬','喝杯茶再回来 🍵'];
+        toast(`⏳ 再等 ${min} 分钟哦~ ${tips[min%4]}`);
+        closeModal('newPostModal');
+        return;
+    }
+    
+    const d={category_id:parseInt($('postCategory').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
+    if(!d.title||!d.content){toast('请填写标题和内容 📝');return}
+    
     const title=d.title, content=d.content, cat=d.category_id;
     $('postTitle').value='';$('postContent').value='';
     closeModal('newPostModal');
-    toast('⏳ 发布中...');
+    toast('📨 正在发送...');
     
     submitting = true;
     try{
         await api('/posts',{method:'POST',body:JSON.stringify({category_id:cat,title,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
-        toast('✅ 发布成功！');
+        const cheers = ['🎉 发布成功！大家都能看到啦','✨ 好帖子！已发布','👏 分享成功！感谢你的参与','🌟 太棒了！去看看大家的回复吧'];
+        toast(cheers[Math.floor(Math.random()*cheers.length)]);
         localStorage.setItem('last_post_time', Date.now());
         loadPosts();
-    }catch(e){toast('❌ '+e.message)}
+    }catch(e){toast('❌ 网络开了小差，请重试')}
     submitting = false;
 }
 
