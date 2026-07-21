@@ -310,8 +310,30 @@ async function showDetail(id){
     $('detailModal').classList.add('active');
 }
 async function submitReply(pid){
-    const c=$('replyInput').value.trim();if(!c)return;
-    try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});$('replyInput').value='';toast('✅ 回复成功');showDetail(pid);loadPosts()}catch(e){toast('❌ '+e.message)}
+    const c=$('replyInput').value.trim();if(!c){return}
+    
+    // Rate limit for replies too
+    const lastReply = parseInt(localStorage.getItem('last_reply_time')||'0');
+    const wait = 300000 - (Date.now() - lastReply);
+    if(wait > 0){
+        const min = Math.ceil(wait/60000);
+        const tips = ['歇一歇，看看别人的帖子 🌸','别急，一个一个来 🐢','喝口水再回复 🥤','让键盘歇一会儿 ⌨️'];
+        toast(`⏳ 再等 ${min} 分钟哦~ ${tips[min%4]}`);
+        closeModal('detailModal');
+        return;
+    }
+    
+    $('replyInput').value='';
+    closeModal('detailModal');
+    toast('📨 回复发送中...');
+    
+    try{
+        await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
+        const cheers = ['💬 回复成功！','✨ 你的回复已发布','👏 感谢你的参与！'];
+        toast(cheers[Math.floor(Math.random()*cheers.length)]);
+        localStorage.setItem('last_reply_time', Date.now());
+        loadPosts();
+    }catch(e){toast('❌ 网络开了小差')}
 }
 
 // ======== AUTH ========
