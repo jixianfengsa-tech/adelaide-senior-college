@@ -223,9 +223,16 @@ async function submitReply(pid){
 
 // ======== AUTH ========
 async function loginGoogle(){
-    const sb = getSB(); if(!sb){toast('请刷新页面后重试');return}
-    const {error} = await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/forum/'}});
-    if(error) toast('❌ '+error.message);
+    try{
+        const sb = getSB(); 
+        if(!sb){toast('请刷新页面后重试');return}
+        toast('跳转到 Google...');
+        const {data, error} = await sb.auth.signInWithOAuth({
+            provider:'google',
+            options:{redirectTo:window.location.origin+'/forum/'}
+        });
+        if(error){toast('❌ '+error.message);console.error(error)}
+    }catch(e){toast('❌ '+e.message)}
 }
 async function loginPhone(){
     const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
