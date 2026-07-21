@@ -189,7 +189,7 @@ function D(m){const e=document.getElementById('debug');if(e)e.textContent='🔍 
 function $(id){return document.getElementById(id)}
 
 async function api(path, opt={}){
-    const r = await fetch(API+path, {headers:H, ...opt});
+    const r = await fetch(API+path, {headers:{...H,'Cache-Control':'no-cache','Pragma':'no-cache'}, ...opt});
     if(!r.ok) throw new Error(r.status+' '+await r.text());
     return r.json();
 }
@@ -216,8 +216,8 @@ async function switchCat(c){cat=c;renderTabs();await loadPosts()}
 async function loadPosts(){
     $('postList').innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
     try{
-        let q = '/posts?select=*&order=created_at.desc&limit=50&t='+Date.now();
-        if(cat!=='all') q = '/posts?select=*&category_id=eq.'+cat+'&order=created_at.desc&limit=50&t='+Date.now();
+        let q = '/posts?select=*&order=created_at.desc&limit=50';
+        if(cat!=='all') q = '/posts?select=*&category_id=eq.'+cat+'&order=created_at.desc&limit=50';
         posts = await api(q);
         D('帖子:'+posts.length);
         if(!posts.length){$('postList').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子，点击右下角 ✏️ 发帖吧！</p></div>';return}
