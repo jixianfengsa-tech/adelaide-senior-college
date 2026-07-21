@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>管理员后台 - 老年大学同学之间</title>
+<style>
+:root{--bg:#FFF8F0;--card:#FFF;--warm:#E8D5B7;--gold:#C4A44A;--navy:#2C3E50;--green:#6B8E6B;--pink:#E8A0A0;--text:#3D3D3D;--gray:#999}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);line-height:1.7;background:var(--bg);font-size:16px;margin:0}
+.header{background:linear-gradient(160deg,#2C3E50,#34495E);color:#fff;padding:16px 20px;text-align:center}
+.header h1{font-size:22px;margin:0}.header a{color:rgba(255,255,255,.7);font-size:13px}
+.container{max-width:700px;margin:0 auto;padding:14px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+h2{font-size:18px;color:var(--navy);margin:0 0 12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #f0f0f0}
+th{color:var(--gray);font-weight:600}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600}
+.btn-s{background:var(--green);color:#fff}.btn-w{background:var(--gold);color:#fff}.btn-d{background:#E74C3C;color:#fff}.btn-n{background:var(--navy);color:#fff}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-g{background:rgba(107,142,107,.2);color:var(--green)}.badge-r{background:rgba(231,76,60,.1);color:#E74C3C}.badge-y{background:rgba(196,164,74,.2);color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="header"><h1>🛠️ 管理员后台</h1><a href="javascript:history.back()">← 返回论坛</a></div>
+<div class="container">
+<div id="loginCheck"><div class="card" style="text-align:center"><h2>🔐 管理员验证</h2><input id="adminPin" type="password" placeholder="输入管理密码" style="padding:12px;border:2px solid var(--warm);border-radius:8px;font-size:16px;text-align:center;width:200px;margin-bottom:8px"><br><button class="btn btn-s" onclick="checkAdmin()">验证</button></div></div>
+<div id="adminPanel" style="display:none">
+<div class="card"><h2>📊 全站概览</h2><div id="overview">加载中...</div></div>
+<div class="card"><h2>👤 用户积分流水</h2><select id="userSelect" onchange="showUserLog()" style="padding:8px;border:1px solid var(--warm);border-radius:6px;font-size:14px;width:100%;margin-bottom:8px"><option value="">选择用户...</option></select><div id="userLog"></div></div>
+<div class="card"><h2>✅ 签到记录</h2><div id="checkinLog"></div></div>
+<div class="card"><h2>🏅 奖牌颁发</h2><div id="awardLog"></div></div>
+<div class="card"><h2>🗑 帖子管理</h2><p style="font-size:13px;color:var(--gray)">在论坛中直接操作：打开帖子详情 → 置顶/删除</p></div>
+<div class="card"><h2>📋 版块管理 (20个版位)</h2><p style="font-size:13px;color:var(--gray)">去 Supabase 数据库管理 categories 表</p></div>
+</div></div>
+
+<script>
+const ADMIN_PIN='sure2024';
+
+function checkAdmin(){
+    if($('adminPin').value===ADMIN_PIN){
+        $('loginCheck').style.display='none';$('adminPanel').style.display='block';loadAll();
+    }else{toast('❌ 密码错误')}
+}
+function toast(m){const e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 24px;border-radius:20px;font-size:14px;z-index:99999';document.body.appendChild(e);setTimeout(()=>e.remove(),2000)}
+
+function getAllUsers(){
+    const users=new Set();
+    for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k.startsWith('f_pointlog_'))users.add(k.replace('f_pointlog_',''));
+        if(k.startsWith('f_checkin_'))users.add(k.replace('f_checkin_',''));
+        if(k.startsWith('f_awards_'))users.add(k.replace('f_awards_',''));
+        if(k.startsWith('f_user')&&k.length===6)try{const u=JSON.parse(localStorage.getItem(k));if(u&&u.nickname)users.add(u.nickname)}catch(e){}
+    }
+    return [...users];
+}
+
+function loadAll(){
+    const users=getAllUsers();
+    $('overview').innerHTML=`👥 活跃用户：${users.length}人<br>📝 签到总数：${countKeys('f_checkin_')}次<br>🏅 奖牌总数：${countKeys('f_awards_')}枚`;
+    $('userSelect').innerHTML='<option value="">选择用户...</option>'+users.map(u=>`<option value="${u}">${u}</option>`).join('');
+}
+
+function countKeys(prefix){let c=0;for(let i=0;i<localStorage.length;i++)if(localStorage.key(i).startsWith(prefix))c++;return c}
+
+function showUserLog(){
+    const u=$('userSelect').value;if(!u)return;
+    const log=JSON.parse(localStorage.getItem('f_pointlog_'+u)||'[]');
+    const checkins=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k==='f_checkin_'+u)checkins.push(localStorage.getItem(k))}
+    const awards=JSON.parse(localStorage.getItem('f_awards_'+u)||'[]');
+    let html='<h3>积分流水 ('+log.length+'条)</h3><table><tr><th>时间</th><th>类型</th><th>原因</th><th>分数</th></tr>';
+    log.slice(-20).reverse().forEach(l=>{html+=`<tr><td>${new Date(l.time).toLocaleDateString('zh-CN')}</td><td>${l.type}</td><td>${l.reason}</td><td>+${l.amount}</td></tr>`});
+    html+='</table>';
+    html+='<h3 style="margin-top:12px">🏅 奖牌 ('+awards.length+'枚)</h3>'+awards.map(a=>`<span class="badge badge-y">${a.icon} ${a.name}</span>`).join(' ');
+    $('userLog').innerHTML=html||'无记录';
+    
+    $('checkinLog').innerHTML='<h3>签到记录</h3>'+users.map(u=>{
+        const last=localStorage.getItem('f_checkin_'+u);const streak=localStorage.getItem('f_checkin_streak_'+u)||'0';
+        return `<div>${u}：最近${last||'未签到'} · 连续${streak}天</div>`;
+    }).join('')||'无';
+    
+    $('awardLog').innerHTML='<h3>奖牌汇总</h3>'+users.map(u=>{
+        const a=JSON.parse(localStorage.getItem('f_awards_'+u)||'[]');
+        return a.length?`<div><strong>${u}</strong>：`+a.map(x=>`<span class="badge badge-y">${x.icon}${x.name}</span>`).join(' ')+'</div>':'';
+    }).filter(Boolean).join('')||'无';
+}
+</script>
+</body>
+</html>
