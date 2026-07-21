@@ -397,7 +397,7 @@
 <nav>
     <div class="container">
         <a href="#" class="brand">
-            <img src="logo.jpg" alt="ASLC">
+            <img src="logo.jpg" alt="ACSC">
             <span>Adelaide Chinese<br>Senior College</span>
         </a>
         <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
@@ -453,7 +453,7 @@
 <section id="news" style="background:var(--light)">
     <div class="container">
         <p class="section-label">News &amp; Events</p>
-        <h2 class="section-title">What's happening at ASLC</h2>
+        <h2 class="section-title">What's happening at Adelaide Chinese Senior College</h2>
         <p class="section-lead">Stay up to date with our latest activities, new programs, and community events.</p>
         <div class="news-grid" id="homeNewsGrid">
             <p style="color:var(--gray)">Loading...</p>
@@ -1158,7 +1158,7 @@
         const num = String(i).padStart(2,'0');
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="ASLC Activity Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
+        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="ACSC Activity Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
         grid.appendChild(div);
     }
 })();
