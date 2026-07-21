@@ -53,7 +53,10 @@
 
 <div class="user-bar" id="userBar">
     <div class="avatar" id="userAvatar" style="cursor:pointer" onclick="me&&showProfile()">🐼</div>
-    <div class="user-info"><div class="user-name" id="userName" style="cursor:pointer" onclick="me&&showProfile()">游客</div></div>
+    <div class="user-info">
+        <div class="user-name" id="userName" style="cursor:pointer" onclick="me&&showProfile()">游客</div>
+        <div id="userBadges" style="font-size:11px;color:var(--gold);line-height:1.3"></div>
+    </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">输入昵称</button>
 </div>
 
@@ -153,6 +156,16 @@ async function checkGoogleRedirect(){
     const sb = getSB(); if(!sb) return;
     const {data:{session}} = await sb.auth.getSession();
     if(session?.user){
+        // Only set defaults if user hasn't customized yet
+        const saved = localStorage.getItem('forum_user');
+        if(saved){
+            const parsed = JSON.parse(saved);
+            if(parsed.id === session.user.id) {
+                me = parsed; // Keep custom profile
+                updateBar();
+                return;
+            }
+        }
         me = {id:session.user.id, nickname:session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Google用户', login_type:'google', avatar_emoji:'🌐'};
         localStorage.setItem('forum_user', JSON.stringify(me));
         updateBar();
@@ -205,7 +218,10 @@ async function loadPosts(){
                 </div>
                 <h3>${esc(p.title)}</h3><div class="post-preview">${esc(p.content)}</div>
                 ${p.image_url?`<span style="font-size:12px;color:var(--gold)">📷 含图片</span>`:''}
-                <div style="margin-top:8px;font-size:13px;color:var(--gray)">💬 ${p.reply_count||0} 回复</div></div>`;
+                <div style="margin-top:8px;font-size:13px;color:var(--gray)">
+                    💬 ${p.reply_count||0} 回复 · 👁 ${p.views||0} 阅读
+                    ${(p.reply_count||0)>=10?' 🔥':''}${(p.views||0)>=100?' ⭐':''}
+                </div></div>`;
         }).join('');
     }catch(e){D('错误:'+e.message);$('postList').innerHTML='<div style="text-align:center;padding:60px"><p>❌ '+e.message+'</p><p style="margin-top:8px"><a href="javascript:loadPosts()" style="color:var(--navy)">点击重试</a></p></div>'}
 }
@@ -213,19 +229,26 @@ async function loadPosts(){
 function showNewPost(){if(!me){doLogin();return}$('postAs').textContent=me.nickname;$('newPostModal').classList.add('active')}
 let submitting = false;
 
+// Rate limit with per-user key + level bonus
+function checkRL(type){
+    const key = 'rl_'+type+'_'+(me?.nickname||'guest');
+    const last = parseInt(localStorage.getItem(key)||'0');
+    const total = (me?.total_posts||0)+(me?.total_replies||0);
+    const wait = Math.max(120000, 300000 - total*10000); // Min 2 min, level reduces
+    const rem = wait - (Date.now() - last);
+    if(rem > 0){
+        const m = Math.ceil(rem/60000), s = Math.ceil(rem/1000);
+        const tips = type==='post'?['慢慢来 ☕','值得等待 🌸','先喝杯茶 🍵','让给别人聊聊 💬']:['歇一歇 🌸','一个一个来 🐢','喝口水 🥤','键盘歇会儿 ⌨️'];
+        toast('⏳ 再等 '+(m>0?m+'分钟':s+'秒')+'~ '+tips[Math.floor(Math.random()*tips.length)]+(total>=10?' (VIP)':''));
+        return false;
+    }
+    localStorage.setItem(key, Date.now());
+    return true;
+}
+
 async function submitPost(){
     if(submitting) return;
-    
-    // Friendly rate limit
-    const lastPost = parseInt(localStorage.getItem('last_post_time')||'0');
-    const wait = 300000 - (Date.now() - lastPost);
-    if(wait > 0){
-        const min = Math.ceil(wait/60000);
-        const tips = ['慢慢来，休息一下 ☕','好东西值得等待 🌸','让其他人也聊聊呗 💬','喝杯茶再回来 🍵'];
-        toast(`⏳ 再等 ${min} 分钟哦~ ${tips[min%4]}`);
-        closeModal('newPostModal');
-        return;
-    }
+    if(!checkRL('post')){closeModal('newPostModal');return}
     
     const d={category_id:parseInt($('postCategory').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
     if(!d.title||!d.content){toast('请填写标题和内容 📝');return}
@@ -254,7 +277,9 @@ async function submitPost(){
         await api('/posts',{method:'POST',body:JSON.stringify({category_id:cat,title,content,guest_nickname:me?.nickname||'游客',image_url:imageUrl}),headers:{...H,Prefer:'return=minimal'}});
         const cheers = ['🎉 发布成功！大家都能看到啦','✨ 好帖子！已发布','👏 分享成功！感谢你的参与','🌟 太棒了！去看看大家的回复吧'];
         toast(cheers[Math.floor(Math.random()*cheers.length)]);
-        localStorage.setItem('last_post_time', Date.now());
+        me.total_posts = (me.total_posts||0) + 1;
+        localStorage.setItem('forum_user', JSON.stringify(me));
+        updateBar();
         loadPosts();
     }catch(e){toast('❌ 网络开了小差，请重试')}
     submitting = false;
@@ -297,6 +322,10 @@ async function uploadToStorage(blob){
 
 async function showDetail(id){
     const p=posts.find(x=>x.id===id);if(!p)return;
+    // Increment view count
+    p.views = (p.views||0) + 1;
+    api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});
+    loadPosts(); // refresh counts
     const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
     let rh='<p style="color:var(--gray)">暂无回复</p>';
     try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:14px">${esc(x.content)}</div></div>`).join('')}catch(e){}
@@ -311,17 +340,7 @@ async function showDetail(id){
 }
 async function submitReply(pid){
     const c=$('replyInput').value.trim();if(!c){return}
-    
-    // Rate limit for replies too
-    const lastReply = parseInt(localStorage.getItem('last_reply_time')||'0');
-    const wait = 300000 - (Date.now() - lastReply);
-    if(wait > 0){
-        const min = Math.ceil(wait/60000);
-        const tips = ['歇一歇，看看别人的帖子 🌸','别急，一个一个来 🐢','喝口水再回复 🥤','让键盘歇一会儿 ⌨️'];
-        toast(`⏳ 再等 ${min} 分钟哦~ ${tips[min%4]}`);
-        closeModal('detailModal');
-        return;
-    }
+    if(!checkRL('reply')){closeModal('detailModal');return}
     
     $('replyInput').value='';
     closeModal('detailModal');
@@ -331,7 +350,9 @@ async function submitReply(pid){
         await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
         const cheers = ['💬 回复成功！','✨ 你的回复已发布','👏 感谢你的参与！'];
         toast(cheers[Math.floor(Math.random()*cheers.length)]);
-        localStorage.setItem('last_reply_time', Date.now());
+        me.total_replies = (me.total_replies||0) + 1;
+        localStorage.setItem('forum_user', JSON.stringify(me));
+        updateBar();
         loadPosts();
     }catch(e){toast('❌ 网络开了小差')}
 }
@@ -383,8 +404,24 @@ function updateBar(){
         } else {
             $('userAvatar').textContent = av;
         }
-        $('userName').textContent=me.nickname+(isAdmin?' 👑':'');$('loginBtn').textContent='退出';$('loginBtn').onclick=logout
-    }else{$('userAvatar').textContent='🐼';$('userName').textContent='游客';$('loginBtn').textContent='输入昵称';$('loginBtn').onclick=doLogin}
+        $('userName').textContent=me.nickname+(isAdmin?' 👑':'');
+        
+        // Badges based on stats
+        const total = (me.total_posts||0) + (me.total_replies||0);
+        let badges = '';
+        if(total >= 50) badges += '🌟灵魂人物 ';
+        else if(total >= 20) badges += '⭐社区明星 ';
+        else if(total >= 5) badges += '💬话匣子 ';
+        else if(total >= 1) badges += '🌱新人 ';
+        if(me.login_type==='google') badges += '🔗';
+        if(me.login_type==='phone') badges += '📱';
+        $('userBadges').textContent = badges || '';
+        
+        $('loginBtn').textContent='退出';$('loginBtn').onclick=logout
+    }else{
+        $('userAvatar').textContent='🐼';$('userName').textContent='游客';$('userBadges').textContent='';
+        $('loginBtn').textContent='输入昵称';$('loginBtn').onclick=doLogin
+    }
 }
 function logout(){me=null;isAdmin=false;localStorage.removeItem('forum_user');updateBar();toast('已退出')}
 
