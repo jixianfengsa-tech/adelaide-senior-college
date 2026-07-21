@@ -88,33 +88,15 @@
     <h2>👋 登录校园交友</h2>
     <p style="color:var(--gray);margin-bottom:20px;font-size:14px">登录后解锁成就和积分</p>
     
-    <button onclick="loginGoogle()" style="width:100%;padding:14px;background:#fff;color:#444;border:2px solid #ddd;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px">
-        <span style="font-size:20px">🌐</span> Google 账号登录
+    <button onclick="loginGoogle()" style="width:100%;padding:14px;background:#fff;color:#444;border:2px solid #ddd;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:22px">🌐</span> Google 账号登录（推荐）
     </button>
     
     <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
         <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
     </div>
     
-    <p style="font-weight:600;color:var(--navy);margin-bottom:8px">📱 手机号登录</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-        <select id="phoneCountry" style="width:100px;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:14px">
-            <option value="+61">🇦🇺 +61</option>
-            <option value="+86">🇨🇳 +86</option>
-        </select>
-        <input id="phoneNumber" placeholder="手机号码" style="flex:1;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px">
-    </div>
-    <button onclick="loginPhone()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">发送验证码</button>
-    <div id="phoneCodeArea" style="display:none;margin-top:12px">
-        <input id="phoneCode" placeholder="输入6位验证码" maxlength="6" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
-        <button onclick="verifyPhone()" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">验证并登录</button>
-    </div>
-    
-    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
-        <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
-    </div>
-    
-    <p style="color:var(--gray);font-size:14px;margin-bottom:8px">不想注册？</p>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:8px">不想登录？</p>
     <input id="guestNickname" placeholder="输入昵称直接发帖" maxlength="20" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
     <button onclick="loginAsGuest()" style="width:100%;padding:14px;background:var(--light);color:var(--navy);border:2px solid var(--border);border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">以游客身份进入</button>
 </div></div>
@@ -224,7 +206,7 @@ async function loadPosts(){
         $('postList').innerHTML = posts.map(p=>{
             const c = cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
             return `<div class="post-card" onclick="showDetail(${p.id})">
-                <div class="post-header"><div class="post-avatar">${emoji(p.guest_nickname||'')}</div>
+                <div class="post-header"><div class="post-avatar">${postAvatar(p.guest_nickname||'')}</div>
                 <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}</div><div class="post-time">${ago(p.created_at)}</div></div>
                 <div class="post-cat">${c.icon} ${c.name}</div>
                 ${isAdmin?`<button onclick="event.stopPropagation();delPost(${p.id})" style="background:var(--red);color:#fff;border:none;padding:2px 10px;border-radius:10px;font-size:11px;cursor:pointer;flex-shrink:0">🗑 删</button>`:''}
@@ -349,7 +331,7 @@ async function showDetail(id){
     let rh='<p style="color:var(--gray)">暂无回复</p>';
     try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:14px">${esc(x.content)}</div></div>`).join('')}catch(e){}
     $('detailContent').innerHTML=`<button class="modal-close" onclick="closeModal('detailModal')">✕</button>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:28px">${emoji(p.guest_nickname||'')}</div><div><div style="font-weight:600">${p.guest_nickname||'匿名'}</div><div style="font-size:12px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name}</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:28px">${postAvatar(p.guest_nickname||'')}</div><div><div style="font-weight:600">${p.guest_nickname||'匿名'}</div><div style="font-size:12px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name}</div></div></div>
         <h2 style="font-size:20px;margin-bottom:12px">${esc(p.title)}</h2>
         ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
         <div style="font-size:15px;line-height:1.8;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
@@ -389,27 +371,6 @@ async function loginGoogle(){
         if(error){toast('❌ '+error.message);console.error(error)}
     }catch(e){toast('❌ '+e.message)}
 }
-async function loginPhone(){
-    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
-    if(phone.length<8){toast('请输入正确的手机号');return}
-    const sb = getSB(); if(!sb){toast('请刷新后重试');return}
-    const {error} = await sb.auth.signInWithOtp({phone});
-    if(error){toast('❌ 短信发送失败：'+error.message);return}
-    $('phoneCodeArea').style.display='block';
-    toast('📱 验证码已发送');
-}
-async function verifyPhone(){
-    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
-    const code = $('phoneCode').value.trim();
-    if(!code){toast('请输入验证码');return}
-    const sb = getSB(); if(!sb) return;
-    const {data:{session},error} = await sb.auth.verifyOtp({phone,token:code,type:'sms'});
-    if(error){toast('❌ 验证失败');return}
-    me = {id:session.user.id, nickname:'用户'+phone.slice(-4), login_type:'phone', avatar_emoji:'📱'};
-    localStorage.setItem('forum_user', JSON.stringify(me));
-    updateBar(); closeModal('loginModal'); toast('✅ 登录成功！');
-}
-
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
     const n=$('guestNickname').value.trim();if(!n){toast('请输入昵称');return}
@@ -500,6 +461,16 @@ function toast(m){const e=$('toast');e.textContent=m;e.style.animation='none';e.
 function ago(d){const s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';if(s<604800)return Math.floor(s/86400)+'天前';return new Date(d).toLocaleDateString('zh-CN')}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function emoji(s){const a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'];let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
+
+// Avatar sync: if this post is by current user, show their custom avatar
+function postAvatar(nick){
+    if(me && me.nickname === nick && me.avatar_emoji){
+        const av = me.avatar_emoji;
+        if(av.startsWith('data:')) return `<img src="${av}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`;
+        return av;
+    }
+    return emoji(nick||'');
+}
 </script>
 </body>
 </html>
