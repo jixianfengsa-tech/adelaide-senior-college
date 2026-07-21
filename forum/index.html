@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>校园交友 — 阿德莱德老年大学</title>
     <style>
-        :root {--navy:#0A1628;--blue:#1B3A5C;--gold:#C4A44A;--white:#FFF;--light:#F5F6F8;--gray:#6B7280;--text:#1F2937;--border:#E5E7EB;--green:#07C160;--radius:10px}
+        :root {--navy:#0A1628;--blue:#1B3A5C;--gold:#C4A44A;--white:#FFF;--light:#F5F6F8;--gray:#6B7280;--text:#1F2937;--border:#E5E7EB;--green:#07C160;--red:#E74C3C;--radius:10px}
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);line-height:1.7;background:var(--light);font-size:16px}
         .container{max-width:800px;margin:0 auto;padding:0 16px}
@@ -123,6 +123,13 @@ const H = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'applicatio
 
 let me = null, cat = 'all', cats = [], posts = [];
 let sbAuth = null;
+let isAdmin = false;
+
+// Admin check - enter password in console or auto-admin for first user
+function checkAdmin(){
+    if(me?.nickname === 'sure') isAdmin = true; // You're the admin
+    if(localStorage.getItem('forum_admin') === '1') isAdmin = true;
+}
 
 function getSB(){
     if(!sbAuth && window.supabase) sbAuth = window.supabase.createClient('https://nkvavgmvbmzrnwurazgq.supabase.co', KEY);
@@ -153,7 +160,7 @@ async function api(path, opt={}){
 (async function(){
     D('启动中...');
     const s = localStorage.getItem('forum_user');
-    if(s){me=JSON.parse(s);updateBar()}
+    if(s){me=JSON.parse(s);updateBar();checkAdmin()}
     await checkGoogleRedirect();
     try{ cats = await api('/categories?order=sort_order'); D('分类:'+cats.length); }
     catch(e){ cats=[{id:1,name:'活动报名',icon:'📢'},{id:2,name:'生活互助',icon:'🏠'},{id:3,name:'健康养生',icon:'🩺'},{id:4,name:'儿孙天地',icon:'👨‍👩‍👧‍👦'},{id:5,name:'才艺晒晒',icon:'🎨'},{id:6,name:'二手转让',icon:'🛒'}]; D('离线模式'); }
@@ -181,7 +188,9 @@ async function loadPosts(){
             return `<div class="post-card" onclick="showDetail(${p.id})">
                 <div class="post-header"><div class="post-avatar">${emoji(p.guest_nickname||'')}</div>
                 <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}</div><div class="post-time">${ago(p.created_at)}</div></div>
-                <div class="post-cat">${c.icon} ${c.name}</div></div>
+                <div class="post-cat">${c.icon} ${c.name}</div>
+                ${isAdmin?`<button onclick="event.stopPropagation();delPost(${p.id})" style="background:var(--red);color:#fff;border:none;padding:2px 10px;border-radius:10px;font-size:11px;cursor:pointer;flex-shrink:0">🗑 删</button>`:''}
+                </div>
                 <h3>${esc(p.title)}</h3><div class="post-preview">${esc(p.content)}</div>
                 <div style="margin-top:8px;font-size:13px;color:var(--gray)">💬 ${p.reply_count||0} 回复</div></div>`;
         }).join('');
@@ -242,13 +251,24 @@ async function verifyPhone(){
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
     const n=$('guestNickname').value.trim();if(!n){toast('请输入昵称');return}
-    me={nickname:n};localStorage.setItem('forum_user',JSON.stringify(me));updateBar();closeModal('loginModal');toast('👋 欢迎，'+n+'！')
+    me={nickname:n};localStorage.setItem('forum_user',JSON.stringify(me));checkAdmin();updateBar();closeModal('loginModal');toast('👋 欢迎，'+n+'！')
 }
 function updateBar(){
-    if(me){$('userAvatar').textContent=emoji(me.nickname);$('userName').textContent=me.nickname;$('loginBtn').textContent='退出';$('loginBtn').onclick=logout}
+    if(me){$('userAvatar').textContent=emoji(me.nickname);$('userName').textContent=me.nickname+(isAdmin?' 👑':'');$('loginBtn').textContent='退出';$('loginBtn').onclick=logout}
     else{$('userAvatar').textContent='🐼';$('userName').textContent='游客';$('loginBtn').textContent='输入昵称';$('loginBtn').onclick=doLogin}
 }
-function logout(){me=null;localStorage.removeItem('forum_user');updateBar();toast('已退出')}
+function logout(){me=null;isAdmin=false;localStorage.removeItem('forum_user');updateBar();toast('已退出')}
+
+async function delPost(id){
+    if(!isAdmin) return;
+    if(!confirm('确定删除这条帖子吗？')) return;
+    try{
+        await fetch(API+'/replies?post_id=eq.'+id,{method:'DELETE',headers:H});
+        await fetch(API+'/posts?id=eq.'+id,{method:'DELETE',headers:H});
+        toast('🗑 已删除');
+        loadPosts();
+    }catch(e){toast('❌ 删除失败')}
+}
 function closeModal(id){$(id).classList.remove('active')}
 function toast(m){const e=$('toast');e.textContent=m;e.style.animation='none';e.offsetHeight;e.style.animation='fadeInOut 2s ease forwards'}
 function ago(d){const s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';if(s<604800)return Math.floor(s/86400)+'天前';return new Date(d).toLocaleDateString('zh-CN')}
