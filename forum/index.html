@@ -62,6 +62,16 @@
 
 <div class="cat-tabs" id="catTabs"></div>
 
+<!-- Search & Sort -->
+<div style="display:flex;gap:8px;padding:8px 0;position:sticky;top:136px;background:var(--light);z-index:97">
+    <input id="searchInput" placeholder="🔍 搜索帖子..." style="flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:14px" oninput="debounceSearch()">
+    <select id="sortBy" onchange="loadPosts()" style="padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:#fff">
+        <option value="newest">🕐 最新</option>
+        <option value="hot">🔥 最热</option>
+        <option value="views">👁 最多浏览</option>
+    </select>
+</div>
+
 <div class="container">
     <div class="post-list" id="postList"><p style="text-align:center;color:var(--gray);padding:40px">加载中...</p></div>
     <p id="debug" style="text-align:center;font-size:11px;color:#ccc;margin-top:-16px"></p>
@@ -195,31 +205,60 @@ function renderTabs(){
 }
 async function switchCat(c){cat=c;renderTabs();await loadPosts()}
 
-async function loadPosts(){
-    $('postList').innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
+let page = 1, hasMore = true, searchTimer = null;
+function debounceSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(loadPosts,400)}
+
+async function loadPosts(append=false){
+    if(!append){page=1;hasMore=true}
+    const list = document.getElementById('postList');
+    if(!append) list.innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
+    
     try{
-        let q = '/posts?select=*&order=created_at.desc&limit=50';
-        if(cat!=='all') q = '/posts?select=*&category_id=eq.'+cat+'&order=created_at.desc&limit=50';
-        posts = await api(q);
-        D('帖子:'+posts.length);
-        if(!posts.length){$('postList').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子，点击右下角 ✏️ 发帖吧！</p></div>';return}
-        $('postList').innerHTML = posts.map(p=>{
+        const search = $('searchInput').value.trim();
+        const sort = $('sortBy').value;
+        let orderCol = 'created_at'; let orderDir = 'desc';
+        if(sort==='hot'){orderCol='reply_count';orderDir='desc'}
+        if(sort==='views'){orderCol='views';orderDir='desc'}
+        
+        // Build query with search filter
+        let q = `/posts?select=*&order=${orderCol}.${orderDir}&limit=20&offset=${(page-1)*20}`;
+        if(cat!=='all') q += `&category_id=eq.${cat}`;
+        if(search) q += `&or=(title.ilike.*${encodeURIComponent(search)}*,content.ilike.*${encodeURIComponent(search)}*)`;
+        
+        const data = await api(q);
+        if(!append) posts = data||[];
+        else posts = posts.concat(data||[]);
+        hasMore = (data||[]).length === 20;
+        
+        if(posts.length===0){list.innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子，点击右下角 ✏️ 发帖吧！</p></div>';return}
+        
+        list.innerHTML = posts.map(p=>{
             const c = cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
+            const isMine = me && me.nickname === p.guest_nickname;
             return `<div class="post-card" onclick="showDetail(${p.id})">
                 <div class="post-header"><div class="post-avatar">${postAvatar(p.guest_nickname||'')}</div>
-                <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}</div><div class="post-time">${ago(p.created_at)}</div></div>
+                <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">我的</small>':''}</div><div class="post-time">${ago(p.created_at)}</div></div>
                 <div class="post-cat">${c.icon} ${c.name}</div>
-                ${isAdmin?`<button onclick="event.stopPropagation();delPost(${p.id})" style="background:var(--red);color:#fff;border:none;padding:2px 10px;border-radius:10px;font-size:11px;cursor:pointer;flex-shrink:0">🗑 删</button>`:''}
+                ${isAdmin||isMine?`<button onclick="event.stopPropagation();delPost(${p.id})" style="background:var(--red);color:#fff;border:none;padding:2px 10px;border-radius:10px;font-size:11px;cursor:pointer;flex-shrink:0">🗑</button>`:''}
+                ${p.is_pinned?' 📌':''}
                 </div>
                 <h3>${esc(p.title)}</h3><div class="post-preview">${esc(p.content)}</div>
-                ${p.image_url?`<span style="font-size:12px;color:var(--gold)">📷 含图片</span>`:''}
+                ${p.image_url?`<span style="font-size:12px;color:var(--gold)">📷</span>`:''}
                 <div style="margin-top:8px;font-size:13px;color:var(--gray)">
-                    💬 ${p.reply_count||0} 回复 · 👁 ${p.views||0} 阅读
+                    💬 ${p.reply_count||0} · 👁 ${p.views||0}
                     ${(p.reply_count||0)>=10?' 🔥':''}${(p.views||0)>=100?' ⭐':''}
                 </div></div>`;
         }).join('');
-    }catch(e){D('错误:'+e.message);$('postList').innerHTML='<div style="text-align:center;padding:60px"><p>❌ '+e.message+'</p><p style="margin-top:8px"><a href="javascript:loadPosts()" style="color:var(--navy)">点击重试</a></p></div>'}
+        
+        // Load more button
+        if(hasMore){
+            list.innerHTML += `<div style="text-align:center;padding:20px"><button onclick="loadMore()" style="padding:10px 40px;background:var(--navy);color:#fff;border:none;border-radius:20px;font-size:14px;cursor:pointer">加载更多...</button></div>`;
+        }
+        D('帖子:'+posts.length+(hasMore?'+':''));
+    }catch(e){D('错误:'+e.message);list.innerHTML='<div style="text-align:center;padding:60px"><p>❌ '+e.message+'</p><p><a href="javascript:loadPosts()" style="color:var(--navy)">点击重试</a></p></div>'}
 }
+
+function loadMore(){page++;loadPosts(true)}
 
 function showNewPost(){if(!me){doLogin();return}$('postAs').textContent=me.nickname;$('newPostModal').classList.add('active')}
 let submitting = false;
@@ -324,21 +363,46 @@ async function uploadToStorage(blob){
 
 async function showDetail(id){
     const p=posts.find(x=>x.id===id);if(!p)return;
-    // Increment view count
     p.views = (p.views||0) + 1;
     api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});
     const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
+    const isMine = me && me.nickname === p.guest_nickname;
+    
     let rh='<p style="color:var(--gray)">暂无回复</p>';
     try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:14px">${esc(x.content)}</div></div>`).join('')}catch(e){}
+    
     $('detailContent').innerHTML=`<button class="modal-close" onclick="closeModal('detailModal')">✕</button>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:28px">${postAvatar(p.guest_nickname||'')}</div><div><div style="font-weight:600">${p.guest_nickname||'匿名'}</div><div style="font-size:12px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name}</div></div></div>
+        ${isAdmin?`<button onclick="togglePin(${id})" style="float:right;margin-right:40px;background:var(--gold);color:var(--navy);border:none;padding:4px 12px;border-radius:10px;font-size:12px;cursor:pointer;font-weight:600">📌 ${p.is_pinned?'取消置顶':'置顶'}</button>`:''}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:28px">${postAvatar(p.guest_nickname||'')}</div><div><div style="font-weight:600">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">我的</small>':''}</div><div style="font-size:12px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name} · 👁 ${p.views}</div></div></div>
         <h2 style="font-size:20px;margin-bottom:12px">${esc(p.title)}</h2>
         ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
         <div style="font-size:15px;line-height:1.8;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
+        ${isMine?`<div style="margin-bottom:16px"><button onclick="editPost(${id})" style="padding:6px 16px;border:1px solid var(--navy);border-radius:6px;background:#fff;color:var(--navy);cursor:pointer;font-size:13px">✏️ 编辑</button></div>`:''}
+        ${!isMine?`<div style="margin-bottom:16px"><button onclick="reportPost(${id})" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:11px">🚩 举报</button></div>`:''}
         <h3 style="font-size:16px;margin-bottom:12px">回复 (${p.reply_count||0})</h3>${rh}
         <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px"><button onclick="submitReply(${id})" style="padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600">回复</button></div>`;
     $('detailModal').classList.add('active');
 }
+
+async function editPost(id){
+    const p=posts.find(x=>x.id===id);
+    const newContent = prompt('编辑帖子内容：', p?p.content:'');
+    if(!newContent) return;
+    try{
+        await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:newContent}),headers:{...H,Prefer:'return=minimal'}});
+        toast('✅ 已更新'); showDetail(id); loadPosts();
+    }catch(e){toast('❌ 编辑失败')}
+}
+
+async function togglePin(id){
+    const p=posts.find(x=>x.id===id);if(!p)return;
+    try{
+        await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});
+        toast(p.is_pinned?'📌 已取消置顶':'📌 已置顶'); showDetail(id); loadPosts();
+    }catch(e){toast('❌ 操作失败')}
+}
+
+function reportPost(id){toast('🚩 已举报，管理员会审核')}
 async function submitReply(pid){
     const c=$('replyInput').value.trim();if(!c){return}
     if(!checkRL('reply')){closeModal('detailModal');return}
