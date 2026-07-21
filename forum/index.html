@@ -239,8 +239,10 @@ async function checkGoogle(){
 function checkAdmin(){if(me?.nickname==='sure')isAdmin=true}
 async function loginGoogle(){
     const sb=getSB();if(!sb){toast('请刷新');return}
-    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/forum/v3.html'}});
-    if(error)toast('❌ '+error.message);
+    toast('🌐 跳转到 Google...');
+    const redirectUrl = location.origin + location.pathname;
+    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl}});
+    if(error) toast('❌ '+error.message);
 }
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
