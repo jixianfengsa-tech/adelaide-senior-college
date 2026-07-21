@@ -1,166 +1,129 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>网络家园 — 阿德莱德老年大学</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>老年大学同学之家</title>
 <style>
 :root{--bg:#FFF8F0;--card:#FFF;--warm:#E8D5B7;--gold:#C4A44A;--navy:#2C3E50;--green:#6B8E6B;--pink:#E8A0A0;--text:#3D3D3D;--gray:#999;--radius:16px;--shadow:0 2px 12px rgba(0,0,0,0.06)}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);line-height:1.7;background:var(--bg);font-size:18px;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);line-height:1.7;background:var(--bg);font-size:18px}
 .container{max-width:700px;margin:0 auto;padding:0 14px}
-
-/* Header */
 .header{background:linear-gradient(160deg,#5B7B6C,#6B8E6B);color:#fff;padding:18px 14px;text-align:center;position:sticky;top:0;z-index:100;border-radius:0 0 20px 20px}
-.header h1{font-size:24px;font-weight:900;letter-spacing:1px}
-.header .sub{font-size:14px;opacity:0.8;margin-top:2px}
-
-/* User Strip */
+.header h1{font-size:24px;font-weight:900}.header .sub{font-size:14px;opacity:.9;margin-top:2px}
+.header .sub a{color:rgba(255,255,255,.8);text-decoration:none}
+.header .notify{position:absolute;right:16px;top:16px;font-size:24px;cursor:pointer}
+.header .notify .badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#E74C3C;border-radius:50%;font-size:11px;color:#fff;display:flex;align-items:center;justify-content:center;display:none}
 .user-strip{display:flex;align-items:center;gap:12px;padding:12px 0}
 .user-avatar{width:48px;height:48px;border-radius:50%;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;cursor:pointer}
 .user-avatar img{width:100%;height:100%;object-fit:cover}
-.user-info{flex:1;min-width:0}
-.user-name{font-weight:700;font-size:18px;color:var(--navy)}
-.user-level{font-size:14px;color:var(--gold)}
-.user-points{font-size:13px;color:var(--gray)}
+.user-info{flex:1}.user-name{font-weight:700;font-size:18px;color:var(--navy)}.user-level{font-size:14px;color:var(--gold)}
 .btn-sm{padding:8px 18px;border-radius:20px;font-size:14px;font-weight:600;border:none;cursor:pointer;background:var(--navy);color:#fff}
-.btn-sm.guest{background:var(--gold);color:#fff}
+.btn-sm.guest{background:var(--gold)}
 
-/* Check-in Card */
-.checkin-card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);text-align:center}
-.checkin-card h3{font-size:20px;color:var(--navy);margin-bottom:4px}
-.checkin-count{font-size:14px;color:var(--gray);margin-bottom:12px}
-.checkin-btn{padding:14px 40px;background:var(--green);color:#fff;border:none;border-radius:30px;font-size:20px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.checkin-btn.done{background:var(--warm);color:var(--gray);cursor:default}
-.mood-picker{display:none;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
-.mood-picker.show{display:flex}
-.mood-btn{padding:10px 16px;border-radius:20px;border:2px solid var(--warm);background:#fff;font-size:16px;cursor:pointer;transition:all 0.2s}
-.mood-btn:hover{border-color:var(--gold);background:rgba(196,164,74,0.1)}
+/* Big category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.cat-box{background:var(--card);border-radius:var(--radius);padding:18px 10px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:all .2s;text-decoration:none;color:inherit}
+.cat-box:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.cat-box .c-icon{font-size:32px;display:block;margin-bottom:6px}
+.cat-box .c-name{font-size:15px;font-weight:700;color:var(--navy)}
 
-/* Card base */
 .card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
-
-/* Section title */
 .sec-title{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.tabs{display:flex;gap:0;margin-bottom:12px;background:var(--warm);border-radius:25px;padding:3px}
+.tab-btn{flex:1;padding:10px;border-radius:22px;border:none;background:transparent;font-size:16px;font-weight:600;cursor:pointer;color:var(--gray)}
+.tab-btn.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(0,0,0,.08)}
 
-/* Hot posts */
-.hot-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f0f0;cursor:pointer}
-.hot-item:last-child{border-bottom:none}
-.hot-rank{font-size:22px;font-weight:900;width:30px;text-align:center;flex-shrink:0}
-.hot-rank.r1{color:#E74C3C}.hot-rank.r2{color:#E67E22}.hot-rank.r3{color:#F39C12}
-.hot-body{flex:1;min-width:0}
-.hot-title{font-size:17px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hot-meta{font-size:13px;color:var(--gray)}
+.checkin-card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);text-align:center}
+.mood-picker{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.mood-btn{padding:10px 16px;border-radius:20px;border:2px solid var(--warm);background:#fff;font-size:16px;cursor:pointer}
+.mood-btn:hover{border-color:var(--gold)}
 
-/* Leaderboard */
-.lb-item{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:16px}
-.lb-avatar{font-size:24px;width:36px;text-align:center}
-
-/* Post card */
-.post-card{cursor:pointer}
-.post-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.post-card{cursor:pointer}.post-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .post-pavatar{width:40px;height:40px;border-radius:50%;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
 .post-pavatar img{width:100%;height:100%;object-fit:cover}
 .post-meta{flex:1}.post-author{font-weight:600;color:var(--navy);font-size:16px}.post-time{font-size:13px;color:var(--gray)}
 .post-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
 .post-preview{font-size:16px;color:#666;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .post-img{width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:8px}
-.post-actions{display:flex;gap:16px;font-size:14px;color:var(--gray);align-items:center}
-.post-actions .react-btn{padding:4px 12px;border-radius:12px;border:1px solid var(--warm);background:#fff;cursor:pointer;font-size:16px;transition:all 0.2s}
-.post-actions .react-btn:hover{background:rgba(196,164,74,0.1);border-color:var(--gold)}
-.post-actions .react-btn.liked{background:rgba(231,76,60,0.1);border-color:#E74C3C}
+.post-actions{display:flex;gap:12px;font-size:14px;color:var(--gray);align-items:center;flex-wrap:wrap}
+.react-btn{padding:4px 12px;border-radius:12px;border:1px solid var(--warm);background:#fff;cursor:pointer;font-size:16px}
+.react-btn.liked{background:rgba(231,76,60,.1);border-color:#E74C3C}
 
-/* Category pills */
-.cat-pills{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none}
-.cat-pills::-webkit-scrollbar{display:none}
-.cat-pill{padding:14px 22px;border-radius:30px;font-size:18px;font-weight:700;white-space:nowrap;cursor:pointer;background:#fff;color:var(--gray);border:2px solid var(--warm);transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-.cat-pill.active{background:var(--green);color:#fff;border-color:var(--green)}
-
-/* FAB */
-.fab{position:fixed;bottom:28px;right:20px;width:60px;height:60px;background:var(--gold);color:#fff;border:none;border-radius:50%;font-size:30px;cursor:pointer;z-index:200;box-shadow:0 6px 20px rgba(196,164,74,0.4);display:flex;align-items:center;justify-content:center}
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;align-items:flex-end;justify-content:center}
+.fab{position:fixed;bottom:24px;right:20px;background:var(--gold);color:#fff;border:none;border-radius:30px;padding:14px 24px;font-size:18px;font-weight:700;cursor:pointer;z-index:200;box-shadow:0 6px 20px rgba(196,164,74,.4)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:flex-end;justify-content:center}
 .modal-overlay.active{display:flex}
-.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:700px;max-height:88vh;overflow-y:auto;padding:24px;animation:slideUp 0.3s}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:700px;max-height:88vh;overflow-y:auto;padding:24px;animation:slideUp .3s}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-close{float:right;font-size:24px;cursor:pointer;color:var(--gray);background:none;border:none;padding:4px}
+.modal-close{float:right;font-size:24px;cursor:pointer;color:var(--gray);background:none;border:none}
 .modal h2{font-size:22px;color:var(--navy);margin-bottom:16px}
 .modal input,.modal textarea,.modal select{width:100%;padding:14px;border:2px solid var(--warm);border-radius:12px;font-size:17px;font-family:inherit;margin-bottom:12px;background:#FAFAFA}
 .modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--gold);background:#fff}
-.modal .btn-submit{width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer}
-
-/* Search bar */
-.search-bar{display:flex;gap:8px;padding:8px 0}
-.search-bar input{flex:1;padding:12px 16px;border:2px solid var(--warm);border-radius:25px;font-size:16px;background:#fff}
-.search-bar select{padding:12px;border:2px solid var(--warm);border-radius:25px;font-size:15px;background:#fff}
-
-/* Toast */
+.btn-submit{width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 28px;border-radius:25px;font-size:16px;z-index:99999;animation:fadeInOut 2.5s ease forwards}
 @keyframes fadeInOut{0%{opacity:0;top:0}15%{opacity:1;top:20px}85%{opacity:1;top:20px}100%{opacity:0;top:0}}
-@media(max-width:480px){body{font-size:16px}.header h1{font-size:20px}}
+.retry-btn{padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:20px;font-size:14px;cursor:pointer;margin-top:8px}
+@media(max-width:480px){body{font-size:16px}.header h1{font-size:20px}.cat-grid{grid-template-columns:repeat(3,1fr);gap:6px}.cat-box{padding:14px 6px}.cat-box .c-name{font-size:13px}}
 </style>
 </head>
 <body>
 
-<div class="header"><h1>🏫 网络家园</h1><p class="sub">阿德莱德老年大学社区 · <a href="/" style="color:rgba(255,255,255,0.8)">← 返回主页</a></p></div>
+<div class="header">
+    <h1>🏫 老年大学同学之家</h1>
+    <p class="sub">看通知、聊课程、找同伴、互相帮助 · <a href="/">← 返回主页</a></p>
+    <div class="notify" onclick="showNotifications()">🔔<span class="badge" id="notifyBadge">0</span></div>
+</div>
 
 <div class="container">
-<!-- User -->
 <div class="user-strip" id="userStrip">
     <div class="user-avatar" id="uAvatar" onclick="showProfile()">🐼</div>
     <div class="user-info"><div class="user-name" id="uName">游客</div><div class="user-level" id="uLevel"></div></div>
-    <div class="user-points" id="uPoints"></div>
     <button class="btn-sm guest" id="loginBtn" onclick="doLogin()">登录</button>
+</div>
+
+<!-- Big Categories -->
+<div class="cat-grid">
+    <div class="cat-box" onclick="switchCat('1')"><span class="c-icon">📢</span><span class="c-name">校园通知</span></div>
+    <div class="cat-box" onclick="switchCat('2')"><span class="c-icon">💬</span><span class="c-name">同学交流</span></div>
+    <div class="cat-box" onclick="switchCat('3')"><span class="c-icon">🚶</span><span class="c-name">活动约伴</span></div>
+    <div class="cat-box" onclick="switchCat('4')"><span class="c-icon">❓</span><span class="c-name">生活求助</span></div>
+    <div class="cat-box" onclick="switchCat('5')"><span class="c-icon">🛒</span><span class="c-name">闲置分享</span></div>
+    <div class="cat-box" onclick="switchCat('6')"><span class="c-icon">📖</span><span class="c-name">人生故事</span></div>
 </div>
 
 <!-- Check-in -->
 <div class="checkin-card" id="checkinCard">
-    <h3>🌞 今日签到</h3>
-    <div class="checkin-count" id="checkinCount">加载中...</div>
-    <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">✅ 今日签到</button>
-    <div class="mood-picker" id="moodPicker">
-        <span class="mood-btn" onclick="pickMood('😊','开心')">😊 开心</span>
-        <span class="mood-btn" onclick="pickMood('😌','平静')">😌 平静</span>
-        <span class="mood-btn" onclick="pickMood('🥰','很充实')">🥰 很充实</span>
-        <span class="mood-btn" onclick="pickMood('😴','有点累')">😴 有点累</span>
-        <span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹 想聊天</span>
+    <h3>🌞 今日签到 <span id="checkinCount" style="font-size:14px;color:var(--gray)"></span></h3>
+    <button class="mood-btn" onclick="doCheckin()" id="checkinBtn" style="font-size:18px;padding:12px 24px">✅ 今日签到</button>
+    <div class="mood-picker" id="moodPicker" style="display:none">
+        <span class="mood-btn" onclick="pickMood('😊','开心')">😊</span><span class="mood-btn" onclick="pickMood('😌','平静')">😌</span>
+        <span class="mood-btn" onclick="pickMood('🥰','充实')">🥰</span><span class="mood-btn" onclick="pickMood('😴','有点累')">😴</span><span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹</span>
     </div>
 </div>
 
-<!-- Hot Posts -->
-<div class="card"><div class="sec-title">🔥 热门帖子</div><div id="hotPosts">加载中...</div></div>
+<!-- Hot / Leaderboard -->
+<div class="card"><div class="sec-title">🔥 热门讨论</div><div id="hotPosts">加载中...</div></div>
+<div class="card"><div class="sec-title">🏆 活跃同学</div><div id="leaderboard">加载中...</div></div>
+<div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月寿星</div><div id="birthdayList"></div></div>
 
-<!-- Leaderboard -->
-<div class="card"><div class="sec-title">🏆 活跃会员</div><div id="leaderboard">加载中...</div></div>
-
-<!-- Birthday -->
-<div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月生日会员</div><div id="birthdayList"></div></div>
-
-<!-- Category Pills -->
-<div class="cat-pills" id="catPills"></div>
-
-<!-- Search -->
-<div class="search-bar">
-    <input id="searchInput" placeholder="🔍 搜索..." oninput="debounceSearch()">
-    <select id="sortBy" onchange="loadPosts()"><option value="newest">🕐 最新</option><option value="hot">🔥 最热</option></select>
-</div>
-
-<!-- Posts -->
+<!-- Tabs + Posts -->
+<div class="tabs"><button class="tab-btn active" onclick="switchTab('newest')">最新发言</button><button class="tab-btn" onclick="switchTab('hot')">热门讨论</button></div>
 <div id="postList"><p style="text-align:center;color:var(--gray);padding:40px">加载中...</p></div>
 <div id="debug" style="text-align:center;font-size:11px;color:#ccc"></div>
 </div>
 
-<button class="fab" onclick="showNewPost()">✏️</button>
+<button class="fab" onclick="showNewPost()">✏️ 我要发言</button>
 
 <!-- Post Modal -->
 <div class="modal-overlay" id="postModal"><div class="modal">
     <button class="modal-close" onclick="closeM('postModal')">✕</button>
-    <h2>✏️ 发帖</h2>
+    <h2>✏️ 我要发言</h2>
     <select id="postCat"><option value="">选择版块</option></select>
-    <input id="postTitle" placeholder="标题" maxlength="100">
-    <textarea id="postContent" rows="3" placeholder="说点什么..."></textarea>
-    <input type="file" id="postImage" accept="image/*" style="font-size:14px">
-    <button class="btn-submit" onclick="submitPost()">发布</button>
+    <input id="postTitle" placeholder="标题（可选）" maxlength="100">
+    <textarea id="postContent" rows="4" placeholder="说点什么吧..."></textarea>
+    <input type="file" id="postImage" accept="image/*,.heic,.heif" multiple style="font-size:14px">
+    <p style="font-size:12px;color:var(--gray);margin-bottom:8px">支持 JPG/PNG/HEIC/微信图片，自动压缩</p>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:15px"><input type="checkbox" id="allowComments" checked> 允许评论</label>
+    <button class="btn-submit" id="postSubmitBtn" onclick="submitPost()">发布</button>
 </div></div>
 
 <!-- Detail Modal -->
@@ -169,11 +132,13 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <!-- Login Modal -->
 <div class="modal-overlay" id="loginModal"><div class="modal" style="text-align:center">
     <button class="modal-close" onclick="closeM('loginModal')">✕</button>
-    <h2>👋 登录</h2>
-    <button onclick="loginGoogle()" style="width:100%;padding:16px;background:#fff;border:2px solid #ddd;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin-bottom:12px">🌐 Google 登录（推荐）</button>
+    <h2>👋 登录同学之家</h2>
+    <p style="color:var(--gray);margin-bottom:16px">登录后才能发言、点赞和签到</p>
+    <button onclick="loginGoogle()" style="width:100%;padding:16px;background:#fff;border:2px solid #ddd;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin-bottom:12px">🌐 Google 登录</button>
     <div style="color:var(--gray);margin:16px 0">— 或 —</div>
-    <input id="guestNickname" placeholder="输入昵称直接发帖" maxlength="20" style="text-align:center;font-size:18px;padding:14px;width:100%;border:2px solid var(--warm);border-radius:12px;margin-bottom:8px">
-    <button onclick="loginAsGuest()" style="width:100%;padding:16px;background:var(--warm);color:var(--navy);border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer">以游客身份进入</button>
+    <input id="guestNickname" placeholder="输入昵称" maxlength="20" style="text-align:center;font-size:18px;padding:14px;width:100%;border:2px solid var(--warm);border-radius:12px;margin-bottom:8px">
+    <button onclick="loginAsGuest()" style="width:100%;padding:16px;background:var(--warm);color:var(--navy);border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer">以游客身份浏览</button>
+    <p style="font-size:12px;color:var(--gray);margin-top:12px">游客可以浏览，发言需登录</p>
 </div></div>
 
 <!-- Profile Modal -->
@@ -181,38 +146,29 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <button class="modal-close" onclick="closeM('profileModal')">✕</button>
     <h2>✏️ 个人资料</h2>
     <div id="avatarPicker" style="font-size:34px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px"></div>
-    <input id="profileNickname" placeholder="昵称" maxlength="20" style="text-align:center;font-size:18px">
+    <div id="profileStats" style="font-size:14px;color:var(--gray);margin:8px 0"></div>
     <div id="profileAchs" style="font-size:14px;color:var(--gold);margin:8px 0"></div>
-    <button onclick="setBirthday()" style="width:100%;padding:10px;background:var(--warm);border:none;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:8px">🎂 设置生日月份</button>
-    <button onclick="saveProfile()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;margin-top:8px">保存</button>
+    <input id="profileNickname" placeholder="昵称" maxlength="20" style="text-align:center;font-size:18px">
+    <button onclick="setBirthday()" style="width:100%;padding:10px;background:var(--warm);border:none;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:8px">🎂 设置生日</button>
+    <button onclick="saveProfile()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer">保存</button>
 </div></div>
 
-<!-- Birthday Picker -->
+<!-- Birthday Modal -->
 <div class="modal-overlay" id="birthModal"><div class="modal" style="text-align:center">
     <button class="modal-close" onclick="closeM('birthModal')">✕</button>
     <h2>🎂 选择生日月份</h2>
     <p id="birthSelected" style="color:var(--gold);font-size:18px;font-weight:700;margin:8px 0">请点击选择</p>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:320px;margin:20px auto" id="birthGrid"></div>
+    <div id="birthGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:320px;margin:20px auto"></div>
     <button onclick="confirmBirth()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;margin-top:12px">✅ 确定</button>
 </div></div>
 
-<!-- Rate Limit Modal -->
-<div class="modal-overlay" id="rateLimitModal"><div class="modal" style="text-align:center;padding:32px">
-    <div style="font-size:56px">⏳</div><h2>发帖太快啦！</h2>
-    <p id="rlMsg" style="font-size:16px;color:var(--gray)"></p>
-    <div style="font-size:48px;font-weight:900;color:var(--gold)" id="rlSec">120</div>
-    <p style="color:var(--gray)">秒后可以继续</p>
-    <button onclick="closeM('rateLimitModal')" style="margin-top:12px;padding:10px 30px;border-radius:20px;border:1px solid var(--warm);background:#fff;cursor:pointer;font-size:16px">好的</button>
-</div></div>
-
 <div id="toast"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1';
-const KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
+const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
 const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
-let me=null,cat='all',cats=[],posts=[],isAdmin=false,sbAuth=null;
+let me=null,cat='all',cats=[],posts=[],isAdmin=false,sbAuth=null,currentTab='newest',submitting=false;
+let tempAvatar=null,selectedBirthMonth=null,pendingLoginAction=null;
 
 function $(id){return document.getElementById(id)}
 function D(m){const e=$('debug');if(e)e.textContent='🔍 '+m}
@@ -222,398 +178,263 @@ function ago(d){const s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'�
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function emoji(s){const a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'];let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
 function getSB(){if(!sbAuth&&window.supabase)sbAuth=window.supabase.createClient('https://nkvavgmvbmzrnwurazgq.supabase.co',KEY);return sbAuth}
-
-async function api(path,opt={}){const r=await fetch(API+path,{headers:{...H,'Cache-Control':'no-cache'},...opt});if(!r.ok)throw new Error(r.status);return r.json()}
+async function api(path,opt={}){
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
+    try{const r=await fetch(API+path,{headers:{...H,'Cache-Control':'no-cache'},signal:controller.signal,...opt});clearTimeout(timer);
+    if(!r.ok)throw new Error(r.status);return r.json()}catch(e){clearTimeout(timer);throw e}
+}
 
 // ==== AUTH ====
 async function checkGoogle(){
     const sb=getSB();if(!sb)return;
-    const{data:{session}}=await sb.auth.getSession();
+    try{const{data:{session}}=await sb.auth.getSession();
     if(session?.user){
         const saved=localStorage.getItem('f_user');
         if(saved){try{const p=JSON.parse(saved);if(p.login_type==='google'&&p.id===session.user.id){me=p;updateMe();return}}catch(e){}}
         me={id:session.user.id,nickname:session.user.user_metadata?.full_name||session.user.email?.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0};
         localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-    }
+    }}catch(e){}
 }
 function checkAdmin(){if(me?.nickname==='sure')isAdmin=true}
 async function loginGoogle(){
-    const sb=getSB();if(!sb){toast('请刷新');return}
-    toast('🌐 跳转到 Google...');
-    const redirectUrl = location.origin + location.pathname;
+    const sb=getSB();if(!sb){toast('请刷新后重试');return}
+    try{const redirectUrl=location.origin+location.pathname;
     const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl}});
-    if(error) toast('❌ '+error.message);
+    if(error){$('loginModal').innerHTML+=`<p style="color:#E74C3C;margin-top:12px">❌ 登录失败：${error.message}</p><button onclick="closeM('loginModal')" class="retry-btn">返回论坛</button>`}
+    }catch(e){$('loginModal').innerHTML+=`<p style="color:#E74C3C;margin-top:12px">❌ 网络错误，请重试</p><button onclick="loginGoogle()" class="retry-btn">重新登录</button><button onclick="closeM('loginModal')" class="retry-btn" style="margin-left:8px">返回论坛</button>`}
 }
-function doLogin(){$('loginModal').classList.add('active')}
+function doLogin(){pendingLoginAction=null;$('loginModal').classList.add('active')}
+function requireLogin(action){if(!me){pendingLoginAction=action;doLogin();return false}return true}
 function loginAsGuest(){
     const n=$('guestNickname').value.trim();if(!n){toast('请输入昵称');return}
     me={nickname:n,login_type:'guest',avatar_emoji:emoji(n),points:parseInt(localStorage.getItem('f_points_'+n)||'0')};
-    localStorage.setItem('f_user',JSON.stringify(me));checkAdmin();updateMe();closeM('loginModal');toast('👋 '+n+'！')
+    localStorage.setItem('f_user',JSON.stringify(me));checkAdmin();updateMe();closeM('loginModal');
+    toast('👋 '+n+'！游客可以浏览，发言请登录');
+    if(pendingLoginAction) pendingLoginAction();
 }
 
 // ==== PROFILE ====
-let tempAvatar=null;
-function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';
-    tempAvatar=null;
+function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';tempAvatar=null;
     const av=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🌐'];
     const isPhoto=me.avatar_emoji&&me.avatar_emoji.startsWith('data:');
     $('avatarPicker').innerHTML=av.map(a=>`<span onclick="pickAv('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`).join('')+
-    `<div id="photoPreview" style="margin-top:8px">${isPhoto?`<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px">📷 当前自定义照片 <span onclick="me.avatar_emoji='🐼';showProfile()" style="cursor:pointer;margin-left:8px">✕ 移除</span></div>`:`<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:12px;font-size:15px">📷 上传照片</div>`}</div>
+    `<div id="photoPreview" style="margin-top:8px">${isPhoto?`<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px">📷 当前照片 <span onclick="me.avatar_emoji='🐼';showProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>`:`<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:12px;font-size:15px">📷 上传照片</div>`}</div>
     <input type="file" id="avFile" accept="image/*" style="display:none" onchange="upAv(event)">`;
-    $('profileAchs').textContent = '🏅 '+getAchievements().join(' ');
+    $('profileAchs').textContent='🏅 '+getAchievements().join(' ');
+    const streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
+    $('profileStats').innerHTML=`加入：${ago(me.created_at||new Date().toISOString())} · 连续签到：${streak}天 · 积分：${me.points||0}`;
     $('profileModal').classList.add('active');
 }
 function pickAv(a){me.avatar_emoji=a;tempAvatar=null;showProfile()}
-function upAv(e){
-    const f=e.target.files[0];if(!f||f.size>500000){toast('照片小于500KB');return}
-    const r=new FileReader();
-    r.onload=ev=>{
-        tempAvatar=ev.target.result;
-        $('photoPreview').innerHTML=`<div style="text-align:center;padding:8px;background:rgba(196,164,74,0.1);border-radius:12px">
-            <img src="${tempAvatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px">
-            <div style="font-size:14px;color:var(--gray);margin-bottom:8px">预览</div>
-            <button onclick="confirmPhoto()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer">✅ 确认使用此照片</button>
-            <button onclick="tempAvatar=null;showProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer;margin-left:8px">取消</button></div>`;
-    };
-    r.readAsDataURL(f);
-}
+function upAv(e){const f=e.target.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return}const r=new FileReader();r.onload=ev=>{tempAvatar=ev.target.result;$('photoPreview').innerHTML=`<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="${tempAvatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><button onclick="confirmPhoto()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer">✅ 确认使用</button><button onclick="tempAvatar=null;showProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer;margin-left:8px">取消</button></div>`};r.readAsDataURL(f)}
 function confirmPhoto(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;showProfile()}}
-function saveProfile(){
-    const nn=$('profileNickname').value.trim();
-    if(nn) me.nickname=nn;
-    // Ensure Google ID is preserved for session matching
-    if(!me.id && me.login_type==='google'){
-        const sb=getSB();
-        if(sb){sb.auth.getSession().then(({data})=>{if(data?.session?.user)me.id=data.session.user.id})}
-    }
-    localStorage.setItem('f_user',JSON.stringify(me));
-    updateMe();closeM('profileModal');toast('✅ 已保存');
-}
-
-function updateMe(){
-    if(me){
-        const av=me.avatar_emoji||emoji(me.nickname);
-        if(av.startsWith('data:')){$('uAvatar').innerHTML=`<img src="${av}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`}
-        else $('uAvatar').textContent=av;
-        $('uName').textContent=me.nickname+(isAdmin?' 👑':'');
-        const pts=me.points||0;
-        let lv='🌱 新学员';if(pts>=100)lv='🌿 活跃学员';if(pts>=300)lv='🌳 高级会员';if(pts>=800)lv='🏅 社区达人';
-        $('uLevel').textContent=lv;$('uPoints').textContent=pts+'分';
-        $('loginBtn').textContent='退出';$('loginBtn').onclick=logout;$('loginBtn').className='btn-sm';
-    }else{$('uAvatar').textContent='🐼';$('uName').textContent='游客';$('uLevel').textContent='';$('uPoints').textContent='';$('loginBtn').textContent='登录';$('loginBtn').onclick=doLogin;$('loginBtn').className='btn-sm guest'}
-}
+function saveProfile(){const nn=$('profileNickname').value.trim();if(nn)me.nickname=nn;if(!me.id&&me.login_type==='google'){const sb=getSB();if(sb)sb.auth.getSession().then(({data})=>{if(data?.session?.user)me.id=data.session.user.id;localStorage.setItem('f_user',JSON.stringify(me));updateMe()})}else{localStorage.setItem('f_user',JSON.stringify(me));updateMe()}closeM('profileModal');toast('✅ 已保存')}
 function logout(){me=null;isAdmin=false;localStorage.removeItem('f_user');updateMe();toast('已退出')}
 
+// ==== TIMEZONE ====
+function adelaideToday(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
+function adelaideYesterday(){const d=new Date();d.setDate(d.getDate()-1);return d.toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
+
 // ==== CHECK-IN ====
-function doCheckin(){
-    if(!me){doLogin();return}
-    const today=new Date().toDateString();
-    const last=localStorage.getItem('f_checkin_'+me.nickname);
-    if(last===today){toast('今天已经签到过了 🌞');return}
-    $('moodPicker').classList.add('show');$('checkinBtn').style.display='none';
-}
+function doCheckin(){if(!requireLogin())return;const today=adelaideToday();const last=localStorage.getItem('f_checkin_'+me.nickname);if(last===today){toast('今天签到过了 🌞');return}$('moodPicker').style.display='flex';$('checkinBtn').style.display='none'}
 function pickMood(icon,label){
-    const today=new Date().toDateString();
-    const yesterday=new Date(Date.now()-86400000).toDateString();
-    const last=localStorage.getItem('f_checkin_'+me.nickname);
-    
-    // Track streak
+    const today=adelaideToday(),yesterday=adelaideYesterday(),last=localStorage.getItem('f_checkin_'+me.nickname);
+    if(last===today){toast('今天已经签到过了');return} // Double-check
     let streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
-    if(last===yesterday) streak++; else if(last!==today) streak=1;
+    if(last===yesterday)streak++;else if(last!==today)streak=1;
     localStorage.setItem('f_checkin_streak_'+me.nickname,streak);
-    
     localStorage.setItem('f_checkin_'+me.nickname,today);
-    me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));
-    $('moodPicker').classList.remove('show');
-    $('checkinBtn').textContent='✅ 已签到 '+icon;$('checkinBtn').className='checkin-btn done';$('checkinBtn').style.display='inline-flex';
-    updateMe();loadCheckin();
+    addPoints(1,'checkin','每日签到');
+    $('moodPicker').style.display='none';$('checkinBtn').textContent='✅ 已签到 '+icon;$('checkinBtn').style.display='inline-block';
+    updateMe();loadCheckin();checkAwards();
     toast(icon+' 签到成功！+1分 🔥连续'+streak+'天');
 }
-async function loadCheckin(){
-    const today=new Date().toDateString();
-    let count=0;const names=new Set();
-    // Count check-ins from all localStorage entries
-    for(let i=0;i<localStorage.length;i++){
-        const k=localStorage.key(i);
-        if(k&&k.startsWith('f_checkin_')&&localStorage.getItem(k)===today){count++;names.add(k.replace('f_checkin_',''))}
-    }
-    $('checkinCount').textContent='今日已签到：'+count+'人';
-    if(me){const last=localStorage.getItem('f_checkin_'+me.nickname);
-        if(last===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').className='checkin-btn done';}}
-}
-
-// ==== HOT POSTS & LEADERBOARD ====
-async function loadHot(){
-    try{
-        const data=await api('/posts?select=*&order=reply_count.desc&limit=5');
-        $('hotPosts').innerHTML=data.map((p,i)=>{
-            const ranks=['🥇','🥈','🥉','4','5'];
-            return `<div class="hot-item" onclick="showDetail(${p.id})"><span class="hot-rank r${i+1}">${ranks[i]}</span><div class="hot-body"><div class="hot-title">${esc(p.title)}</div><div class="hot-meta">💬${p.reply_count||0} · 👁${p.views||0} · ${p.guest_nickname||'匿名'}</div></div></div>`;
-        }).join('');
-    }catch(e){}
-}
-async function loadLB(){
-    try{
-        const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=100');
-        const counts={};data.forEach(p=>{if(p.guest_nickname)counts[p.guest_nickname]=(counts[p.guest_nickname]||0)+1});
-        const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        $('leaderboard').innerHTML=sorted.map(([n,c],i)=>`<div class="lb-item"><span class="lb-avatar">${emoji(n)}</span><span>${n}</span><span style="color:var(--gray);font-size:14px">${c}帖</span></div>`).join('')||'<p style="color:var(--gray)">暂无数据</p>';
-    }catch(e){}
-}
+async function loadCheckin(){const today=adelaideToday();let count=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_checkin_')&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='今日'+count+'人签到';if(me){const last=localStorage.getItem('f_checkin_'+me.nickname);if(last===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}}}
 
 // ==== CATEGORIES ====
-async function loadCats(){
-    try{cats=await api('/categories?order=sort_order')}catch(e){cats=[{id:1,name:'校园公告',icon:'📢'},{id:2,name:'学习交流',icon:'📚'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'求助专区',icon:'❓'},{id:5,name:'二手闲置',icon:'🛒'},{id:6,name:'生活分享',icon:'💬'}]}
-    $('catPills').innerHTML=cats.map(c=>`<span class="cat-pill ${cat===String(c.id)?'active':''}" onclick="switchCat('${c.id}')">${c.icon} ${c.name}</span>`).join('');
-    $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-}
-function switchCat(c){cat=c;loadCats();loadPosts()}
+async function loadCats(){try{cats=await api('/categories?order=sort_order')}catch(e){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}]}
+    $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
+function switchCat(c){cat=c;loadPosts()}
+
+// ==== TABS ====
+function switchTab(t){currentTab=t;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');loadPosts()}
 
 // ==== POSTS ====
-let page=1,hasMore=true,searchTimer;
-function debounceSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(loadPosts,400)}
-
+let page=1,hasMore=true;
 async function loadPosts(append=false){
-    if(!append){page=1;hasMore=true}
-    const list=$('postList');if(!append)list.innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
+    if(!append){page=1;hasMore=true}const list=$('postList');if(!append)list.innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
+    const timeout=setTimeout(()=>{list.innerHTML='<div style="text-align:center;padding:60px"><p>⏳ 加载超时</p><button class="retry-btn" onclick="loadPosts()">点击重试</button></div>'},10000);
     try{
-        const search=$('searchInput').value.trim(),sort=$('sortBy').value;
-        let col='created_at';if(sort==='hot')col='reply_count';
-        let q=`/posts?select=*&order=${col}.desc&limit=20&offset=${(page-1)*20}`;
-        if(cat!=='all')q+=`&category_id=eq.${cat}`;
-        if(search)q+=`&or=(title.ilike.*${encodeURIComponent(search)}*,content.ilike.*${encodeURIComponent(search)}*)`;
-        const data=await api(q);
-        if(!append)posts=data||[];else posts=posts.concat(data||[]);
-        hasMore=(data||[]).length===20;
-        if(!posts.length){list.innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子</p></div>';return}
-        list.innerHTML=posts.map(p=>{
-            const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
-            const isMine=me&&me.nickname===p.guest_nickname;
-            return `<div class="card post-card" onclick="showDetail(${p.id})">
-                <div class="post-header"><div class="post-pavatar">${pAv(p.guest_nickname||'')}</div>
-                <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">· 我的</small>':''}</div>
-                <div class="post-time">${ago(p.created_at)} · ${c.icon}${c.name}</div></div>
-                ${isAdmin||isMine?`<button onclick="event.stopPropagation();delPost(${p.id})" style="float:right;background:none;border:none;font-size:18px;cursor:pointer">🗑</button>`:''}</div>
-                <div class="post-title">${p.is_pinned?'📌 ':''}${esc(p.title)}</div>
-                <div class="post-preview">${esc(p.content)}</div>
-                ${p.image_url?`<img src="${p.image_url}" class="post-img" loading="lazy" onerror="this.style.display='none'">`:''}
-                <div class="post-actions">
-                    <button class="react-btn" onclick="event.stopPropagation();likePost(${p.id})">❤️ ${p.likes||0}</button>
-                    <span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>
-                    ${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}
-                </div></div>`;
-        }).join('');
+        let col='created_at';if(currentTab==='hot')col='reply_count';
+        let q=`/posts?select=*&order=${col}.desc&limit=20&offset=${(page-1)*20}`;if(cat!=='all')q+=`&category_id=eq.${cat}`;
+        const data=await api(q);clearTimeout(timeout);
+        if(!append)posts=data||[];else posts=posts.concat(data||[]);hasMore=(data||[]).length===20;
+        if(!posts.length){list.innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有同学发言，来发布第一条消息吧</p></div>';return}
+        list.innerHTML=posts.map(p=>{const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};const isMine=me&&me.nickname===p.guest_nickname;return`<div class="card post-card" onclick="showDetail(${p.id})"><div class="post-header"><div class="post-pavatar">${pAv(p.guest_nickname||'')}</div><div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">· 我</small>':''}</div><div class="post-time">${ago(p.created_at)} · ${c.icon}${c.name}</div></div>${isAdmin||isMine?`<button onclick="event.stopPropagation();delPost(${p.id})" style="float:right;background:none;border:none;font-size:18px;cursor:pointer">🗑</button>`:''}</div><div class="post-title">${p.is_pinned?'📌 ':''}${esc(p.title||'无标题')}</div><div class="post-preview">${esc(p.content||'')}</div>${p.image_url?`<img src="${p.image_url}" class="post-img" loading="lazy" onerror="this.style.display='none'">`:''}<div class="post-actions"><button class="react-btn ${isLiked(p.id)?'liked':''}" onclick="event.stopPropagation();toggleLike(${p.id})">❤️ ${p.likes||0}</button><span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}</div></div>`}).join('');
         if(hasMore)list.innerHTML+=`<div style="text-align:center;padding:20px"><button onclick="loadMore()" style="padding:12px 40px;background:var(--navy);color:#fff;border:none;border-radius:25px;font-size:16px;cursor:pointer">加载更多</button></div>`;
-    }catch(e){D('错误:'+e.message)}
+    }catch(e){clearTimeout(timeout);list.innerHTML=`<div style="text-align:center;padding:60px"><p>❌ 暂时无法读取</p><button class="retry-btn" onclick="loadPosts()">点击重试</button></div>`}
 }
 function loadMore(){page++;loadPosts(true)}
-
-function pAv(nick){
-    if(me&&me.nickname===nick&&me.avatar_emoji){
-        const av=me.avatar_emoji;
-        if(av.startsWith('data:'))return`<img src="${av}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`;
-        return av;
-    }return emoji(nick||'');
-}
+function isLiked(id){return me&&localStorage.getItem('f_like_'+me.nickname+'_'+id)}
+function pAv(nick){if(me&&me.nickname===nick&&me.avatar_emoji){const av=me.avatar_emoji;if(av.startsWith('data:'))return`<img src="${av}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`;return av}return emoji(nick||'')}
 
 // ==== NEW POST ====
-function showNewPost(){if(!me){doLogin();return}$('postModal').classList.add('active')}
+function showNewPost(){if(!requireLogin())return;$('postModal').classList.add('active');const draft=localStorage.getItem('f_draft');if(draft){try{const d=JSON.parse(draft);$('postTitle').value=d.title||'';$('postContent').value=d.content||''}catch(e){}}}
+function saveDraft(){const d={title:$('postTitle').value,content:$('postContent').value};if(d.title||d.content)localStorage.setItem('f_draft',JSON.stringify(d))}
+setInterval(saveDraft,5000);$('postTitle').addEventListener('input',saveDraft);$('postContent').addEventListener('input',saveDraft);
+
 async function submitPost(){
+    if(submitting)return;const btn=$('postSubmitBtn');
     const d={category_id:parseInt($('postCat').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
-    if(!d.title||!d.content){toast('请填写标题和内容');return}
-    closeM('postModal');toast('📨 发送中...');
-    // Image
-    const f=$('postImage').files[0];let img=null;
+    if(!d.title&&!d.content&&!$('postImage').files[0]){toast('请至少填写标题、内容或上传图片');return}
+    submitting=true;btn.disabled=true;btn.textContent='正在发布...';closeM('postModal');toast('📨 发布中...');
+    let img=null;const f=$('postImage').files[0];
     if(f){try{const sb=getSB();if(sb){const n=Date.now()+'.jpg';await sb.storage.from('posts').upload(n,f,{contentType:'image/jpeg',upsert:true});img=sb.storage.from('posts').getPublicUrl(n).data.publicUrl}}catch(e){}}
-    try{
-        await api('/posts',{method:'POST',body:JSON.stringify({...d,image_url:img}),headers:{...H,Prefer:'return=minimal'}});
-        me.points=(me.points||0)+2;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-        toast(['🎉 发布成功！','✨ 已发布','👏 感谢分享'][Math.floor(Math.random()*3)]);
+    try{const res=await api('/posts',{method:'POST',body:JSON.stringify({...d,image_url:img,allow_comments:$('allowComments').checked}),headers:{...H,Prefer:'return=representation'}});
+        me.total_posts=(me.total_posts||0)+1;addPoints(2,'post','发布帖子');checkAwards();
+        toast('🎉 发布成功，大家现在可以看到您的内容了。');
         $('postTitle').value='';$('postContent').value='';$('postImage').value='';loadPosts();loadHot();loadLB();
-    }catch(e){toast('❌ 失败')}
+        if(res&&res.length)setTimeout(()=>showDetail(res[0].id),500);
+    }catch(e){toast('❌ 发布失败，草稿已保存')}
+    submitting=false;btn.disabled=false;btn.textContent='发布';
 }
 
 // ==== LIKE ====
-async function likePost(id){
-    if(!me){toast('请先登录');return}
-    const key='f_like_'+me.nickname+'_'+id;
-    if(localStorage.getItem(key)){toast('已经点过赞了 ❤️');return}
-    localStorage.setItem(key,'1');
-    const p=posts.find(x=>x.id===id);if(!p)return;
-    p.likes=(p.likes||0)+1;
-    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}
-    // Update card inline without full reload
+function toggleLike(id){if(!requireLogin())return;const key='f_like_'+me.nickname+'_'+id;const p=posts.find(x=>x.id===id);if(!p)return;
+    if(localStorage.getItem(key)){localStorage.removeItem(key);p.likes=Math.max(0,(p.likes||0)-1);try{api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}}
+    else{localStorage.setItem(key,'1');p.likes=(p.likes||0)+1;try{api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}
+        // Track likes received for post author
+        if(p.guest_nickname&&me.nickname!==p.guest_nickname){const authorKey='f_likes_received_'+p.guest_nickname;const count=parseInt(localStorage.getItem(authorKey)||'0')+1;localStorage.setItem(authorKey,count)}}
     updatePostCard(id);
 }
 
 // ==== DETAIL ====
 async function showDetail(id){
-    const p=posts.find(x=>x.id===id);if(!p)return;
-    p.views=(p.views||0)+1;
-    api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});
-    updatePostCard(id); // Real-time view update
-    const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
-    const isMine=me&&me.nickname===p.guest_nickname;
+    const p=posts.find(x=>x.id===id);if(!p)return;p.views=(p.views||0)+1;api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});updatePostCard(id);
+    const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};const isMine=me&&me.nickname===p.guest_nickname;
     let rh='<p style="color:var(--gray)">暂无回复</p>';
-    try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid #f0f0f0"><div style="font-weight:600;font-size:15px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:16px">${esc(x.content)}</div></div>`).join('')}catch(e){}
+    try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid #f0f0f0"><div style="font-weight:600;font-size:15px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:16px">${esc(x.content)}</div><button onclick="replyTo('${x.guest_nickname||'匿名'}')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px">↩ 回复</button></div>`).join('')}catch(e){}
     $('detailContent').innerHTML=`<button class="modal-close" onclick="closeM('detailModal')">✕</button>
         ${isAdmin?`<button onclick="togglePin(${id})" style="float:right;margin-right:40px;background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600">📌 ${p.is_pinned?'取消置顶':'置顶'}</button>`:''}
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">${pAv(p.guest_nickname||'')}</div><div><div style="font-weight:600;font-size:18px">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">· 我的</small>':''}</div><div style="font-size:13px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name} · 👁 ${p.views}</div></div></div>
-        <h2 style="font-size:22px;margin-bottom:12px">${esc(p.title)}</h2>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">${pAv(p.guest_nickname||'')}</div><div><div style="font-weight:600;font-size:18px">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">· 我</small>':''}</div><div style="font-size:13px;color:var(--gray)">${ago(p.created_at)} · ${c.icon}${c.name} · 👁${p.views}</div></div></div>
+        <h2 style="font-size:22px;margin-bottom:12px">${esc(p.title||'无标题')}</h2>
         ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
-        <div style="font-size:17px;line-height:1.9;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
-        ${isMine?`<button onclick="editPost(${id})" style="padding:8px 18px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:15px;margin-bottom:12px">✏️ 编辑</button>`:''}
-        <div style="display:flex;gap:6px;margin-bottom:16px">
-            <button onclick="sharePost(${id})" style="padding:6px 14px;border:1px solid var(--warm);border-radius:15px;background:#fff;cursor:pointer;font-size:13px">🔗 分享</button>
-            ${p.category_id===3?`<button onclick="rsvpPost(${id})" style="padding:6px 14px;border:1px solid var(--green);border-radius:15px;background:rgba(107,142,107,0.1);color:var(--green);cursor:pointer;font-size:13px;font-weight:600">✅ 我要参加</button>`:''}
+        <div style="font-size:17px;line-height:1.9;margin-bottom:20px;white-space:pre-wrap">${esc(p.content||'')}</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <button class="react-btn ${isLiked(id)?'liked':''}" onclick="toggleLike(${id})">❤️ ${p.likes||0}</button>
+            <button onclick="quickReply(${id},'🌹')" style="font-size:24px;background:none;border:none;cursor:pointer;padding:2px 6px" title="送花">🌹</button>
+            <button onclick="quickReply(${id},'👏')" style="font-size:24px;background:none;border:none;cursor:pointer;padding:2px 6px" title="鼓掌">👏</button>
+            <button onclick="quickReply(${id},'😊')" style="font-size:24px;background:none;border:none;cursor:pointer;padding:2px 6px" title="微笑">😊</button>
+            <button onclick="quickReply(${id},'🙏')" style="font-size:24px;background:none;border:none;cursor:pointer;padding:2px 6px" title="感谢">🙏</button>
+            <button onclick="sharePost(${id})" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer">🔗 分享</button>
+            ${!isMine?`<button onclick="reportPost(${id})" style="font-size:11px;background:none;border:none;color:var(--gray);cursor:pointer">🚩 举报</button>`:''}
         </div>
+        ${isMine?`<button onclick="editPost(${id})" style="padding:6px 14px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:14px;margin-bottom:12px">✏️ 编辑</button>`:''}
         <h3 style="font-size:18px;margin-bottom:12px">回复 (${p.reply_count||0})</h3>${rh}
         <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:12px;border:2px solid var(--warm);border-radius:12px;font-size:16px"><button onclick="submitReply(${id})" style="padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer">回复</button></div>
-        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-            <span onclick="quickReply(${id},'❤️')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="爱心">❤️</span>
-            <span onclick="quickReply(${id},'🌹')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="玫瑰">🌹</span>
-            <span onclick="quickReply(${id},'👏')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(243,156,18,0.08)" title="鼓掌">👏</span>
-            <span onclick="quickReply(${id},'🙏')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(46,204,113,0.08)" title="感谢">🙏</span>
-            <span onclick="quickReply(${id},'🥰')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(231,76,60,0.08)" title="喜欢">🥰</span>
-            <span onclick="quickReply(${id},'😊')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(52,152,219,0.08)" title="微笑">😊</span>
-            <span onclick="quickReply(${id},'😂')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(241,196,15,0.08)" title="大笑">😂</span>
-            <span onclick="quickReply(${id},'🎉')" style="font-size:28px;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(155,89,182,0.08)" title="庆祝">🎉</span>
-        </div>
-        <p style="font-size:12px;color:var(--gray);margin-top:4px">👆 点表情快捷回复，无需打字</p>`;
+        <p style="font-size:11px;color:var(--gray);margin-top:4px">👆 点🌹👏😊🙏快捷回复，无需打字</p>`;
     $('detailModal').classList.add('active');
 }
+function replyTo(name){const inp=$('replyInput');if(inp)inp.value='回复 @'+name+'：';inp.focus()}
+async function quickReply(pid,emoji){closeM('detailModal');toast(emoji+' 已发送！');await doReply(pid,emoji)}
+async function submitReply(pid){const c=$('replyInput').value.trim();if(!c)return;closeM('detailModal');toast('📨 发送中...');await doReply(pid,c)}
+async function doReply(pid,content){try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});me.total_replies=(me.total_replies||0)+1;addPoints(1,'reply','回复帖子');checkAwards();const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid)}setTimeout(loadHot,1000)}catch(e){toast('❌ 失败')}}
+function updatePostCard(id){const p=posts.find(x=>x.id===id);if(!p)return;document.querySelectorAll('.post-card').forEach(card=>{const h3=card.querySelector('.post-title');if(h3&&h3.textContent.includes(p.title||'')){const actions=card.querySelector('.post-actions');if(actions)actions.innerHTML=`<button class="react-btn ${isLiked(id)?'liked':''}" onclick="event.stopPropagation();toggleLike(${id})">❤️ ${p.likes||0}</button><span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}`}})}
+async function editPost(id){const p=posts.find(x=>x.id===id);const nc=prompt('编辑：',p?p.content:'');if(!nc)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:nc}),headers:{...H,Prefer:'return=minimal'}});toast('✅ 已更新');p.content=nc;showDetail(id)}catch(e){toast('❌')}}
+async function togglePin(id){const p=posts.find(x=>x.id===id);if(!p)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});toast(p.is_pinned?'取消置顶':'已置顶');showDetail(id)}catch(e){}}
+async function delPost(id){if(!confirm('删除？'))return;try{await fetch(API+'/replies?post_id=eq.'+id,{method:'DELETE',headers:H});await fetch(API+'/posts?id=eq.'+id,{method:'DELETE',headers:H});toast('🗑 已删除');loadPosts()}catch(e){toast('❌')}}
+function sharePost(id){const url=location.origin+location.pathname+'#'+id;if(navigator.clipboard){navigator.clipboard.writeText(url);toast('🔗 链接已复制！')}else prompt('复制链接：',url)}
+function reportPost(id){toast('🚩 已举报')}
 
-async function submitReply(pid){
-    const c=$('replyInput').value.trim();if(!c)return;
-    closeM('detailModal');toast('📨 发送中...');
-    await doReply(pid,c);
-}
+// ==== HOT & LB ====
+async function loadHot(){try{const data=await api('/posts?select=*&order=reply_count.desc&limit=5');$('hotPosts').innerHTML=data.length?data.map((p,i)=>`<div class="post-card" onclick="showDetail(${p.id})" style="padding:12px"><span style="font-size:18px;font-weight:900;color:${['#E74C3C','#E67E22','#F39C12'][i]||'var(--gray)'}">${['🥇','🥈','🥉'][i]||i+1}</span> ${esc(p.title||'无标题')} <span style="font-size:13px;color:var(--gray)">💬${p.reply_count||0}</span></div>`).join(''):'<p style="color:var(--gray)">暂无热门讨论</p>'}catch(e){$('hotPosts').innerHTML='<button class="retry-btn" onclick="loadHot()">点击重试</button>'}}
+async function loadLB(){try{const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=200');const counts={};data.forEach(p=>{if(p.guest_nickname)counts[p.guest_nickname]=(counts[p.guest_nickname]||0)+1});const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);$('leaderboard').innerHTML=sorted.length?sorted.map(([n,c],i)=>`<div style="padding:6px 0;font-size:16px"><span style="font-size:20px">${emoji(n)}</span> ${n} <span style="color:var(--gray);font-size:14px">${c}篇发言</span></div>`).join(''):'<p style="color:var(--gray)">暂无数据</p>'}catch(e){$('leaderboard').innerHTML='<button class="retry-btn" onclick="loadLB()">点击重试</button>'}}
 
-async function quickReply(pid,emoji){
-    closeM('detailModal');toast(emoji+' 已发送！');
-    await doReply(pid,emoji);
-}
+// ==== BIRTHDAY ====
+function setBirthday(){selectedBirthMonth=null;$('birthSelected').textContent='请点击选择';let html='';for(let i=1;i<=12;i++)html+=`<div id="bm${i}" onclick="pickBirth(${i})" style="padding:18px;border-radius:14px;background:var(--warm);font-size:20px;font-weight:700;cursor:pointer">${i}月</div>`;$('birthGrid').innerHTML=html;$('birthModal').classList.add('active')}
+function pickBirth(m){selectedBirthMonth=m;$('birthSelected').textContent='已选：'+m+'月 🎂';for(let i=1;i<=12;i++){const el=$('bm'+i);if(el){el.style.background=i===m?'var(--gold)':'var(--warm)';el.style.color=i===m?'#fff':''}}}
+function confirmBirth(){if(!selectedBirthMonth){toast('请先选择');return}localStorage.setItem('f_birth_'+me.nickname,selectedBirthMonth);closeM('birthModal');toast('🎂 已设置：'+selectedBirthMonth+'月');loadBirthdays()}
+function loadBirthdays(){const m=new Date().getMonth()+1;const bdays=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_birth_')&&parseInt(localStorage.getItem(k))===m)bdays.push(k.replace('f_birth_',''))}if(bdays.length){$('birthdayCard').style.display='block';$('birthdayList').innerHTML='<p>🎉 祝以下同学生日快乐：</p>'+bdays.map(n=>'🌹 '+n).join('<br>')}}
 
-async function doReply(pid,content){
-    try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
-        me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-        const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid)}
-        // Also refresh hot list silently
-        setTimeout(loadHot,1000);
-    }catch(e){toast('❌ 失败')}
+// ==== POINTS SYSTEM ====
+function addPoints(amount,type,reason){
+    if(!me||!me.nickname)return;
+    me.points=(me.points||0)+amount;
+    localStorage.setItem('f_user',JSON.stringify(me));
+    // Point log
+    const log=JSON.parse(localStorage.getItem('f_pointlog_'+me.nickname)||'[]');
+    log.push({amount,type,reason,time:new Date().toISOString()});
+    if(log.length>100)log.shift();
+    localStorage.setItem('f_pointlog_'+me.nickname,JSON.stringify(log));
+    updateMe();
 }
+function deductPoints(amount,reason){
+    if(!me||!me.nickname)return;
+    me.points=Math.max(0,(me.points||0)-amount);
+    localStorage.setItem('f_user',JSON.stringify(me));updateMe();
+}
+function getLevel(pts){if(pts>=1000)return{name:'🏅 荣誉同学',lvl:5};if(pts>=500)return{name:'⭐ 校园达人',lvl:4};if(pts>=200)return{name:'🌳 热心同学',lvl:3};if(pts>=50)return{name:'🌿 活跃同学',lvl:2};return{name:'🌱 新同学',lvl:1}}
 
-// Update a single post card without full page reload
-function updatePostCard(id){
-    const p=posts.find(x=>x.id===id);if(!p)return;
-    const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
-    const isMine=me&&me.nickname===p.guest_nickname;
-    // Find the card in DOM and update just the stats
-    const cards=document.querySelectorAll('.post-card');
-    cards.forEach(card=>{
-        const h3=card.querySelector('.post-title');
-        if(h3&&h3.textContent.includes(p.title)){
-            const actions=card.querySelector('.post-actions');
-            if(actions){
-                actions.innerHTML=`<button class="react-btn" onclick="event.stopPropagation();likePost(${p.id})">❤️ ${p.likes||0}</button>
-                    <span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>
-                    ${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}`;
-            }
-        }
-    });
-}
-
-async function editPost(id){
-    const p=posts.find(x=>x.id===id);const nc=prompt('编辑：',p?p.content:'');
-    if(!nc)return;
-    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:nc}),headers:{...H,Prefer:'return=minimal'}});toast('✅ 已更新');showDetail(id);loadPosts()}catch(e){toast('❌ 失败')}
-}
-async function togglePin(id){
-    const p=posts.find(x=>x.id===id);if(!p)return;
-    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});toast(p.is_pinned?'取消置顶':'已置顶');showDetail(id);loadPosts()}catch(e){}
-}
-async function delPost(id){
-    if(!confirm('删除？'))return;
-    try{await fetch(API+'/replies?post_id=eq.'+id,{method:'DELETE',headers:H});await fetch(API+'/posts?id=eq.'+id,{method:'DELETE',headers:H});toast('🗑 已删除');loadPosts()}catch(e){toast('❌')}
+// ==== ROLES ====
+function getRole(){
+    if(!me)return'游客';
+    if(isAdmin)return'👑 管理员';
+    if(me.role==='teacher')return'👩‍🏫 老师';
+    if(me.role==='volunteer')return'⭐ 志愿者';
+    if(me.login_type==='google')return'🎓 注册学员';
+    return'🎓 注册学员';
 }
 
-function sharePost(id){
-    const url=location.origin+'/forum/v3.html#'+id;
-    if(navigator.clipboard){navigator.clipboard.writeText(url);toast('🔗 链接已复制！发给朋友吧')}
-    else{prompt('复制链接分享：',url)}
-}
-function rsvpPost(id){
-    if(!me){doLogin();return}
-    const key='f_rsvp_'+me.nickname+'_'+id;
-    if(localStorage.getItem(key)){toast('你已经报过名了 ✅');return}
-    localStorage.setItem(key,'1');
-    me.points=(me.points||0)+5;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-    toast('✅ 报名成功！+5分');
-}
-
-// ==== BIRTHDAY & ACHIEVEMENTS ====
-function loadBirthdays(){
-    const now=new Date();const m=now.getMonth()+1;
-    const bdays=[];let myBm=null;
-    for(let i=0;i<localStorage.length;i++){
-        const k=localStorage.key(i);
-        if(k&&k.startsWith('f_birth_')){const v=localStorage.getItem(k);if(parseInt(v)===m)bdays.push(k.replace('f_birth_',''))}
-    }
-    if(me){myBm=localStorage.getItem('f_birth_'+me.nickname)}
-    if(bdays.length){
-        $('birthdayCard').style.display='block';
-        $('birthdayList').innerHTML='<p style="margin-bottom:8px">🎉 祝以下同学生日快乐：</p>'+bdays.map(n=>'🌹 '+n).join('<br>');
-    }
-    if(!myBm&&me){
-        // Prompt to set birthday
-    }
-}
-
-let selectedBirthMonth=null;
-
-function setBirthday(){
-    selectedBirthMonth=null;
-    $('birthSelected').textContent='请点击选择';
-    let html='';
-    for(let i=1;i<=12;i++){
-        html+=`<div id="bm${i}" onclick="pickBirth(${i})" style="padding:18px;border-radius:14px;background:var(--warm);font-size:20px;font-weight:700;cursor:pointer">${i}月</div>`;
-    }
-    $('birthGrid').innerHTML=html;
-    $('birthModal').classList.add('active');
-}
-function pickBirth(m){
-    selectedBirthMonth=m;
-    $('birthSelected').textContent='已选：'+m+'月 🎂';
-    // Highlight selected
-    for(let i=1;i<=12;i++){
-        const el=$('bm'+i);if(el)el.style.background=i===m?'var(--gold)':'var(--warm)';
-        if(el)el.style.color=i===m?'#fff':'';
-    }
-}
-function confirmBirth(){
-    if(!selectedBirthMonth){toast('请先选择一个月份');return}
-    localStorage.setItem('f_birth_'+me.nickname,selectedBirthMonth);
-    closeM('birthModal');
-    toast('🎂 生日已设置：'+selectedBirthMonth+'月');
-    loadBirthdays();
-}
+// ==== ACHIEVEMENTS ====
+const ALL_AWARDS=[
+    {id:'first_login',name:'初来报到',icon:'👋',desc:'第一次登录',check:()=>me&&me.points>=0},
+    {id:'first_post',name:'第一次发言',icon:'✏️',desc:'发布第一篇帖子',check:()=>(me?.total_posts||0)>=1},
+    {id:'streak_7',name:'坚持一周',icon:'🔥',desc:'连续签到7天',check:()=>parseInt(localStorage.getItem('f_checkin_streak_'+me?.nickname)||0)>=7},
+    {id:'streak_30',name:'月度坚持',icon:'💪',desc:'连续签到30天',check:()=>parseInt(localStorage.getItem('f_checkin_streak_'+me?.nickname)||0)>=30},
+    {id:'helper_20',name:'热心回复',icon:'💛',desc:'有效回复20次',check:()=>(me?.total_replies||0)>=20},
+    {id:'liked_100',name:'百次鼓掌',icon:'👏',desc:'收到100次点赞',check:()=>(me?.total_likes_received||0)>=100},
+    {id:'points_50',name:'活跃新星',icon:'🌟',desc:'累计50积分',check:()=>(me?.points||0)>=50},
+    {id:'points_200',name:'校园常青',icon:'🌳',desc:'累计200积分',check:()=>(me?.points||0)>=200},
+];
 
 function getAchievements(){
-    const a=[];
-    const pts=me?.points||0;
-    if(pts>=10)a.push('🌱');if(pts>=100)a.push('🌿');if(pts>=300)a.push('🌳');if(pts>=800)a.push('🏅');
-    const streak=parseInt(localStorage.getItem('f_checkin_streak_'+me?.nickname)||'0');
-    if(streak>=7)a.push('🏅7天');
-    if(streak>=30)a.push('👑30天');
-    return a;
+    const earned=JSON.parse(localStorage.getItem('f_awards_'+me?.nickname)||'[]');
+    return earned;
+}
+function checkAwards(){
+    if(!me||!me.nickname)return;
+    const earned=getAchievements();
+    let newAward=null;
+    ALL_AWARDS.forEach(a=>{
+        if(!earned.find(e=>e.id===a.id)&&a.check()){
+            earned.push({id:a.id,name:a.name,icon:a.icon,time:new Date().toISOString()});
+            newAward=a;
+        }
+    });
+    if(newAward){
+        localStorage.setItem('f_awards_'+me.nickname,JSON.stringify(earned));
+        toast('🎉 恭喜您获得"'+newAward.name+'"奖牌！');
+        updateMe();
+    }
+}
+
+function updateMe(){
+    if(me){
+        const av=me.avatar_emoji||emoji(me.nickname);
+        if(av.startsWith('data:'))$('uAvatar').innerHTML=`<img src="${av}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`;else $('uAvatar').textContent=av;
+        $('uName').textContent=me.nickname+(isAdmin?' 👑':'');
+        const lv=getLevel(me.points||0);const role=getRole();
+        $('uLevel').textContent=role+' · '+lv.name;
+        const awards=getAchievements();
+        if(awards.length)$('uLevel').textContent+=' 🏅×'+awards.length;
+        $('loginBtn').textContent='退出';$('loginBtn').onclick=logout;$('loginBtn').className='btn-sm';
+    }else{$('uAvatar').textContent='🐼';$('uName').textContent='游客';$('uLevel').textContent='';$('loginBtn').textContent='登录';$('loginBtn').onclick=doLogin;$('loginBtn').className='btn-sm guest'}
 }
 
 // ==== INIT ====
 (async function(){
     const s=localStorage.getItem('f_user');if(s){me=JSON.parse(s);checkAdmin();updateMe()}
-    // Only do Google check if not already logged in with saved profile
-    if(!me || me.login_type !== 'google') await checkGoogle();
-    if(!me) await checkGoogle(); // Fallback for first-time Google login
+    if(!me||me.login_type!=='google')await checkGoogle();if(!me)await checkGoogle();
     await loadCats();
     await Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays()]);
 })();
