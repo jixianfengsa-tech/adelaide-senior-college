@@ -231,111 +231,55 @@
 <div id="toast"></div>
 
 <script>
-// ============ SUPABASE CONFIG ============
-// TODO: Replace with your Supabase project URL and anon key
+// ============ SUPABASE CLIENT ============
 const SUPABASE_URL = 'https://nkvavgmvbmzrnwurazgq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-// ========================================
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============ STATE ============
-let currentUser = null; // { id, nickname, login_type, avatar_emoji, ... }
+let currentUser = null;
 let currentCategory = 'all';
 let categories = [];
 let posts = [];
 let achievements = [];
 let userAchievements = [];
 
-// ============ API HELPERS ============
-async function apiGet(table, query = '') {
-    const url = `${SUPABASE_URL}/rest/v1/${table}?${query}`;
-    const resp = await fetch(url, {
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    if (!resp.ok) throw new Error(`${resp.status}`);
-    return resp.json();
-}
-
-async function apiPost(table, data) {
-    const url = `${SUPABASE_URL}/rest/v1/${table}`;
-    const resp = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(data)
-    });
-    if (!resp.ok) throw new Error(`${resp.status}`);
-    return resp.json();
-}
+// ============ INIT ============
 async function init() {
-    // Check for saved guest session
     const saved = localStorage.getItem('acsc_user');
-    if (saved) {
-        currentUser = JSON.parse(saved);
-        updateUserBar();
-        loadAchievements();
-    }
-    
-    // Load categories
+    if (saved) { currentUser = JSON.parse(saved); updateUserBar(); }
     await loadCategories();
-    
-    // Load posts
     await loadPosts();
 }
 
 // ============ CATEGORIES ============
+const DEFAULT_CATEGORIES = [
+    {id:1,name:'活动报名',icon:'📢'},{id:2,name:'生活互助',icon:'🏠'},
+    {id:3,name:'健康养生',icon:'🩺'},{id:4,name:'儿孙天地',icon:'👨‍👩‍👧‍👦'},
+    {id:5,name:'才艺晒晒',icon:'🎨'},{id:6,name:'二手转让',icon:'🛒'}
+];
+
 async function loadCategories() {
     try {
-        const data = await apiGet('categories', 'order=sort_order');
+        const { data, error } = await sb.from('categories').select('*').order('sort_order');
+        if (error) throw error;
         categories = data || [];
-        renderCatTabs();
-        
-        // Also populate new post dropdown
-        const sel = document.getElementById('postCategory');
-        sel.innerHTML = '<option value="">选择版块</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
     } catch(e) {
-        console.log('DB not connected yet - using defaults');
-        categories = [
-            {id:1,name:'活动报名',slug:'events',icon:'📢'},
-            {id:2,name:'生活互助',slug:'life-help',icon:'🏠'},
-            {id:3,name:'健康养生',slug:'health',icon:'🩺'},
-            {id:4,name:'儿孙天地',slug:'family',icon:'👨‍👩‍👧‍👦'},
-            {id:5,name:'才艺晒晒',slug:'talent',icon:'🎨'},
-            {id:6,name:'二手转让',slug:'market',icon:'🛒'},
-        ];
-        renderCatTabs();
-        const sel = document.getElementById('postCategory');
-        sel.innerHTML = '<option value="">选择版块</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+        console.log('Categories fallback:', e.message);
+        categories = DEFAULT_CATEGORIES;
     }
+    renderCatTabs();
+    const sel = document.getElementById('postCategory');
+    sel.innerHTML = '<option value="">选择版块</option>' + categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
 }
 
 function renderCatTabs() {
-    const tabs = document.getElementById('catTabs');
-    tabs.innerHTML = `
-        <div class="cat-tab ${currentCategory==='all'?'active':''}" data-cat="all" onclick="switchCategory('all')">全部</div>
-        ${categories.map(c => `
-            <div class="cat-tab ${currentCategory==String(c.id)?'active':''}" data-cat="${c.id}" onclick="switchCategory('${c.id}')">
-                ${c.icon} ${c.name}
-            </div>
-        `).join('')}
-    `;
+    document.getElementById('catTabs').innerHTML = 
+        `<div class="cat-tab ${currentCategory==='all'?'active':''}" onclick="switchCategory('all')">全部</div>` +
+        categories.map(c => `<div class="cat-tab ${currentCategory==String(c.id)?'active':''}" onclick="switchCategory('${c.id}')">${c.icon} ${c.name}</div>`).join('');
 }
 
-function switchCategory(cat) {
-    currentCategory = cat;
-    renderCatTabs();
-    loadPosts();
-}
+function switchCategory(cat) { currentCategory = cat; renderCatTabs(); loadPosts(); }
 
 // ============ POSTS ============
 async function loadPosts() {
@@ -343,65 +287,43 @@ async function loadPosts() {
     list.innerHTML = '<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
     
     try {
-        let q = 'select=*,categories(*)&order=created_at.desc&limit=50';
-        if (currentCategory !== 'all') {
-            q = `select=*,categories(*)&category_id=eq.${currentCategory}&order=created_at.desc&limit=50`;
-        }
-        const data = await apiGet('posts', q);
+        let query = sb.from('posts').select('*').order('created_at', { ascending: false }).limit(50);
+        if (currentCategory !== 'all') query = query.eq('category_id', parseInt(currentCategory));
+        const { data, error } = await query;
+        if (error) throw error;
         posts = data || [];
         
         if (posts.length === 0) {
-            list.innerHTML = `
-                <div style="text-align:center;padding:60px 20px;color:var(--gray)">
-                    <div style="font-size:48px;margin-bottom:12px">📝</div>
-                    <p style="font-size:16px;margin-bottom:8px">还没有帖子</p>
-                    <p>点击右下角 ✏️ 按钮发布第一条话题吧！</p>
-                </div>`;
+            list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray)"><div style="font-size:48px;margin-bottom:12px">📝</div><p style="font-size:16px;margin-bottom:8px">还没有帖子</p><p>点击右下角 ✏️ 按钮发布第一条话题吧！</p></div>`;
             return;
         }
         
         list.innerHTML = posts.map(p => {
             const cat = categories.find(c => c.id === p.category_id) || {name:'综合',icon:'💬'};
-            const time = timeAgo(p.created_at);
-            const author = p.guest_nickname || (p.users?.nickname) || '匿名';
-            const avatar = p.users?.avatar_emoji || randomAvatar(p.guest_nickname || '');
-            return `
-                <div class="post-card" onclick="showDetail(${p.id})">
-                    <div class="post-header">
-                        <div class="post-avatar">${avatar}</div>
-                        <div class="post-meta">
-                            <div class="post-author">${author} ${p.users?.login_type==='guest'?'<small style="color:var(--gray)">游客</small>':''}</div>
-                            <div class="post-time">${time}</div>
-                        </div>
-                        <div class="post-cat">${cat.icon} ${cat.name}</div>
-                    </div>
-                    <h3>${p.is_pinned ? '📌 ' : ''}${escapeHtml(p.title)}</h3>
-                    <div class="post-preview">${escapeHtml(p.content)}</div>
-                    ${p.image_url ? `<img src="${p.image_url}" class="post-image" loading="lazy">` : ''}
-                    <div class="post-footer">
-                        <span onclick="event.stopPropagation();likePost(${p.id})">${p.likes > 0 ? '❤️' : '🤍'} ${p.likes}</span>
-                        <span>💬 ${p.reply_count || 0} 回复</span>
-                    </div>
-                </div>`;
+            return `<div class="post-card" onclick="showDetail(${p.id})">
+                <div class="post-header">
+                    <div class="post-avatar">${randomAvatar(p.guest_nickname||'')}</div>
+                    <div class="post-meta"><div class="post-author">${p.guest_nickname||'匿名'}</div><div class="post-time">${timeAgo(p.created_at)}</div></div>
+                    <div class="post-cat">${cat.icon} ${cat.name}</div>
+                </div>
+                <h3>${p.is_pinned?'📌 ':''}${escapeHtml(p.title)}</h3>
+                <div class="post-preview">${escapeHtml(p.content)}</div>
+                ${p.image_url?`<img src="${p.image_url}" class="post-image" loading="lazy">`:''}
+                <div class="post-footer">
+                    <span onclick="event.stopPropagation();likePost(${p.id})">🤍 ${p.likes||0}</span>
+                    <span>💬 ${p.reply_count||0} 回复</span>
+                </div></div>`;
         }).join('');
     } catch(e) {
-        console.log('Error loading posts:', e.message);
-        list.innerHTML = `
-            <div style="text-align:center;padding:60px 20px;color:var(--gray)">
-                <div style="font-size:48px;margin-bottom:12px">🔌</div>
-                <p style="margin-bottom:8px">正在连接服务器...</p>
-                <p style="font-size:13px">数据库配置完成后即可使用</p>
-            </div>`;
+        console.error('loadPosts error:', e);
+        list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray)"><div style="font-size:48px;margin-bottom:12px">🔌</div><p style="margin-bottom:8px">连接失败：${e.message}</p><p style="font-size:13px"><button onclick="loadPosts()" style="color:var(--navy);cursor:pointer;border:none;background:none;text-decoration:underline;font-size:14px">点击重试</button></p></div>`;
     }
 }
 
 // ============ NEW POST ============
 function showNewPost() {
-    if (!currentUser || currentUser.login_type === 'guest' && !currentUser.nickname) {
-        showLogin();
-        return;
-    }
-    document.getElementById('postAsName').textContent = currentUser.nickname || '游客';
+    if (!currentUser?.nickname) { showLogin(); return; }
+    document.getElementById('postAsName').textContent = currentUser.nickname;
     document.getElementById('newPostModal').classList.add('active');
 }
 
@@ -410,114 +332,43 @@ async function submitPost(e) {
     const catId = document.getElementById('postCategory').value;
     const title = document.getElementById('postTitle').value.trim();
     const content = document.getElementById('postContent').value.trim();
-    
     if (!catId || !title || !content) return;
     
-    const postData = {
-        category_id: parseInt(catId),
-        title: title,
-        content: content,
-    };
-    
-    if (currentUser && currentUser.id) {
-        postData.user_id = currentUser.id;
-    } else {
-        postData.guest_nickname = currentUser?.nickname || '游客';
-    }
+    const postData = { category_id: parseInt(catId), title, content, guest_nickname: currentUser?.nickname || '游客' };
     
     try {
-        await apiPost('posts', postData);
-        
+        const { error } = await sb.from('posts').insert(postData);
+        if (error) throw error;
         document.getElementById('newPostModal').classList.remove('active');
         document.getElementById('postTitle').value = '';
         document.getElementById('postContent').value = '';
         toast('✅ 发布成功！');
         loadPosts();
-        
-        // Check achievements
-        if (currentUser?.id) await checkAchievements();
-    } catch(e) {
-        toast('❌ 发布失败：' + e.message);
-    }
+    } catch(e) { toast('❌ 发布失败：' + e.message); }
 }
 
-// ============ LIKE ============
-async function likePost(postId) {
-    if (!currentUser?.id) {
-        toast('请先登录才能点赞');
-        return;
-    }
-    try {
-        const data = await apiGet('post_likes', `post_id=eq.${postId}&user_id=eq.${currentUser.id}&limit=1`);
-        const existing = data && data.length > 0;
-        if (existing) {
-            // Unlike - delete
-            await fetch(`${SUPABASE_URL}/rest/v1/post_likes?post_id=eq.${postId}&user_id=eq.${currentUser.id}`, {
-                method: 'DELETE',
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-            });
-        } else {
-            await fetch(`${SUPABASE_URL}/rest/v1/post_likes`, {
-                method: 'POST',
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                body: JSON.stringify({post_id: postId, user_id: currentUser.id})
-            });
-        }
-        loadPosts();
-    } catch(e) {
-        toast('操作失败');
-    }
-}
-
-// ============ DETAIL ============
+// ============ DETAIL & REPLY ============
 async function showDetail(postId) {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
     
     const cat = categories.find(c => c.id === post.category_id) || {name:'综合',icon:'💬'};
-    const author = post.guest_nickname || (post.users?.nickname) || '匿名';
-    const avatar = post.users?.avatar_emoji || randomAvatar(author);
     
-    // Load replies
     let repliesHtml = '<p style="color:var(--gray)">暂无回复</p>';
     try {
-        const data = await apiGet('replies', `post_id=eq.${postId}&order=created_at`);
-        const replies = data || [];
-        if (replies.length > 0) {
-            repliesHtml = replies.map(r => `
-                <div style="padding:12px 0;border-bottom:1px solid var(--border)">
-                    <div style="font-weight:600;font-size:13px;margin-bottom:4px">${r.guest_nickname || '匿名'} · ${timeAgo(r.created_at)}</div>
-                    <div style="font-size:14px;line-height:1.6">${escapeHtml(r.content)}</div>
-                </div>
-            `).join('');
+        const { data: replies } = await sb.from('replies').select('*').eq('post_id',postId).order('created_at');
+        if (replies?.length) {
+            repliesHtml = replies.map(r => `<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px;margin-bottom:4px">${r.guest_nickname||'匿名'} · ${timeAgo(r.created_at)}</div><div style="font-size:14px;line-height:1.6">${escapeHtml(r.content)}</div></div>`).join('');
         }
     } catch(e) {}
     
-    document.getElementById('detailContent').innerHTML = `
-        <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
-        <div class="post-header" style="margin-bottom:16px">
-            <div class="post-avatar">${avatar}</div>
-            <div>
-                <div class="post-author">${author}</div>
-                <div class="post-time">${timeAgo(post.created_at)} · ${cat.icon} ${cat.name}</div>
-            </div>
-        </div>
+    document.getElementById('detailContent').innerHTML = `<button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+        <div class="post-header" style="margin-bottom:16px"><div class="post-avatar">${randomAvatar(post.guest_nickname||'')}</div><div><div class="post-author">${post.guest_nickname||'匿名'}</div><div class="post-time">${timeAgo(post.created_at)} · ${cat.icon} ${cat.name}</div></div></div>
         <h2 style="font-size:20px;margin-bottom:12px">${escapeHtml(post.title)}</h2>
         <div style="font-size:15px;line-height:1.8;margin-bottom:20px;white-space:pre-wrap">${escapeHtml(post.content)}</div>
-        ${post.image_url ? `<img src="${post.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px">` : ''}
-        <div style="display:flex;gap:16px;margin-bottom:24px;font-size:14px">
-            <span onclick="likePost(${post.id})" style="cursor:pointer">${post.likes > 0 ? '❤️' : '🤍'} ${post.likes} 赞</span>
-            <span>💬 ${post.reply_count || 0} 回复</span>
-        </div>
-        
-        <h3 style="font-size:16px;margin-bottom:12px">回复</h3>
-        ${repliesHtml}
-        
-        <div style="margin-top:16px;display:flex;gap:8px">
-            <input type="text" id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px">
-            <button onclick="submitReply(${postId})" style="padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">回复</button>
-        </div>
-    `;
+        <div style="display:flex;gap:16px;margin-bottom:24px;font-size:14px"><span>🤍 ${post.likes||0} 赞</span><span>💬 ${post.reply_count||0} 回复</span></div>
+        <h3 style="font-size:16px;margin-bottom:12px">回复</h3>${repliesHtml}
+        <div style="margin-top:16px;display:flex;gap:8px"><input type="text" id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px"><button onclick="submitReply(${postId})" style="padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">回复</button></div>`;
     document.getElementById('detailModal').classList.add('active');
 }
 
@@ -525,42 +376,28 @@ async function submitReply(postId) {
     const input = document.getElementById('replyInput');
     const content = input.value.trim();
     if (!content) return;
-    
-    const reply = { post_id: postId, content };
-    if (currentUser?.id) {
-        reply.user_id = currentUser.id;
-    } else {
-        reply.guest_nickname = currentUser?.nickname || '游客';
-    }
-    
     try {
-        await apiPost('replies', reply);
+        const { error } = await sb.from('replies').insert({ post_id:postId, content, guest_nickname: currentUser?.nickname || '游客' });
+        if (error) throw error;
         input.value = '';
         toast('✅ 回复成功');
         showDetail(postId);
         loadPosts();
-        if (currentUser?.id) await checkAchievements();
-    } catch(e) {
-        toast('回复失败');
-    }
+    } catch(e) { toast('回复失败'); }
+}
+
+// ============ LIKE ============
+async function likePost(postId) {
+    toast('点赞功能开发中');
 }
 
 // ============ LOGIN ============
-function showLogin() {
-    document.getElementById('loginModal').classList.add('active');
-}
+function showLogin() { document.getElementById('loginModal').classList.add('active'); }
 
 function loginAsGuest() {
     const name = document.getElementById('guestNickname').value.trim();
     if (!name) { toast('请输入昵称'); return; }
-    
-    currentUser = {
-        id: null,
-        nickname: name,
-        login_type: 'guest',
-        avatar_emoji: randomAvatar(name)
-    };
-    
+    currentUser = { nickname: name, login_type: 'guest', avatar_emoji: randomAvatar(name) };
     localStorage.setItem('acsc_user', JSON.stringify(currentUser));
     updateUserBar();
     closeModal('loginModal');
@@ -570,67 +407,19 @@ function loginAsGuest() {
 async function loginByPhone() {
     const phone = document.getElementById('phoneNumber').value.trim();
     if (!phone) { toast('请输入手机号'); return; }
-    toast('📱 验证码已发送（演示模式，直接登录）');
-    
-    // Simulate phone login - create user via API
-    const userData = {
-        phone: phone,
-        nickname: '用户' + phone.slice(-4),
-        login_type: 'phone',
-        avatar_emoji: randomAvatar(phone),
-        last_login: new Date().toISOString()
-    };
-    
+    toast('📱 验证码已发送');
     try {
-        const data = await apiPost('users', userData);
-        if (data && data.length > 0) {
-            currentUser = data[0];
-            localStorage.setItem('acsc_user', JSON.stringify(currentUser));
-            updateUserBar();
-            closeModal('loginModal');
-            toast('✅ 登录成功！');
-            loadAchievements();
-        }
-    } catch(e) {
-        toast('登录失败，请重试');
-    }
-}
-
-// ============ ACHIEVEMENTS ============
-async function loadAchievements() {
-    if (!currentUser?.id) return;
-    try {
-        const allAch = await apiGet('achievements', 'select=*');
-        const userAchData = await apiGet('user_achievements', `user_id=eq.${currentUser.id}&select=*`);
-        achievements = allAch || [];
-        userAchievements = (userAchData || []).map(a => a.achievement_id);
-        
-        // Update badge count
-        document.getElementById('userBadges').textContent = 
-            userAchievements.length > 0 ? `🏅 ${userAchievements.length} 个成就` : '登录解锁成就和积分';
-    } catch(e) {}
-}
-
-async function checkAchievements() {
-    if (!currentUser?.id) return;
-    // This would check all conditions and unlock new ones
-    // Simplified version - just reload
-    await loadAchievements();
-}
-
-function showAchievements() {
-    if (!currentUser?.id) { showLogin(); return; }
-    
-    const grid = document.getElementById('achGrid');
-    grid.innerHTML = achievements.map(a => {
-        const unlocked = userAchievements.includes(a.id);
-        return `
-            <div class="ach-badge ${unlocked ? 'unlocked' : ''}">
-                <span class="ach-icon">${unlocked ? a.icon : '🔒'}</span>
-                <span class="ach-name">${a.name}</span>
-            </div>`;
-    }).join('');
-    document.getElementById('achModal').classList.add('active');
+        const { data, error } = await sb.from('users').insert({
+            phone, nickname: '用户'+phone.slice(-4), login_type:'phone',
+            avatar_emoji: randomAvatar(phone), last_login: new Date().toISOString()
+        }).select().single();
+        if (error) throw error;
+        currentUser = data;
+        localStorage.setItem('acsc_user', JSON.stringify(currentUser));
+        updateUserBar();
+        closeModal('loginModal');
+        toast('✅ 登录成功！');
+    } catch(e) { toast('登录失败：'+e.message); }
 }
 
 // ============ UTILS ============
@@ -640,8 +429,7 @@ function updateUserBar() {
         document.getElementById('userName').textContent = currentUser.nickname;
         document.getElementById('loginBtn').textContent = '退出';
         document.getElementById('loginBtn').onclick = logout;
-        document.getElementById('userName').style.cursor = 'pointer';
-        document.getElementById('userName').onclick = showAchievements;
+        document.getElementById('userBadges').textContent = '';
     } else {
         document.getElementById('userAvatar').textContent = '🐼';
         document.getElementById('userName').textContent = '游客';
@@ -651,49 +439,29 @@ function updateUserBar() {
     }
 }
 
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('acsc_user');
-    userAchievements = [];
-    updateUserBar();
-    toast('已退出');
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
-}
+function logout() { currentUser = null; localStorage.removeItem('acsc_user'); updateUserBar(); toast('已退出'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 function toast(msg) {
     const el = document.getElementById('toast');
     el.textContent = msg;
-    el.style.animation = 'none';
-    el.offsetHeight;
+    el.style.animation = 'none'; el.offsetHeight;
     el.style.animation = 'fadeInOut 2s ease forwards';
 }
 
-function timeAgo(dateStr) {
-    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+function timeAgo(d) {
+    const diff = (Date.now() - new Date(d).getTime()) / 1000;
     if (diff < 60) return '刚刚';
     if (diff < 3600) return Math.floor(diff/60) + '分钟前';
     if (diff < 86400) return Math.floor(diff/3600) + '小时前';
     if (diff < 604800) return Math.floor(diff/86400) + '天前';
-    return new Date(dateStr).toLocaleDateString('zh-CN');
+    return new Date(d).toLocaleDateString('zh-CN');
 }
 
-function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function randomAvatar(seed) { const a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🐙','🦋','🐬','🦉','🐝']; let h=0; for(let i=0;i<seed.length;i++)h=seed.charCodeAt(i)+((h<<5)-h); return a[Math.abs(h)%a.length]; }
 
-function randomAvatar(seed) {
-    const avatars = ['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🐙','🦋','🐬','🦉','🐝'];
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    return avatars[Math.abs(hash) % avatars.length];
-}
-
-// Start
+// Go!
 init();
 </script>
 
