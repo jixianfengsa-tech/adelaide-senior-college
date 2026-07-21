@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>测试</title></head>
+<body style="font-family:sans-serif;padding:20px">
+<h2>论坛连接测试</h2>
+<div id="log" style="background:#f5f5f5;padding:16px;border-radius:8px;font-family:monospace;font-size:14px;white-space:pre-wrap"></div>
+<script>
+const log = document.getElementById('log');
+function L(msg) { log.textContent += msg + '\n'; }
+
+const URL = 'https://nkvavgmvbmzrnwurazgq.supabase.co';
+const KEY = 'sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
+
+async function test() {
+    L('1. 测试 fetch...');
+    try {
+        const r = await fetch(URL + '/rest/v1/posts?select=id,title&limit=3', {
+            headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+        });
+        L('   状态: ' + r.status);
+        const data = await r.json();
+        L('   帖子数: ' + data.length);
+        data.forEach(p => L('   - ' + p.title));
+    } catch(e) {
+        L('   ❌ 失败: ' + e.message);
+    }
+
+    L('');
+    L('2. 测试 Supabase 客户端...');
+    try {
+        if (!window.supabase) { L('   ❌ window.supabase 不存在!'); return; }
+        const sb = window.supabase.createClient(URL, KEY);
+        const { data, error } = await sb.from('posts').select('id,title').limit(3);
+        if (error) { L('   ❌ ' + error.message); return; }
+        L('   帖子数: ' + data.length);
+        data.forEach(p => L('   - ' + p.title));
+    } catch(e) {
+        L('   ❌ ' + e.message);
+    }
+}
+
+window.onload = () => setTimeout(test, 500);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</body></html>
