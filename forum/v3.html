@@ -133,6 +133,18 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <!-- Leaderboard -->
 <div class="card"><div class="sec-title">🏆 活跃会员</div><div id="leaderboard">加载中...</div></div>
 
+<!-- Weekly Activities -->
+<div class="card"><div class="sec-title">📅 本周活动</div><div id="weeklyActs" style="font-size:16px">
+    <div style="padding:8px 0">☯️ 周一/三 太极 · Rose Garden & Mitchell Park</div>
+    <div style="padding:8px 0">💃 周二/三/四 广场舞 · 三处地点</div>
+    <div style="padding:8px 0">🎤 周五 声乐课 · 168 South Terrace</div>
+    <div style="padding:8px 0">🪈 周五 葫芦丝 · 168 South Terrace</div>
+    <div style="padding:8px 0">🇬🇧 周一/三 英语课 · 168 South Terrace</div>
+</div></div>
+
+<!-- Birthday -->
+<div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月生日会员</div><div id="birthdayList"></div></div>
+
 <!-- Category Pills -->
 <div class="cat-pills" id="catPills"></div>
 
@@ -179,6 +191,8 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <h2>✏️ 个人资料</h2>
     <div id="avatarPicker" style="font-size:34px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px"></div>
     <input id="profileNickname" placeholder="昵称" maxlength="20" style="text-align:center;font-size:18px">
+    <div id="profileAchs" style="font-size:14px;color:var(--gold);margin:8px 0"></div>
+    <button onclick="setBirthday()" style="width:100%;padding:10px;background:var(--warm);border:none;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:8px">🎂 设置生日月份</button>
     <button onclick="saveProfile()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;margin-top:8px">保存</button>
 </div></div>
 
@@ -240,6 +254,7 @@ function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';
     const av=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🌐'];
     $('avatarPicker').innerHTML=av.map(a=>`<span onclick="pickAv('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`).join('')+
     `<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:8px;margin-top:4px;font-size:14px">📷 上传照片<input type="file" id="avFile" accept="image/*" style="display:none" onchange="upAv(event)"></div>`;
+    $('profileAchs').textContent = '🏅 '+getAchievements().join(' ');
     $('profileModal').classList.add('active');
 }
 function pickAv(a){me.avatar_emoji=a;showProfile()}
@@ -270,12 +285,20 @@ function doCheckin(){
 }
 function pickMood(icon,label){
     const today=new Date().toDateString();
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    const last=localStorage.getItem('f_checkin_'+me.nickname);
+    
+    // Track streak
+    let streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
+    if(last===yesterday) streak++; else if(last!==today) streak=1;
+    localStorage.setItem('f_checkin_streak_'+me.nickname,streak);
+    
     localStorage.setItem('f_checkin_'+me.nickname,today);
     me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));
     $('moodPicker').classList.remove('show');
     $('checkinBtn').textContent='✅ 已签到 '+icon;$('checkinBtn').className='checkin-btn done';$('checkinBtn').style.display='inline-flex';
-    updateMe();toast(icon+' 签到成功！+1分');
-    loadCheckin();
+    updateMe();loadCheckin();
+    toast(icon+' 签到成功！+1分 🔥连续'+streak+'天');
 }
 async function loadCheckin(){
     const today=new Date().toDateString();
@@ -407,6 +430,10 @@ async function showDetail(id){
         ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
         <div style="font-size:17px;line-height:1.9;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
         ${isMine?`<button onclick="editPost(${id})" style="padding:8px 18px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:15px;margin-bottom:12px">✏️ 编辑</button>`:''}
+        <div style="display:flex;gap:6px;margin-bottom:16px">
+            <button onclick="sharePost(${id})" style="padding:6px 14px;border:1px solid var(--warm);border-radius:15px;background:#fff;cursor:pointer;font-size:13px">🔗 分享</button>
+            ${p.category_id===3?`<button onclick="rsvpPost(${id})" style="padding:6px 14px;border:1px solid var(--green);border-radius:15px;background:rgba(107,142,107,0.1);color:var(--green);cursor:pointer;font-size:13px;font-weight:600">✅ 我要参加</button>`:''}
+        </div>
         <h3 style="font-size:18px;margin-bottom:12px">回复 (${p.reply_count||0})</h3>${rh}
         <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:12px;border:2px solid var(--warm);border-radius:12px;font-size:16px"><button onclick="submitReply(${id})" style="padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer">回复</button></div>
         <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
@@ -455,12 +482,62 @@ async function delPost(id){
     try{await fetch(API+'/replies?post_id=eq.'+id,{method:'DELETE',headers:H});await fetch(API+'/posts?id=eq.'+id,{method:'DELETE',headers:H});toast('🗑 已删除');loadPosts()}catch(e){toast('❌')}
 }
 
+function sharePost(id){
+    const url=location.origin+'/forum/v3.html#'+id;
+    if(navigator.clipboard){navigator.clipboard.writeText(url);toast('🔗 链接已复制！发给朋友吧')}
+    else{prompt('复制链接分享：',url)}
+}
+function rsvpPost(id){
+    if(!me){doLogin();return}
+    const key='f_rsvp_'+me.nickname+'_'+id;
+    if(localStorage.getItem(key)){toast('你已经报过名了 ✅');return}
+    localStorage.setItem(key,'1');
+    me.points=(me.points||0)+5;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
+    toast('✅ 报名成功！+5分');
+}
+
+// ==== BIRTHDAY & ACHIEVEMENTS ====
+function loadBirthdays(){
+    const now=new Date();const m=now.getMonth()+1;
+    const bdays=[];let myBm=null;
+    for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('f_birth_')){const v=localStorage.getItem(k);if(parseInt(v)===m)bdays.push(k.replace('f_birth_',''))}
+    }
+    if(me){myBm=localStorage.getItem('f_birth_'+me.nickname)}
+    if(bdays.length){
+        $('birthdayCard').style.display='block';
+        $('birthdayList').innerHTML='<p style="margin-bottom:8px">🎉 祝以下同学生日快乐：</p>'+bdays.map(n=>'🌹 '+n).join('<br>');
+    }
+    if(!myBm&&me){
+        // Prompt to set birthday
+    }
+}
+
+function setBirthday(){
+    const m=prompt('你的生日是几月？(1-12)');
+    if(!m||m<1||m>12)return;
+    localStorage.setItem('f_birth_'+me.nickname,m);
+    toast('🎂 生日已设置：'+m+'月');
+    loadBirthdays();
+}
+
+function getAchievements(){
+    const a=[];
+    const pts=me?.points||0;
+    if(pts>=10)a.push('🌱');if(pts>=100)a.push('🌿');if(pts>=300)a.push('🌳');if(pts>=800)a.push('🏅');
+    const streak=parseInt(localStorage.getItem('f_checkin_streak_'+me?.nickname)||'0');
+    if(streak>=7)a.push('🏅7天');
+    if(streak>=30)a.push('👑30天');
+    return a;
+}
+
 // ==== INIT ====
 (async function(){
     const s=localStorage.getItem('f_user');if(s){me=JSON.parse(s);checkAdmin();updateMe()}
     await checkGoogle();
     await loadCats();
-    await Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin()]);
+    await Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays()]);
 })();
 </script>
 </body>
