@@ -204,7 +204,7 @@ async function loadPosts(){
                 ${isAdmin?`<button onclick="event.stopPropagation();delPost(${p.id})" style="background:var(--red);color:#fff;border:none;padding:2px 10px;border-radius:10px;font-size:11px;cursor:pointer;flex-shrink:0">🗑 删</button>`:''}
                 </div>
                 <h3>${esc(p.title)}</h3><div class="post-preview">${esc(p.content)}</div>
-                ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:250px;object-fit:cover;border-radius:8px;margin-top:8px" loading="lazy" onerror="this.style.display='none'">`:''}
+                ${p.image_url?`<span style="font-size:12px;color:var(--gold)">📷 含图片</span>`:''}
                 <div style="margin-top:8px;font-size:13px;color:var(--gray)">💬 ${p.reply_count||0} 回复</div></div>`;
         }).join('');
     }catch(e){D('错误:'+e.message);$('postList').innerHTML='<div style="text-align:center;padding:60px"><p>❌ '+e.message+'</p><p style="margin-top:8px"><a href="javascript:loadPosts()" style="color:var(--navy)">点击重试</a></p></div>'}
@@ -303,6 +303,7 @@ async function showDetail(id){
     $('detailContent').innerHTML=`<button class="modal-close" onclick="closeModal('detailModal')">✕</button>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:28px">${emoji(p.guest_nickname||'')}</div><div><div style="font-weight:600">${p.guest_nickname||'匿名'}</div><div style="font-size:12px;color:var(--gray)">${ago(p.created_at)} · ${c.icon} ${c.name}</div></div></div>
         <h2 style="font-size:20px;margin-bottom:12px">${esc(p.title)}</h2>
+        ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
         <div style="font-size:15px;line-height:1.8;margin-bottom:20px;white-space:pre-wrap">${esc(p.content)}</div>
         <h3 style="font-size:16px;margin-bottom:12px">回复 (${p.reply_count||0})</h3>${rh}
         <div style="margin-top:16px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px"><button onclick="submitReply(${id})" style="padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600">回复</button></div>`;
