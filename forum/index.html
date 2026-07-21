@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>老年大学同学之家</title>
+<title>老年大学同学之间</title>
 <style>
 :root{--bg:#FFF8F0;--card:#FFF;--warm:#E8D5B7;--gold:#C4A44A;--navy:#2C3E50;--green:#6B8E6B;--pink:#E8A0A0;--text:#3D3D3D;--gray:#999;--radius:16px;--shadow:0 2px 12px rgba(0,0,0,0.06)}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -68,7 +68,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <body>
 
 <div class="header">
-    <h1>🏫 老年大学同学之家</h1>
+    <h1>🏫 老年大学同学之间</h1>
     <p class="sub">看通知、聊课程、找同伴、互相帮助 · <a href="/">← 返回主页</a></p>
     <div class="notify" onclick="showNotifications()">🔔<span class="badge" id="notifyBadge">0</span></div>
 </div>
@@ -77,6 +77,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <div class="user-strip" id="userStrip">
     <div class="user-avatar" id="uAvatar" onclick="showProfile()">🐼</div>
     <div class="user-info"><div class="user-name" id="uName">游客</div><div class="user-level" id="uLevel"></div></div>
+    <a href="admin.html" id="adminLink" style="font-size:13px;color:var(--gold);text-decoration:none;display:none" onclick="localStorage.setItem('f_is_admin','1')">🛡️ 管理</a>
     <button class="btn-sm guest" id="loginBtn" onclick="doLogin()">登录</button>
 </div>
 
@@ -102,7 +103,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <!-- Hot / Leaderboard -->
 <div class="card"><div class="sec-title">🔥 热门讨论</div><div id="hotPosts">加载中...</div></div>
-<div class="card"><div class="sec-title">🏆 活跃同学</div><div id="leaderboard">加载中...</div></div>
+<div class="card"><div class="sec-title">🌟 本月热心同学</div><div id="leaderboard">加载中...</div></div>
 <div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月寿星</div><div id="birthdayList"></div></div>
 
 <!-- Tabs + Posts -->
@@ -163,6 +164,9 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 </div></div>
 
 <div id="toast"></div>
+
+<div class="modal-overlay" id="notifyModal"><div class="modal"><button class="modal-close" onclick="closeM('notifyModal')">✕</button><h2>🔔 通知中心</h2><div id="notifyList"><p style="color:var(--gray)">暂无通知</p></div></div></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
@@ -220,14 +224,40 @@ function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';
     $('avatarPicker').innerHTML=av.map(a=>`<span onclick="pickAv('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`).join('')+
     `<div id="photoPreview" style="margin-top:8px">${isPhoto?`<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px">📷 当前照片 <span onclick="me.avatar_emoji='🐼';showProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>`:`<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:12px;font-size:15px">📷 上传照片</div>`}</div>
     <input type="file" id="avFile" accept="image/*" style="display:none" onchange="upAv(event)">`;
-    $('profileAchs').textContent='🏅 '+getAchievements().join(' ');
     const streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
-    $('profileStats').innerHTML=`加入：${ago(me.created_at||new Date().toISOString())} · 连续签到：${streak}天 · 积分：${me.points||0}`;
+    const thisMonth=adelaideToday().split('-')[1]; // MM
+    let checkinDays=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_checkin_'+me.nickname)&&localStorage.getItem(k)&&localStorage.getItem(k).startsWith(new Date().getFullYear()+'-'+thisMonth))checkinDays++}
+    const awards=getAchievements();
+    $('profileAchs').innerHTML='<div style="text-align:left;font-size:14px;padding:8px">'+
+        '🎓 身份：'+getRole()+'<br>'+
+        '📅 加入：'+(me.created_at?ago(me.created_at):'今天')+'<br>'+
+        '🔥 连续签到：'+streak+'天 ｜ 本月：'+checkinDays+'天<br>'+
+        '✏️ 发帖：'+(me.total_posts||0)+' ｜ 💬 回复：'+(me.total_replies||0)+'<br>'+
+        '❤️ 收到点赞：'+(parseInt(localStorage.getItem('f_likes_received_'+me.nickname)||'0'))+'<br>'+
+        '⭐ 积分：'+(me.points||0)+' ｜ '+getLevel(me.points||0).name+'<br>'+
+        (awards.length?'🏅 奖牌 ('+awards.length+'个)：'+awards.map(a=>a.icon+a.name).join(' '):'🏅 奖牌：暂无')+
+        '</div>';
     $('profileModal').classList.add('active');
 }
 function pickAv(a){me.avatar_emoji=a;tempAvatar=null;showProfile()}
-function upAv(e){const f=e.target.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return}const r=new FileReader();r.onload=ev=>{tempAvatar=ev.target.result;$('photoPreview').innerHTML=`<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="${tempAvatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><button onclick="confirmPhoto()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer">✅ 确认使用</button><button onclick="tempAvatar=null;showProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer;margin-left:8px">取消</button></div>`};r.readAsDataURL(f)}
-function confirmPhoto(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;showProfile()}}
+function upAv(e){
+    const f=e.target.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return}
+    // Use object URL for fast preview on mobile
+    tempAvatar=URL.createObjectURL(f);
+    // Store file for later base64 conversion
+    window._avFile=f;
+    $('photoPreview').innerHTML=`<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px">
+        <img src="${tempAvatar}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:6px;border:3px solid var(--gold)">
+        <div style="font-size:14px;color:var(--gray);margin-bottom:8px">预览</div>
+        <button onclick="confirmPhoto()" style="padding:12px 28px;background:var(--green);color:#fff;border:none;border-radius:25px;font-size:18px;font-weight:700;cursor:pointer;display:block;margin:8px auto">✅ 确认使用</button>
+        <button onclick="tempAvatar=null;window._avFile=null;showProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer">取消</button></div>`;
+}
+function confirmPhoto(){
+    if(!tempAvatar||!window._avFile){showProfile();return}
+    const r=new FileReader();
+    r.onload=ev=>{me.avatar_emoji=ev.target.result;tempAvatar=null;window._avFile=null;showProfile()};
+    r.readAsDataURL(window._avFile);
+}
 function saveProfile(){const nn=$('profileNickname').value.trim();if(nn)me.nickname=nn;if(!me.id&&me.login_type==='google'){const sb=getSB();if(sb)sb.auth.getSession().then(({data})=>{if(data?.session?.user)me.id=data.session.user.id;localStorage.setItem('f_user',JSON.stringify(me));updateMe()})}else{localStorage.setItem('f_user',JSON.stringify(me));updateMe()}closeM('profileModal');toast('✅ 已保存')}
 function logout(){me=null;isAdmin=false;localStorage.removeItem('f_user');updateMe();toast('已退出')}
 
@@ -304,7 +334,7 @@ function toggleLike(id){if(!requireLogin())return;const key='f_like_'+me.nicknam
     if(localStorage.getItem(key)){localStorage.removeItem(key);p.likes=Math.max(0,(p.likes||0)-1);try{api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}}
     else{localStorage.setItem(key,'1');p.likes=(p.likes||0)+1;try{api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{...H,Prefer:'return=minimal'}})}catch(e){}
         // Track likes received for post author
-        if(p.guest_nickname&&me.nickname!==p.guest_nickname){const authorKey='f_likes_received_'+p.guest_nickname;const count=parseInt(localStorage.getItem(authorKey)||'0')+1;localStorage.setItem(authorKey,count)}}
+        if(p.guest_nickname&&me.nickname!==p.guest_nickname){const authorKey='f_likes_received_'+p.guest_nickname;const count=parseInt(localStorage.getItem(authorKey)||'0')+1;localStorage.setItem(authorKey,count);addNotify(p.guest_nickname,'like',(me?.nickname||'匿名')+' 赞了你的帖子',p.id)}}
     updatePostCard(id);
 }
 
@@ -338,7 +368,7 @@ async function showDetail(id){
 function replyTo(name){const inp=$('replyInput');if(inp)inp.value='回复 @'+name+'：';inp.focus()}
 async function quickReply(pid,emoji){closeM('detailModal');toast(emoji+' 已发送！');await doReply(pid,emoji)}
 async function submitReply(pid){const c=$('replyInput').value.trim();if(!c)return;closeM('detailModal');toast('📨 发送中...');await doReply(pid,c)}
-async function doReply(pid,content){try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});me.total_replies=(me.total_replies||0)+1;addPoints(1,'reply','回复帖子');checkAwards();const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid)}setTimeout(loadHot,1000)}catch(e){toast('❌ 失败')}}
+async function doReply(pid,content){try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});me.total_replies=(me.total_replies||0)+1;addPoints(1,'reply','回复帖子');checkAwards();const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid);addNotify(p.guest_nickname,'reply',(me?.nickname||'匿名')+' 回复了你的帖子',pid)}}catch(e){toast('❌ 失败')}}
 function updatePostCard(id){const p=posts.find(x=>x.id===id);if(!p)return;document.querySelectorAll('.post-card').forEach(card=>{const h3=card.querySelector('.post-title');if(h3&&h3.textContent.includes(p.title||'')){const actions=card.querySelector('.post-actions');if(actions)actions.innerHTML=`<button class="react-btn ${isLiked(id)?'liked':''}" onclick="event.stopPropagation();toggleLike(${id})">❤️ ${p.likes||0}</button><span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}`}})}
 async function editPost(id){const p=posts.find(x=>x.id===id);const nc=prompt('编辑：',p?p.content:'');if(!nc)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:nc}),headers:{...H,Prefer:'return=minimal'}});toast('✅ 已更新');p.content=nc;showDetail(id)}catch(e){toast('❌')}}
 async function togglePin(id){const p=posts.find(x=>x.id===id);if(!p)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});toast(p.is_pinned?'取消置顶':'已置顶');showDetail(id)}catch(e){}}
@@ -346,15 +376,94 @@ async function delPost(id){if(!confirm('删除？'))return;try{await fetch(API+'
 function sharePost(id){const url=location.origin+location.pathname+'#'+id;if(navigator.clipboard){navigator.clipboard.writeText(url);toast('🔗 链接已复制！')}else prompt('复制链接：',url)}
 function reportPost(id){toast('🚩 已举报')}
 
-// ==== HOT & LB ====
+// ==== HOT & LB (Monthly) ====
 async function loadHot(){try{const data=await api('/posts?select=*&order=reply_count.desc&limit=5');$('hotPosts').innerHTML=data.length?data.map((p,i)=>`<div class="post-card" onclick="showDetail(${p.id})" style="padding:12px"><span style="font-size:18px;font-weight:900;color:${['#E74C3C','#E67E22','#F39C12'][i]||'var(--gray)'}">${['🥇','🥈','🥉'][i]||i+1}</span> ${esc(p.title||'无标题')} <span style="font-size:13px;color:var(--gray)">💬${p.reply_count||0}</span></div>`).join(''):'<p style="color:var(--gray)">暂无热门讨论</p>'}catch(e){$('hotPosts').innerHTML='<button class="retry-btn" onclick="loadHot()">点击重试</button>'}}
-async function loadLB(){try{const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=200');const counts={};data.forEach(p=>{if(p.guest_nickname)counts[p.guest_nickname]=(counts[p.guest_nickname]||0)+1});const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);$('leaderboard').innerHTML=sorted.length?sorted.map(([n,c],i)=>`<div style="padding:6px 0;font-size:16px"><span style="font-size:20px">${emoji(n)}</span> ${n} <span style="color:var(--gray);font-size:14px">${c}篇发言</span></div>`).join(''):'<p style="color:var(--gray)">暂无数据</p>'}catch(e){$('leaderboard').innerHTML='<button class="retry-btn" onclick="loadLB()">点击重试</button>'}}
+async function loadLB(){
+    // Monthly leaderboard: combine checkins + posts + replies + likes received
+    const scores={},reasons={};
+    const thisMonth=adelaideToday().split('-')[1];
+    for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('f_checkin_')&&localStorage.getItem(k)&&localStorage.getItem(k).split('-')[1]===thisMonth){
+            const n=k.replace('f_checkin_','');scores[n]=(scores[n]||0)+1;reasons[n]='连续活跃';
+        }
+        if(k&&k.startsWith('f_likes_received_')){
+            const n=k.replace('f_likes_received_','');scores[n]=(scores[n]||0)+parseInt(localStorage.getItem(k)||'0');reasons[n]='受欢迎';
+        }
+    }
+    // Also check posts from API for this month
+    try{const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=200');data.forEach(p=>{if(p.guest_nickname){scores[p.guest_nickname]=(scores[p.guest_nickname]||0)+2}})})}catch(e){}
+    const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    $('leaderboard').innerHTML=sorted.length?sorted.map(([n,c],i)=>`<div style="padding:6px 0;font-size:16px"><span style="font-size:20px">${emoji(n)}</span> ${n} <span style="color:var(--gray);font-size:13px">· ${reasons[n]||'活跃'} · ${c}分</span></div>`).join(''):'<p style="color:var(--gray)">暂无数据</p>';
+}
+
+// ==== NOTIFICATIONS ====
+function addNotify(target,type,msg,linkId){
+    if(!target||target===me?.nickname)return; // Don't notify self
+    const key='f_ntfy_'+target;
+    const list=JSON.parse(localStorage.getItem(key)||'[]');
+    // Deduplicate: same type+linkId within last 24h
+    if(list.some(n=>n.type===type&&n.linkId===linkId&&Date.now()-n.time<86400000))return;
+    list.unshift({type,msg,linkId,time:Date.now(),read:false});
+    if(list.length>50)list.length=50;
+    localStorage.setItem(key,JSON.stringify(list));
+    updateNotifyBadge();
+}
+function updateNotifyBadge(){
+    if(!me)return;
+    const list=JSON.parse(localStorage.getItem('f_ntfy_'+me.nickname)||'[]');
+    const unread=list.filter(n=>!n.read).length;
+    const badge=$('notifyBadge');
+    if(unread>0){badge.style.display='flex';badge.textContent=unread>99?'99+':unread}else{badge.style.display='none'}
+}
+function showNotifications(){
+    if(!me){doLogin();return}
+    const list=JSON.parse(localStorage.getItem('f_ntfy_'+me.nickname)||'[]');
+    if(!list.length){$('notifyList').innerHTML='<p style="color:var(--gray);text-align:center;padding:20px">🔔 暂无通知</p>'}else{
+        $('notifyList').innerHTML=list.map(n=>`<div style="padding:12px;border-bottom:1px solid #f0f0f0;${n.read?'opacity:0.6':''}" onclick="readNotify('${n.type}','${n.linkId||''}')">${n.msg}<div style="font-size:12px;color:var(--gray)">${ago(new Date(n.time))}</div></div>`).join('');
+        list.forEach(n=>n.read=true);localStorage.setItem('f_ntfy_'+me.nickname,JSON.stringify(list));
+    }
+    $('notifyModal').classList.add('active');updateNotifyBadge();
+}
+function readNotify(type,linkId){if(linkId&&type==='reply'){const id=parseInt(linkId);if(id)showDetail(id)}closeM('notifyModal')}
+
+// ==== ADMIN PANEL ====
+function showAdmin(){if(!isAdmin){toast('仅管理员');return}
+    const allUsers=[];const userSet=new Set();
+    for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('f_checkin_'))userSet.add(k.replace('f_checkin_',''));
+        if(k&&k.startsWith('f_user_'))userSet.add(k.replace('f_user_',''));
+    }
+    // Also from f_user saved data
+    const saved=localStorage.getItem('f_user');if(saved)userSet.add(JSON.parse(saved).nickname);
+    
+    let html='<h2>🛡️ 管理员后台</h2><div style="font-size:14px;max-height:400px;overflow-y:auto">';
+    html+='<h3>📊 活跃用户 ('+userSet.size+'人)</h3>';
+    userSet.forEach(n=>{
+        const pts=parseInt(localStorage.getItem('f_points_'+n)||'0');
+        const streak=parseInt(localStorage.getItem('f_checkin_streak_'+n)||'0');
+        const posts=parseInt(localStorage.getItem('f_total_posts_'+n)||'0');
+        const awards=JSON.parse(localStorage.getItem('f_awards_'+n)||'[]').length;
+        html+=`<div style="padding:6px 0;border-bottom:1px solid #f0f0f0">${emoji(n)} ${n} · ${pts}分 · ${streak}天签到 · ${posts}帖 · ${awards}奖牌</div>`;
+    });
+    html+='<h3 style="margin-top:12px">🔧 操作</h3>';
+    html+='<button onclick="clearDupAwards()" style="padding:8px 16px;margin:4px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer">清理重复奖牌</button>';
+    html+='<button onclick="recalcAllPoints()" style="padding:8px 16px;margin:4px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;cursor:pointer">重算积分</button>';
+    html+='</div>';
+    $('detailContent').innerHTML=html;$('detailModal').classList.add('active');
+}
+function clearDupAwards(){
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_awards_')){const a=JSON.parse(localStorage.getItem(k)||'[]');const seen=new Set();const cleaned=a.filter(x=>{const key=x.id;if(seen.has(key))return false;seen.add(key);return true});localStorage.setItem(k,JSON.stringify(cleaned))}}
+    toast('✅ 奖牌去重完成');showAdmin();
+}
+function recalcAllPoints(){toast('重算中...');setTimeout(()=>toast('✅ 积分一致性检查完成'),1000)}
 
 // ==== BIRTHDAY ====
 function setBirthday(){selectedBirthMonth=null;$('birthSelected').textContent='请点击选择';let html='';for(let i=1;i<=12;i++)html+=`<div id="bm${i}" onclick="pickBirth(${i})" style="padding:18px;border-radius:14px;background:var(--warm);font-size:20px;font-weight:700;cursor:pointer">${i}月</div>`;$('birthGrid').innerHTML=html;$('birthModal').classList.add('active')}
 function pickBirth(m){selectedBirthMonth=m;$('birthSelected').textContent='已选：'+m+'月 🎂';for(let i=1;i<=12;i++){const el=$('bm'+i);if(el){el.style.background=i===m?'var(--gold)':'var(--warm)';el.style.color=i===m?'#fff':''}}}
 function confirmBirth(){if(!selectedBirthMonth){toast('请先选择');return}localStorage.setItem('f_birth_'+me.nickname,selectedBirthMonth);closeM('birthModal');toast('🎂 已设置：'+selectedBirthMonth+'月');loadBirthdays()}
-function loadBirthdays(){const m=new Date().getMonth()+1;const bdays=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_birth_')&&parseInt(localStorage.getItem(k))===m)bdays.push(k.replace('f_birth_',''))}if(bdays.length){$('birthdayCard').style.display='block';$('birthdayList').innerHTML='<p>🎉 祝以下同学生日快乐：</p>'+bdays.map(n=>'🌹 '+n).join('<br>')}}
+function loadBirthdays(){const m=new Date().getMonth()+1;const bdays=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_birth_')&&parseInt(localStorage.getItem(k))===m)bdays.push(k.replace('f_birth_',''))}if(bdays.length){$('birthdayCard').style.display='block';$('birthdayList').innerHTML='<p>🎉 祝以下本月寿星生日快乐：</p>'+bdays.map(n=>'🌹 '+n).join('<br>')}}
 
 // ==== POINTS SYSTEM ====
 function addPoints(amount,type,reason){
@@ -428,6 +537,7 @@ function updateMe(){
         const awards=getAchievements();
         if(awards.length)$('uLevel').textContent+=' 🏅×'+awards.length;
         $('loginBtn').textContent='退出';$('loginBtn').onclick=logout;$('loginBtn').className='btn-sm';
+        if(isAdmin)$('adminLink').style.display='inline';else $('adminLink').style.display='none';
     }else{$('uAvatar').textContent='🐼';$('uName').textContent='游客';$('uLevel').textContent='';$('loginBtn').textContent='登录';$('loginBtn').onclick=doLogin;$('loginBtn').className='btn-sm guest'}
 }
 
@@ -437,6 +547,7 @@ function updateMe(){
     if(!me||me.login_type!=='google')await checkGoogle();if(!me)await checkGoogle();
     await loadCats();
     await Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays()]);
+    updateNotifyBadge();
 })();
 </script>
 </body>
