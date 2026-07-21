@@ -212,21 +212,20 @@ let submitting = false;
 
 async function submitPost(){
     if(submitting) return;
-    // Rate limit: 5 min
-    const lastPost = parseInt(localStorage.getItem('last_post_time')||'0');
-    if(Date.now()-lastPost < 300000){
-        toast('⏳ 请等待 '+Math.ceil((300000-(Date.now()-lastPost))/60000)+' 分钟后再发帖');
-        return;
-    }
     const d={category_id:parseInt($('postCategory').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
     if(!d.title||!d.content){toast('请填写标题和内容');return}
+    
+    // Close modal immediately
+    const title=d.title, content=d.content, cat=d.category_id;
+    $('postTitle').value='';$('postContent').value='';
+    closeModal('newPostModal');
+    toast('⏳ 发布中...');
+    
     submitting = true;
     try{
-        await api('/posts',{method:'POST',body:JSON.stringify(d),headers:{...H,Prefer:'return=minimal'}});
-        closeModal('newPostModal');
+        await api('/posts',{method:'POST',body:JSON.stringify({category_id:cat,title,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});
         toast('✅ 发布成功！');
         localStorage.setItem('last_post_time', Date.now());
-        $('postTitle').value='';$('postContent').value='';
         loadPosts();
     }catch(e){toast('❌ '+e.message)}
     submitting = false;
