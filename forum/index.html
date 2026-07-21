@@ -157,8 +157,9 @@
 <!-- Post List -->
 <div class="container">
     <div class="post-list" id="postList">
-        <p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>
+        <p style="text-align:center;color:var(--gray);padding:40px">⏳ 正在连接服务器...</p>
     </div>
+    <p id="debugStatus" style="text-align:center;font-size:11px;color:#ccc;margin-top:-20px"></p>
 </div>
 
 <!-- FAB -->
@@ -256,8 +257,15 @@ let posts = [];
 let achievements = [];
 let userAchievements = [];
 
+function debug(msg) { 
+    const el = document.getElementById('debugStatus'); 
+    if (el) el.textContent = '🔍 ' + msg;
+    console.log(msg);
+}
+
 // ============ INIT ============
 async function init() {
+    debug('JS OK, loading...');
     const saved = localStorage.getItem('acsc_user');
     if (saved) { currentUser = JSON.parse(saved); updateUserBar(); }
     await loadCategories();
@@ -272,12 +280,14 @@ const DEFAULT_CATEGORIES = [
 ];
 
 async function loadCategories() {
+    debug('Loading categories...');
     try {
         const { data, error } = await sb().from('categories').select('*').order('sort_order');
         if (error) throw error;
         categories = data || [];
+        debug(`Categories: ${categories.length} loaded`);
     } catch(e) {
-        console.log('Categories fallback:', e.message);
+        debug('Categories fallback: ' + e.message);
         categories = DEFAULT_CATEGORIES;
     }
     renderCatTabs();
@@ -297,6 +307,7 @@ function switchCategory(cat) { currentCategory = cat; renderCatTabs(); loadPosts
 async function loadPosts() {
     const list = document.getElementById('postList');
     list.innerHTML = '<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
+    debug('Loading posts...');
     
     try {
         let query = sb().from('posts').select('*').order('created_at', { ascending: false }).limit(50);
@@ -304,6 +315,7 @@ async function loadPosts() {
         const { data, error } = await query;
         if (error) throw error;
         posts = data || [];
+        debug(`Posts: ${posts.length} loaded`);
         
         if (posts.length === 0) {
             list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray)"><div style="font-size:48px;margin-bottom:12px">📝</div><p style="font-size:16px;margin-bottom:8px">还没有帖子</p><p>点击右下角 ✏️ 按钮发布第一条话题吧！</p></div>`;
