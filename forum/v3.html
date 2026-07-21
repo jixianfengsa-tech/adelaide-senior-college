@@ -252,15 +252,32 @@ function loginAsGuest(){
 }
 
 // ==== PROFILE ====
+let tempAvatar=null;
 function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';
+    tempAvatar=null;
     const av=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🐔','🦄','🌐'];
-    $('avatarPicker').innerHTML=av.map(a=>`<span onclick="pickAv('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`).join('')+
-    `<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:8px;margin-top:4px;font-size:14px">📷 上传照片<input type="file" id="avFile" accept="image/*" style="display:none" onchange="upAv(event)"></div>`;
+    const isPhoto=me.avatar_emoji&&me.avatar_emoji.startsWith('data:');
+    $('avatarPicker').innerHTML=av.map(a=>`<span onclick="pickAv('${a}')" style="cursor:pointer;padding:4px;border-radius:8px;background:${!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent'}">${a}</span>`).join('')+
+    `<div id="photoPreview" style="margin-top:8px">${isPhoto?`<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px">📷 当前自定义照片 <span onclick="me.avatar_emoji='🐼';showProfile()" style="cursor:pointer;margin-left:8px">✕ 移除</span></div>`:`<div onclick="$('avFile').click()" style="cursor:pointer;border:2px dashed var(--warm);border-radius:8px;padding:12px;font-size:15px">📷 上传照片</div>`}</div>
+    <input type="file" id="avFile" accept="image/*" style="display:none" onchange="upAv(event)">`;
     $('profileAchs').textContent = '🏅 '+getAchievements().join(' ');
     $('profileModal').classList.add('active');
 }
-function pickAv(a){me.avatar_emoji=a;showProfile()}
-function upAv(e){const f=e.target.files[0];if(!f||f.size>500000){toast('照片小于500KB');return}const r=new FileReader();r.onload=ev=>{me.avatar_emoji=ev.target.result;showProfile()};r.readAsDataURL(f)}
+function pickAv(a){me.avatar_emoji=a;tempAvatar=null;showProfile()}
+function upAv(e){
+    const f=e.target.files[0];if(!f||f.size>500000){toast('照片小于500KB');return}
+    const r=new FileReader();
+    r.onload=ev=>{
+        tempAvatar=ev.target.result;
+        $('photoPreview').innerHTML=`<div style="text-align:center;padding:8px;background:rgba(196,164,74,0.1);border-radius:12px">
+            <img src="${tempAvatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px">
+            <div style="font-size:14px;color:var(--gray);margin-bottom:8px">预览</div>
+            <button onclick="confirmPhoto()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer">✅ 确认使用此照片</button>
+            <button onclick="tempAvatar=null;showProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer;margin-left:8px">取消</button></div>`;
+    };
+    r.readAsDataURL(f);
+}
+function confirmPhoto(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;showProfile()}}
 function saveProfile(){
     const nn=$('profileNickname').value.trim();
     if(nn) me.nickname=nn;
