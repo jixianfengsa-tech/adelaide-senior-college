@@ -187,6 +187,13 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <button onclick="saveProfile()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;margin-top:8px">保存</button>
 </div></div>
 
+<!-- Birthday Picker -->
+<div class="modal-overlay" id="birthModal"><div class="modal" style="text-align:center">
+    <button class="modal-close" onclick="closeM('birthModal')">✕</button>
+    <h2>🎂 选择生日月份</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:320px;margin:20px auto" id="birthGrid"></div>
+</div></div>
+
 <!-- Rate Limit Modal -->
 <div class="modal-overlay" id="rateLimitModal"><div class="modal" style="text-align:center;padding:32px">
     <div style="font-size:56px">⏳</div><h2>发帖太快啦！</h2>
@@ -249,8 +256,18 @@ function showProfile(){if(!me)return;$('profileNickname').value=me.nickname||'';
     $('profileModal').classList.add('active');
 }
 function pickAv(a){me.avatar_emoji=a;showProfile()}
-function upAv(e){const f=e.target.files[0];if(!f||f.size>500000){toast('照片<500KB');return};const r=new FileReader();r.onload=ev=>{me.avatar_emoji=ev.target.result;showProfile()};r.readAsDataURL(f)}
-function saveProfile(){me.nickname=$('profileNickname').value.trim()||me.nickname;localStorage.setItem('f_user',JSON.stringify(me));updateMe();closeM('profileModal');toast('✅ 已保存')}
+function upAv(e){const f=e.target.files[0];if(!f||f.size>500000){toast('照片小于500KB');return}const r=new FileReader();r.onload=ev=>{me.avatar_emoji=ev.target.result;showProfile()};r.readAsDataURL(f)}
+function saveProfile(){
+    const nn=$('profileNickname').value.trim();
+    if(nn) me.nickname=nn;
+    // Ensure Google ID is preserved for session matching
+    if(!me.id && me.login_type==='google'){
+        const sb=getSB();
+        if(sb){sb.auth.getSession().then(({data})=>{if(data?.session?.user)me.id=data.session.user.id})}
+    }
+    localStorage.setItem('f_user',JSON.stringify(me));
+    updateMe();closeM('profileModal');toast('✅ 已保存');
+}
 
 function updateMe(){
     if(me){
@@ -506,9 +523,16 @@ function loadBirthdays(){
 }
 
 function setBirthday(){
-    const m=prompt('你的生日是几月？(1-12)');
-    if(!m||m<1||m>12)return;
+    let html='';
+    for(let i=1;i<=12;i++){
+        html+=`<div onclick="pickBirth(${i})" style="padding:18px;border-radius:14px;background:var(--warm);font-size:20px;font-weight:700;cursor:pointer" onmouseover="this.style.background='var(--gold)';this.style.color='#fff'" onmouseout="this.style.background='var(--warm)';this.style.color=''">${i}月</div>`;
+    }
+    $('birthGrid').innerHTML=html;
+    $('birthModal').classList.add('active');
+}
+function pickBirth(m){
     localStorage.setItem('f_birth_'+me.nickname,m);
+    closeM('birthModal');closeM('profileModal');
     toast('🎂 生日已设置：'+m+'月');
     loadBirthdays();
 }
@@ -526,7 +550,9 @@ function getAchievements(){
 // ==== INIT ====
 (async function(){
     const s=localStorage.getItem('f_user');if(s){me=JSON.parse(s);checkAdmin();updateMe()}
-    await checkGoogle();
+    // Only do Google check if not already logged in with saved profile
+    if(!me || me.login_type !== 'google') await checkGoogle();
+    if(!me) await checkGoogle(); // Fallback for first-time Google login
     await loadCats();
     await Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays()]);
 })();
