@@ -121,6 +121,16 @@
 
 <div id="toast"></div>
 
+<!-- Rate Limit Modal -->
+<div class="modal-overlay" id="rateLimitModal"><div class="modal" style="text-align:center;padding:40px">
+    <div style="font-size:56px;margin-bottom:12px">⏳</div>
+    <h2 style="color:var(--navy);margin-bottom:8px">发帖太快啦！</h2>
+    <p id="rlMsg" style="font-size:16px;color:var(--gray);margin-bottom:16px"></p>
+    <div style="font-size:48px;font-weight:900;color:var(--gold)" id="rlSec">120</div>
+    <p style="font-size:13px;color:var(--gray)">秒后可以继续</p>
+    <button onclick="closeModal('rateLimitModal')" style="margin-top:16px;padding:10px 30px;background:var(--light);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px">好的，我等一下</button>
+</div></div>
+
 <!-- Profile Modal -->
 <div class="modal-overlay" id="profileModal"><div class="modal" style="text-align:center">
     <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
@@ -206,8 +216,8 @@ async function switchCat(c){cat=c;renderTabs();await loadPosts()}
 async function loadPosts(){
     $('postList').innerHTML='<p style="text-align:center;color:var(--gray);padding:40px">加载中...</p>';
     try{
-        let q = '/posts?select=*&order=created_at.desc&limit=50';
-        if(cat!=='all') q = `/posts?select=*&category_id=eq.${cat}&order=created_at.desc&limit=50`;
+        let q = '/posts?select=*&order=created_at.desc&limit=50&t='+Date.now();
+        if(cat!=='all') q = '/posts?select=*&category_id=eq.'+cat+'&order=created_at.desc&limit=50&t='+Date.now();
         posts = await api(q);
         D('帖子:'+posts.length);
         if(!posts.length){$('postList').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子，点击右下角 ✏️ 发帖吧！</p></div>';return}
@@ -234,13 +244,22 @@ let submitting = false;
 
 // Rate limit - strict, shared between post+reply
 function checkRL(type){
-    // Global session lock (can't bypass by changing name)
     const gKey = 'rl_global';
     const gLast = parseInt(localStorage.getItem(gKey)||'0');
-    const gRem = 120000 - (Date.now() - gLast); // 2 min hard minimum
+    const gRem = 120000 - (Date.now() - gLast);
     if(gRem > 0){
         const s = Math.ceil(gRem/1000);
-        toast('⏳ 请等待 '+s+' 秒后再操作\n发帖太快会被限制哦～');
+        const msgs = ['喝杯茶歇一歇 🍵','让键盘休息一会儿 ⌨️','去看看别人的帖子吧 👀','好事多磨，急什么 🌸'];
+        $('rlMsg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+        $('rlSec').textContent = s;
+        $('rateLimitModal').classList.add('active');
+        // Countdown
+        let remaining = s;
+        const timer = setInterval(()=>{
+            remaining--;
+            $('rlSec').textContent = remaining;
+            if(remaining <= 0){clearInterval(timer);closeModal('rateLimitModal')}
+        }, 1000);
         return false;
     }
     localStorage.setItem(gKey, Date.now());
@@ -326,7 +345,6 @@ async function showDetail(id){
     // Increment view count
     p.views = (p.views||0) + 1;
     api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{...H,Prefer:'return=minimal'}}).catch(()=>{});
-    loadPosts(); // refresh counts
     const c=cats.find(x=>x.id===p.category_id)||{name:'综合',icon:'💬'};
     let rh='<p style="color:var(--gray)">暂无回复</p>';
     try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:13px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:14px">${esc(x.content)}</div></div>`).join('')}catch(e){}
