@@ -88,33 +88,15 @@
     <h2>👋 登录校园交友</h2>
     <p style="color:var(--gray);margin-bottom:20px;font-size:14px">登录后解锁成就和积分</p>
     
-    <button onclick="loginGoogle()" style="width:100%;padding:14px;background:#fff;color:#444;border:2px solid #ddd;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px">
-        <span style="font-size:20px">🌐</span> Google 账号登录
+    <button onclick="loginGoogle()" style="width:100%;padding:14px;background:#fff;color:#444;border:2px solid #ddd;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:22px">🌐</span> Google 账号登录（推荐）
     </button>
     
     <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
         <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
     </div>
     
-    <p style="font-weight:600;color:var(--navy);margin-bottom:8px">📱 手机号登录</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-        <select id="phoneCountry" style="width:100px;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:14px">
-            <option value="+61">🇦🇺 +61</option>
-            <option value="+86">🇨🇳 +86</option>
-        </select>
-        <input id="phoneNumber" placeholder="手机号码" style="flex:1;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px">
-    </div>
-    <button onclick="loginPhone()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">发送验证码</button>
-    <div id="phoneCodeArea" style="display:none;margin-top:12px">
-        <input id="phoneCode" placeholder="输入6位验证码" maxlength="6" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
-        <button onclick="verifyPhone()" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">验证并登录</button>
-    </div>
-    
-    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--gray);font-size:13px">
-        <hr style="flex:1;border-color:var(--border)"><span>或</span><hr style="flex:1;border-color:var(--border)">
-    </div>
-    
-    <p style="color:var(--gray);font-size:14px;margin-bottom:8px">不想注册？</p>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:8px">不想登录？</p>
     <input id="guestNickname" placeholder="输入昵称直接发帖" maxlength="20" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:15px;text-align:center;margin-bottom:8px">
     <button onclick="loginAsGuest()" style="width:100%;padding:14px;background:var(--light);color:var(--navy);border:2px solid var(--border);border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">以游客身份进入</button>
 </div></div>
@@ -389,27 +371,6 @@ async function loginGoogle(){
         if(error){toast('❌ '+error.message);console.error(error)}
     }catch(e){toast('❌ '+e.message)}
 }
-async function loginPhone(){
-    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
-    if(phone.length<8){toast('请输入正确的手机号');return}
-    const sb = getSB(); if(!sb){toast('请刷新后重试');return}
-    const {error} = await sb.auth.signInWithOtp({phone});
-    if(error){toast('❌ 短信发送失败：'+error.message);return}
-    $('phoneCodeArea').style.display='block';
-    toast('📱 验证码已发送');
-}
-async function verifyPhone(){
-    const phone = ($('phoneCountry').value + $('phoneNumber').value.trim()).replace(/\s/g,'');
-    const code = $('phoneCode').value.trim();
-    if(!code){toast('请输入验证码');return}
-    const sb = getSB(); if(!sb) return;
-    const {data:{session},error} = await sb.auth.verifyOtp({phone,token:code,type:'sms'});
-    if(error){toast('❌ 验证失败');return}
-    me = {id:session.user.id, nickname:'用户'+phone.slice(-4), login_type:'phone', avatar_emoji:'📱'};
-    localStorage.setItem('forum_user', JSON.stringify(me));
-    updateBar(); closeModal('loginModal'); toast('✅ 登录成功！');
-}
-
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
     const n=$('guestNickname').value.trim();if(!n){toast('请输入昵称');return}
