@@ -199,7 +199,11 @@ async function checkGoogle(){
         localStorage.setItem('f_user',JSON.stringify(me));updateMe();
     }}catch(e){}
 }
-function checkAdmin(){if(me?.nickname==='sure')isAdmin=true}
+function checkAdmin(){const list=JSON.parse(localStorage.getItem('f_admins')||'["sure"]');isAdmin=list.includes(me?.nickname)}
+
+// Admin helpers
+function getAdminList(){return JSON.parse(localStorage.getItem('f_admins')||'["sure"]')}
+function isUserAdmin(nick){return getAdminList().includes(nick)}
 async function loginGoogle(){
     const sb=getSB();if(!sb){toast('请刷新后重试');return}
     try{const redirectUrl=location.origin+location.pathname;
@@ -345,7 +349,12 @@ async function showDetail(id){
     let rh='<p style="color:var(--gray)">暂无回复</p>';
     try{const r=await api('/replies?post_id=eq.'+id+'&order=created_at');if(r.length)rh=r.map(x=>`<div style="padding:12px 0;border-bottom:1px solid #f0f0f0"><div style="font-weight:600;font-size:15px">${x.guest_nickname||'匿名'} · ${ago(x.created_at)}</div><div style="font-size:16px">${esc(x.content)}</div><button onclick="replyTo('${x.guest_nickname||'匿名'}')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px">↩ 回复</button></div>`).join('')}catch(e){}
     $('detailContent').innerHTML=`<button class="modal-close" onclick="closeM('detailModal')">✕</button>
-        ${isAdmin?`<button onclick="togglePin(${id})" style="float:right;margin-right:40px;background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600">📌 ${p.is_pinned?'取消置顶':'置顶'}</button>`:''}
+        ${isAdmin?`<button onclick="togglePin(${id})" style="float:right;margin-right:40px;background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600">📌 ${p.is_pinned?'取消置顶':'置顶'}</button>
+        <div style="clear:both;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;font-size:13px">
+            <select id="moveCat_${id}" style="padding:4px 8px;border:1px solid var(--warm);border-radius:8px;font-size:12px">${cats.map(c=>`<option value="${c.id}" ${c.id===p.category_id?'selected':''}>${c.icon}${c.name}</option>`).join('')}</select>
+            <button onclick="movePost(${id})" style="padding:4px 12px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">移动</button>
+            <button onclick="delPost(${id})" style="padding:4px 12px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">🗑 删除</button>
+        </div>`:''}
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">${pAv(p.guest_nickname||'')}</div><div><div style="font-weight:600;font-size:18px">${p.guest_nickname||'匿名'}${isMine?' <small style="color:var(--gold)">· 我</small>':''}</div><div style="font-size:13px;color:var(--gray)">${ago(p.created_at)} · ${c.icon}${c.name} · 👁${p.views}</div></div></div>
         <h2 style="font-size:22px;margin-bottom:12px">${esc(p.title||'无标题')}</h2>
         ${p.image_url?`<img src="${p.image_url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin-bottom:16px" onerror="this.style.display='none'">`:''}
@@ -373,6 +382,13 @@ function updatePostCard(id){const p=posts.find(x=>x.id===id);if(!p)return;docume
 async function editPost(id){const p=posts.find(x=>x.id===id);const nc=prompt('编辑：',p?p.content:'');if(!nc)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:nc}),headers:{...H,Prefer:'return=minimal'}});toast('✅ 已更新');p.content=nc;showDetail(id)}catch(e){toast('❌')}}
 async function togglePin(id){const p=posts.find(x=>x.id===id);if(!p)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});toast(p.is_pinned?'取消置顶':'已置顶');showDetail(id)}catch(e){}}
 async function delPost(id){if(!confirm('删除？'))return;try{await fetch(API+'/replies?post_id=eq.'+id,{method:'DELETE',headers:H});await fetch(API+'/posts?id=eq.'+id,{method:'DELETE',headers:H});toast('🗑 已删除');loadPosts()}catch(e){toast('❌')}}
+
+async function movePost(id){
+    if(!isAdmin){toast('仅管理员');return}
+    const newCat=parseInt($('moveCat_'+id).value);
+    try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({category_id:newCat}),headers:{...H,Prefer:'return=minimal'}});
+        toast('✅ 已移动');const p=posts.find(x=>x.id===id);if(p)p.category_id=newCat;showDetail(id);loadPosts();}catch(e){toast('❌')}
+}
 function sharePost(id){const url=location.origin+location.pathname+'#'+id;if(navigator.clipboard){navigator.clipboard.writeText(url);toast('🔗 链接已复制！')}else prompt('复制链接：',url)}
 function reportPost(id){toast('🚩 已举报')}
 
@@ -450,6 +466,11 @@ function showAdmin(){if(!isAdmin){toast('仅管理员');return}
     html+='<h3 style="margin-top:12px">🔧 操作</h3>';
     html+='<button onclick="clearDupAwards()" style="padding:8px 16px;margin:4px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer">清理重复奖牌</button>';
     html+='<button onclick="recalcAllPoints()" style="padding:8px 16px;margin:4px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;cursor:pointer">重算积分</button>';
+    html+='<h3 style="margin-top:12px">👑 管理员</h3>';
+    html+='<div style="font-size:13px">当前：'+getAdminList().join('、')+'</div>';
+    html+='<input id="newAdmin" placeholder="输入昵称添加管理员" style="padding:6px 10px;border:1px solid var(--warm);border-radius:8px;font-size:13px;width:150px;margin-top:4px">';
+    html+='<button onclick="addAdmin()" style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;margin-left:4px">添加</button>';
+    html+='<button onclick="removeAdmin()" style="padding:6px 12px;background:var(--pink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;margin-left:4px">移除</button>';
     html+='</div>';
     $('detailContent').innerHTML=html;$('detailModal').classList.add('active');
 }
@@ -458,6 +479,20 @@ function clearDupAwards(){
     toast('✅ 奖牌去重完成');showAdmin();
 }
 function recalcAllPoints(){toast('重算中...');setTimeout(()=>toast('✅ 积分一致性检查完成'),1000)}
+
+function addAdmin(){
+    const n=$('newAdmin').value.trim();if(!n)return;
+    const list=getAdminList();if(list.includes(n)){toast('已是管理员');return}
+    list.push(n);localStorage.setItem('f_admins',JSON.stringify(list));
+    toast('✅ 已添加 '+n);checkAdmin();showAdmin();
+}
+function removeAdmin(){
+    const n=$('newAdmin').value.trim();if(!n)return;
+    const list=getAdminList();if(!list.includes(n)){toast('不是管理员');return}
+    if(n==='sure'){toast('不能移除创始人');return}
+    localStorage.setItem('f_admins',JSON.stringify(list.filter(x=>x!==n)));
+    toast('🗑 已移除 '+n);checkAdmin();showAdmin();
+}
 
 // ==== BIRTHDAY ====
 function setBirthday(){selectedBirthMonth=null;$('birthSelected').textContent='请点击选择';let html='';for(let i=1;i<=12;i++)html+=`<div id="bm${i}" onclick="pickBirth(${i})" style="padding:18px;border-radius:14px;background:var(--warm);font-size:20px;font-weight:700;cursor:pointer">${i}月</div>`;$('birthGrid').innerHTML=html;$('birthModal').classList.add('active')}
