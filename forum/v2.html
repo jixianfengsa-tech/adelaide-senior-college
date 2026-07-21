@@ -206,10 +206,11 @@ function getAdminList(){return JSON.parse(localStorage.getItem('f_admins')||'["s
 function isUserAdmin(nick){return getAdminList().includes(nick)}
 async function loginGoogle(){
     const sb=getSB();if(!sb){toast('请刷新后重试');return}
+    toast('🌐 跳转中...');
     try{const redirectUrl=location.origin+location.pathname;
     const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl}});
-    if(error){$('loginModal').innerHTML+=`<p style="color:#E74C3C;margin-top:12px">❌ 登录失败：${error.message}</p><button onclick="closeM('loginModal')" class="retry-btn">返回论坛</button>`}
-    }catch(e){$('loginModal').innerHTML+=`<p style="color:#E74C3C;margin-top:12px">❌ 网络错误，请重试</p><button onclick="loginGoogle()" class="retry-btn">重新登录</button><button onclick="closeM('loginModal')" class="retry-btn" style="margin-left:8px">返回论坛</button>`}
+    if(error){toast('登录失败：'+error.message)}
+    }catch(e){toast('网络错误，请重试')}
 }
 function doLogin(){pendingLoginAction=null;$('loginModal').classList.add('active')}
 function requireLogin(action){if(!me){pendingLoginAction=action;doLogin();return false}return true}
@@ -408,7 +409,7 @@ async function loadLB(){
         }
     }
     // Also check posts from API for this month
-    try{const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=200');data.forEach(p=>{if(p.guest_nickname){scores[p.guest_nickname]=(scores[p.guest_nickname]||0)+2}})})}catch(e){}
+    try{const data=await api('/posts?select=guest_nickname&order=created_at.desc&limit=200');data.forEach(p=>{if(p.guest_nickname){scores[p.guest_nickname]=(scores[p.guest_nickname]||0)+2}})}catch(e){}
     const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
     $('leaderboard').innerHTML=sorted.length?sorted.map(([n,c],i)=>`<div style="padding:6px 0;font-size:16px"><span style="font-size:20px">${emoji(n)}</span> ${n} <span style="color:var(--gray);font-size:13px">· ${reasons[n]||'活跃'} · ${c}分</span></div>`).join(''):'<p style="color:var(--gray)">暂无数据</p>';
 }
