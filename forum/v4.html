@@ -84,7 +84,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 </div>
 
 <!-- Big Categories -->
-<div class="cat-grid">
+<div class="cat-grid" id="catGrid">
     <div class="cat-box" onclick="switchCat('1')"><span class="c-icon">📢</span><span class="c-name">校园通知</span></div>
     <div class="cat-box" onclick="switchCat('2')"><span class="c-icon">💬</span><span class="c-name">同学交流</span></div>
     <div class="cat-box" onclick="switchCat('3')"><span class="c-icon">🚶</span><span class="c-name">活动约伴</span></div>
@@ -289,7 +289,8 @@ function pickMood(icon,label){
 async function loadCheckin(){const today=adelaideToday();let count=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('f_checkin_')&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='今日'+count+'人签到';if(me){const last=localStorage.getItem('f_checkin_'+me.nickname);if(last===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}}}
 
 // ==== CATEGORIES ====
-async function loadCats(){try{cats=await api('/categories?order=sort_order')}catch(e){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}]}
+async function loadCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
+    try{const apiCats=await api('/categories?order=sort_order');if(apiCats&&apiCats.length)cats=apiCats}catch(e){}
     $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
 function switchCat(c){cat=c;loadPosts()}
 
@@ -332,7 +333,8 @@ async function submitPost(){
         const newAwards=checkAwards();
         addPoints(2,'post','发布帖子');
         showResult('发布成功！','+2 积分',newAwards);
-        $('postTitle').value='';$('postContent').value='';$('postImage').value='';loadPosts();loadHot();loadLB();
+        $('postTitle').value='';$('postContent').value='';$('postImage').value='';
+        cat='all';loadPosts();loadHot();loadLB();
         if(res&&res.length)setTimeout(()=>showDetail(res[0].id),500);
     }catch(e){toast('❌ 发布失败，草稿已保存')}
     submitting=false;btn.disabled=false;btn.textContent='发布';
