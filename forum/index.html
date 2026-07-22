@@ -50,6 +50,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes popIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes popOut{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-50%) scale(0.8)}}
+@keyframes scrollLeft{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .modal-close{float:right;font-size:24px;cursor:pointer;color:var(--gray);background:none;border:none}
 .modal h2{font-size:20px;color:var(--navy);margin-bottom:14px}
 .modal input,.modal textarea,.modal select{width:100%;padding:14px;border:2px solid var(--warm);border-radius:12px;font-size:16px;font-family:inherit;margin-bottom:10px;background:#FAFAFA}
@@ -88,15 +89,6 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <div class="cat-grid" id="catGrid"></div>
 
-<div class="checkin-card"><h3>🌞 今日签到</h3>
-    <div id="checkinCount" style="font-size:14px;color:var(--gray)"></div>
-    <button class="mood-btn" onclick="doCheckin()" id="checkinBtn" style="font-size:17px;padding:12px 24px">✅ 今日签到</button>
-    <div class="mood-picker" id="moodPicker" style="display:none">
-        <span class="mood-btn" onclick="pickMood('😊','开心')">😊</span><span class="mood-btn" onclick="pickMood('😌','平静')">😌</span>
-        <span class="mood-btn" onclick="pickMood('🥰','充实')">🥰</span><span class="mood-btn" onclick="pickMood('😴','有点累')">😴</span><span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹</span>
-    </div>
-</div>
-
 <div class="card"><div class="sec-title">🔥 热门讨论</div><div id="hotPosts">加载中...</div></div>
 <div class="card"><div class="sec-title">🌟 本月热心同学</div><div id="leaderboard">加载中...</div></div>
 <div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月寿星</div><div id="birthdayList"></div></div>
@@ -107,8 +99,21 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <button class="tab-btn" onclick="switchTab('mine')">我的帖子</button>
     <button class="tab-btn" onclick="switchTab('bkm')">我的收藏</button>
 </div>
-<div id="postList"><p style="text-align:center;color:var(--gray);padding:40px">加载中...</p></div>
+<div id="postList"><p id="initCheck" style="text-align:center;color:var(--gray);padding:40px">⏳ 正在加载，请稍候...</p></div>
 <div id="pagination"></div>
+
+<!-- Bottom Check-in -->
+<div class="checkin-card" style="margin-top:20px">
+    <h3>🌞 今日签到 <span id="checkinCount" style="font-size:14px;color:var(--gray)"></span></h3>
+    <div style="overflow:hidden;height:28px;margin:8px 0;position:relative;font-size:14px;color:var(--gray)">
+        <div id="checkinScroll" style="white-space:nowrap;position:absolute;animation:scrollLeft 20s linear infinite"></div>
+    </div>
+    <button class="mood-btn" onclick="doCheckin()" id="checkinBtn" style="font-size:17px;padding:12px 24px">✅ 今日签到</button>
+    <div class="mood-picker" id="moodPicker" style="display:none">
+        <span class="mood-btn" onclick="pickMood('😊','开心')">😊</span><span class="mood-btn" onclick="pickMood('😌','平静')">😌</span>
+        <span class="mood-btn" onclick="pickMood('🥰','充实')">🥰</span><span class="mood-btn" onclick="pickMood('😴','有点累')">😴</span><span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹</span>
+    </div>
+</div>
 <div id="debug" style="text-align:center;font-size:11px;color:#ccc"></div>
 </div>
 
@@ -253,9 +258,12 @@ function pickMood(icon,label){var today=adelaideToday(),yesterday=adelaideYester
     if(last===today){toast('今天已经签到过了');return}var streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
     if(last===yesterday)streak++;else streak=1;
     localStorage.setItem('f_checkin_streak_'+me.nickname,streak);localStorage.setItem('f_checkin_'+me.nickname,today);
+    // Save mood for scroll display
+    var moods=JSON.parse(localStorage.getItem('f_checkin_moods_'+today)||[]);moods.push({n:me.nickname,i:icon,t:Date.now()});localStorage.setItem('f_checkin_moods_'+today,JSON.stringify(moods));
     addPoints(1,'checkin','每日签到');$('moodPicker').style.display='none';$('checkinBtn').textContent='✅ 已签到 '+icon;$('checkinBtn').style.display='inline-block';
-    updateMe();loadCheckin();checkAwards();toast(icon+' 签到成功！+1分 🔥连续'+streak+'天')}
-async function loadCheckin(){var today=adelaideToday(),count=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='本设备今日'+count+'人签到';if(me&&localStorage.getItem('f_checkin_'+me.nickname)===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}}
+    updateMe();loadCheckin();checkAwards();updateCheckinScroll();toast(icon+' 签到成功！+1分 🔥连续'+streak+'天')}
+async function loadCheckin(){var today=adelaideToday(),count=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='本设备今日'+count+'人签到';if(me&&localStorage.getItem('f_checkin_'+me.nickname)===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}updateCheckinScroll()}
+function updateCheckinScroll(){var today=adelaideToday(),moods=JSON.parse(localStorage.getItem('f_checkin_moods_'+today)||'[]');if(moods.length){$('checkinScroll').textContent=moods.map(function(m){return m.i+' '+m.n}).join(' · ')+' · 已签到'}else{$('checkinScroll').textContent='还没有人签到，来做第一个吧 🌞'}}
 
 // ==================== CATEGORIES ====================
 function buildCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
@@ -518,6 +526,8 @@ function loadBirthdays(){var m=new Date().getMonth()+1,bdays=[];for(var i=0;i<lo
     buildCats();
     Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays(),loadCatCounts(),loadOnline()]);
     updateNotifyBadge();
+    // Debug marker
+    setTimeout(function(){D('V5 初始化完成 · 帖子:'+posts.length)},2000);
 })();
 </script>
 </body>
