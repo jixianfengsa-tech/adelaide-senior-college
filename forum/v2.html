@@ -50,6 +50,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes popIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes popOut{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-50%) scale(0.8)}}
+@keyframes scrollLeft{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .modal-close{float:right;font-size:24px;cursor:pointer;color:var(--gray);background:none;border:none}
 .modal h2{font-size:20px;color:var(--navy);margin-bottom:14px}
 .modal input,.modal textarea,.modal select{width:100%;padding:14px;border:2px solid var(--warm);border-radius:12px;font-size:16px;font-family:inherit;margin-bottom:10px;background:#FAFAFA}
@@ -88,15 +89,6 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <div class="cat-grid" id="catGrid"></div>
 
-<div class="checkin-card"><h3>🌞 今日签到</h3>
-    <div id="checkinCount" style="font-size:14px;color:var(--gray)"></div>
-    <button class="mood-btn" onclick="doCheckin()" id="checkinBtn" style="font-size:17px;padding:12px 24px">✅ 今日签到</button>
-    <div class="mood-picker" id="moodPicker" style="display:none">
-        <span class="mood-btn" onclick="pickMood('😊','开心')">😊</span><span class="mood-btn" onclick="pickMood('😌','平静')">😌</span>
-        <span class="mood-btn" onclick="pickMood('🥰','充实')">🥰</span><span class="mood-btn" onclick="pickMood('😴','有点累')">😴</span><span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹</span>
-    </div>
-</div>
-
 <div class="card"><div class="sec-title">🔥 热门讨论</div><div id="hotPosts">加载中...</div></div>
 <div class="card"><div class="sec-title">🌟 本月热心同学</div><div id="leaderboard">加载中...</div></div>
 <div class="card" id="birthdayCard" style="display:none"><div class="sec-title">🎂 本月寿星</div><div id="birthdayList"></div></div>
@@ -107,8 +99,21 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <button class="tab-btn" onclick="switchTab('mine')">我的帖子</button>
     <button class="tab-btn" onclick="switchTab('bkm')">我的收藏</button>
 </div>
-<div id="postList"><p style="text-align:center;color:var(--gray);padding:40px">加载中...</p></div>
+<div id="postList"><p id="initCheck" style="text-align:center;color:var(--gray);padding:40px">⏳ 正在加载，请稍候...</p></div>
 <div id="pagination"></div>
+
+<!-- Bottom Check-in -->
+<div class="checkin-card" style="margin-top:20px">
+    <h3>🌞 今日签到 <span id="checkinCount" style="font-size:14px;color:var(--gray)"></span></h3>
+    <div style="overflow:hidden;height:28px;margin:8px 0;position:relative;font-size:14px;color:var(--gray)">
+        <div id="checkinScroll" style="white-space:nowrap;position:absolute;animation:scrollLeft 20s linear infinite"></div>
+    </div>
+    <button class="mood-btn" onclick="doCheckin()" id="checkinBtn" style="font-size:17px;padding:12px 24px">✅ 今日签到</button>
+    <div class="mood-picker" id="moodPicker" style="display:none">
+        <span class="mood-btn" onclick="pickMood('😊','开心')">😊</span><span class="mood-btn" onclick="pickMood('😌','平静')">😌</span>
+        <span class="mood-btn" onclick="pickMood('🥰','充实')">🥰</span><span class="mood-btn" onclick="pickMood('😴','有点累')">😴</span><span class="mood-btn" onclick="pickMood('🌹','想聊天')">🌹</span>
+    </div>
+</div>
 <div id="debug" style="text-align:center;font-size:11px;color:#ccc"></div>
 </div>
 
@@ -170,10 +175,9 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
-var me=null,cat='all',cats=[],posts=[],isAdmin=false,sbAuth=null,currentTab='newest',submitting=false;
+var me=null,cat='all',cats=[],posts=[],isAdmin=false,currentTab='newest',submitting=false;
 var tempAvatar=null,selectedBirthMonth=null,totalPosts=0;
 
 function $(id){return document.getElementById(id)}
@@ -183,7 +187,6 @@ function toast(m){var e=$('toast');e.textContent=m;e.style.animation='none';e.of
 function ago(d){var s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';return new Date(d).toLocaleDateString('zh-CN')}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function emoji(s){var a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'],h=0;for(var i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
-function getSB(){if(!sbAuth&&window.supabase)sbAuth=window.supabase.createClient('https://nkvavgmvbmzrnwurazgq.supabase.co',KEY);return sbAuth}
 function adelaideToday(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
 function adelaideYesterday(){var d=new Date();d.setDate(d.getDate()-1);return d.toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
 
@@ -194,20 +197,25 @@ async function api(path,opt){
 
 // ==================== AUTH ====================
 async function checkGoogle(){
-    var sb=getSB();if(!sb)return;
-    try{var sess=await sb.auth.getSession();if(sess.data.session&&sess.data.session.user){
-        var u=sess.data.session.user,saved=localStorage.getItem('f_user');
-        if(saved){try{var p=JSON.parse(saved);if(p.login_type==='google'&&p.id===u.id){me=p;updateMe();return}}catch(e){}}
-        me={id:u.id,nickname:u.user_metadata.full_name||u.email.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0,total_posts:0,total_replies:0};
-        localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-    }}catch(e){}
+    // Check URL for auth callback
+    if(location.hash&&location.hash.indexOf('access_token')!==-1){
+        var params=new URLSearchParams(location.hash.slice(1));
+        var token=params.get('access_token');
+        if(token){
+            // Get user info from Supabase
+            try{var r=await fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+token}});
+            if(r.ok){var u=await r.json();me={id:u.id,nickname:u.user_metadata.full_name||u.email.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0,total_posts:0,total_replies:0};
+            localStorage.setItem('f_user',JSON.stringify(me));updateMe();toast('✅ 登录成功！');location.hash='';return;}
+            }catch(e){}
+        }
+    }
+    // Check existing session from localStorage
+    var saved=localStorage.getItem('f_user');if(saved&&!me){try{me=JSON.parse(saved);checkAdmin();updateMe()}catch(e){}}
 }
-function checkAdmin(){if(me&&me.nickname==='sure')isAdmin=true}
 async function loginGoogle(){
-    var sb=getSB();if(!sb){toast('请刷新');return}
-    try{var url=location.origin+location.pathname;
-    var r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:url}});
-    if(r.error){toast('❌ '+r.error.message);$('loginModal').innerHTML+='<p><button onclick="closeM(\'loginModal\')">返回论坛</button></p>'}}catch(e){toast('❌ 网络错误，请重试')}
+    var redirectUrl=location.origin+location.pathname;
+    var authUrl='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(redirectUrl);
+    location.href=authUrl;
 }
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
@@ -253,9 +261,12 @@ function pickMood(icon,label){var today=adelaideToday(),yesterday=adelaideYester
     if(last===today){toast('今天已经签到过了');return}var streak=parseInt(localStorage.getItem('f_checkin_streak_'+me.nickname)||'0');
     if(last===yesterday)streak++;else streak=1;
     localStorage.setItem('f_checkin_streak_'+me.nickname,streak);localStorage.setItem('f_checkin_'+me.nickname,today);
+    // Save mood for scroll display
+    var moods=JSON.parse(localStorage.getItem('f_checkin_moods_'+today)||[]);moods.push({n:me.nickname,i:icon,t:Date.now()});localStorage.setItem('f_checkin_moods_'+today,JSON.stringify(moods));
     addPoints(1,'checkin','每日签到');$('moodPicker').style.display='none';$('checkinBtn').textContent='✅ 已签到 '+icon;$('checkinBtn').style.display='inline-block';
-    updateMe();loadCheckin();checkAwards();toast(icon+' 签到成功！+1分 🔥连续'+streak+'天')}
-async function loadCheckin(){var today=adelaideToday(),count=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='本设备今日'+count+'人签到';if(me&&localStorage.getItem('f_checkin_'+me.nickname)===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}}
+    updateMe();loadCheckin();checkAwards();updateCheckinScroll();toast(icon+' 签到成功！+1分 🔥连续'+streak+'天')}
+async function loadCheckin(){var today=adelaideToday(),count=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)count++}$('checkinCount').textContent='本设备今日'+count+'人签到';if(me&&localStorage.getItem('f_checkin_'+me.nickname)===today){$('checkinBtn').textContent='✅ 已签到';$('checkinBtn').style.display='inline-block'}updateCheckinScroll()}
+function updateCheckinScroll(){var today=adelaideToday(),moods=JSON.parse(localStorage.getItem('f_checkin_moods_'+today)||'[]');if(moods.length){$('checkinScroll').textContent=moods.map(function(m){return m.i+' '+m.n}).join(' · ')+' · 已签到'}else{$('checkinScroll').textContent='还没有人签到，来做第一个吧 🌞'}}
 
 // ==================== CATEGORIES ====================
 function buildCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
@@ -340,7 +351,8 @@ async function submitPost(){
     if(!$('postTitle').value.trim()&&!$('postContent').value.trim()&&!$('postImage').files[0]){toast('请至少填一项');return}
     submitting=true;btn.disabled=true;btn.textContent='发布中...';closeM('postModal');toast('📨 发布中...');
     var img=null,f=$('postImage').files[0];
-    if(f)try{var sb=getSB();if(sb){var n=Date.now()+'.jpg';await sb.storage.from('posts').upload(n,f,{contentType:'image/jpeg',upsert:true});img=sb.storage.from('posts').getPublicUrl(n).data.publicUrl}}catch(e){}
+    // Store image as base64 data URL (no Supabase client needed)
+    if(f)try{if(f.size>500000){toast('图片自动压缩中...')}var rdr=new FileReader();img=await new Promise(function(resolve){rdr.onload=function(e){resolve(e.target.result)};rdr.readAsDataURL(f)})}catch(e){}
     try{
         var r=await fetch(API+'/posts',{method:'POST',body:JSON.stringify({category_id:parseInt($('postCat').value)||2,title:$('postTitle').value.trim()||'无标题',content:$('postContent').value.trim()||'.',guest_nickname:me.nickname,image_url:img}),headers:{apikey:KEY,'Content-Type':'application/json',Prefer:'return=representation'}});
         if(!r.ok)throw new Error(r.status);
@@ -385,14 +397,13 @@ async function showDetail(id){
         '<button onclick="quickReply('+id+',\'😊\')" style="font-size:22px;background:none;border:none;cursor:pointer">😊</button>'+
         '<button onclick="quickReply('+id+',\'🙏\')" style="font-size:22px;background:none;border:none;cursor:pointer">🙏</button>'+
         '<button onclick="sharePost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer">🔗 分享</button>'+
-        '<button onclick="bookmarkPost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer;color:'+(isBkm?'var(--gold)':'var(--gray)' +')">'+(isBkm?'💾 已收藏':'☆ 收藏')+'</button>'+
+        '<button onclick="bookmarkPost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer;color:'+(isBkm?'var(--gold)':'var(--gray)')+'">'+(isBkm?'💾 已收藏':'☆ 收藏')+'</button>'+
         (!isMine&&!isAdmin?'<button onclick="reportPost('+id+')" style="font-size:11px;background:none;border:none;color:var(--gray);cursor:pointer">🚩 举报</button>':'')+
         '</div>'+
         (isMine?'<button onclick="editPost('+id+')" style="padding:6px 14px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:14px;margin-bottom:12px">✏️ 编辑</button>':'')+
         '<h3 style="font-size:17px;margin-bottom:10px">回复 ('+(p.reply_count||0)+')</h3>'+rh+
         (p.is_locked?'<p style="color:var(--gray);text-align:center;padding:10px">🔒 帖子已关闭，无法回复</p>':
-        '<div style="margin-top:12px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:2px solid var(--warm);border-radius:10px;font-size:15px"><button onclick="submitReply('+id+')" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">回复</button></div>')+
-        '<p style="font-size:11px;color:var(--gray);margin-top:4px">👆 点🌹👏😊🙏快捷回复</p>';
+        '<div style="margin-top:12px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:2px solid var(--warm);border-radius:10px;font-size:15px"><button onclick="submitReply('+id+')" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">回复</button></div>');
     $('detailModal').classList.add('active');
 }
 
@@ -513,11 +524,22 @@ function loadBirthdays(){var m=new Date().getMonth()+1,bdays=[];for(var i=0;i<lo
 
 // ==================== INIT ====================
 (function(){
+    // Quick init - update UI immediately
     var s=localStorage.getItem('f_user');if(s){me=JSON.parse(s);checkAdmin();updateMe()}
-    checkGoogle().then(function(){if(!me)checkGoogle()}).catch(function(){});
     buildCats();
-    Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays(),loadCatCounts(),loadOnline()]);
-    updateNotifyBadge();
+    
+    // Show something immediately
+    $('postList').innerHTML='<div style="text-align:center;padding:20px"><p>✅ 论坛已就绪</p><p style="color:var(--gray);font-size:14px">正在加载数据...</p></div>';
+    
+    // Then load data asynchronously
+    setTimeout(function(){
+        checkGoogle().then(function(){if(!me)checkGoogle()}).catch(function(){});
+        loadPosts().catch(function(e){$('postList').innerHTML='<div style="text-align:center;padding:40px"><p>❌ 加载失败</p><button class="retry-btn" onclick="loadPosts()">重试</button></div>'});
+        loadHot();loadLB();loadCheckin();loadBirthdays();loadCatCounts();loadOnline();
+        updateNotifyBadge();
+    },100);
+    
+    setTimeout(function(){D('V5 就绪 · '+new Date().toLocaleTimeString())},2000);
 })();
 </script>
 </body>
