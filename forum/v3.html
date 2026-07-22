@@ -326,8 +326,10 @@ async function submitPost(){
     let img=null;const f=$('postImage').files[0];
     if(f){try{const sb=getSB();if(sb){const n=Date.now()+'.jpg';await sb.storage.from('posts').upload(n,f,{contentType:'image/jpeg',upsert:true});img=sb.storage.from('posts').getPublicUrl(n).data.publicUrl}}catch(e){}}
     try{const res=await api('/posts',{method:'POST',body:JSON.stringify({...d,image_url:img,allow_comments:$('allowComments').checked}),headers:{...H,Prefer:'return=representation'}});
-        me.total_posts=(me.total_posts||0)+1;addPoints(2,'post','发布帖子');checkAwards();
-        toast('🎉 发布成功，大家现在可以看到您的内容了。');
+        me.total_posts=(me.total_posts||0)+1;
+        const newAwards=checkAwards();
+        addPoints(2,'post','发布帖子');
+        showResult('发布成功！','+2 积分',newAwards);
         $('postTitle').value='';$('postContent').value='';$('postImage').value='';loadPosts();loadHot();loadLB();
         if(res&&res.length)setTimeout(()=>showDetail(res[0].id),500);
     }catch(e){toast('❌ 发布失败，草稿已保存')}
@@ -378,7 +380,7 @@ async function showDetail(id){
 function replyTo(name){const inp=$('replyInput');if(inp)inp.value='回复 @'+name+'：';inp.focus()}
 async function quickReply(pid,emoji){closeM('detailModal');toast(emoji+' 已发送！');await doReply(pid,emoji)}
 async function submitReply(pid){const c=$('replyInput').value.trim();if(!c)return;closeM('detailModal');toast('📨 发送中...');await doReply(pid,c)}
-async function doReply(pid,content){try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});me.total_replies=(me.total_replies||0)+1;addPoints(1,'reply','回复帖子');checkAwards();const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid);if(p.guest_nickname&&p.guest_nickname!==me.nickname)addNotification(p.guest_nickname,'reply',pid,me.nickname+' 回复了你的帖子')}setTimeout(loadHot,1000)}catch(e){toast('❌ 失败')}}
+async function doReply(pid,content){try{await api('/replies',{method:'POST',body:JSON.stringify({post_id:pid,content,guest_nickname:me?.nickname||'游客'}),headers:{...H,Prefer:'return=minimal'}});me.total_replies=(me.total_replies||0)+1;const newAwards=checkAwards();addPoints(1,'reply','回复帖子');showResult('回复成功！','+1 积分',newAwards);const p=posts.find(x=>x.id===pid);if(p){p.reply_count=(p.reply_count||0)+1;updatePostCard(pid);if(p.guest_nickname&&p.guest_nickname!==me.nickname)addNotification(p.guest_nickname,'reply',pid,me.nickname+' 回复了你的帖子')}setTimeout(loadHot,1000)}catch(e){toast('❌ 失败')}}
 function updatePostCard(id){const p=posts.find(x=>x.id===id);if(!p)return;document.querySelectorAll('.post-card').forEach(card=>{const h3=card.querySelector('.post-title');if(h3&&h3.textContent.includes(p.title||'')){const actions=card.querySelector('.post-actions');if(actions)actions.innerHTML=`<button class="react-btn ${isLiked(id)?'liked':''}" onclick="event.stopPropagation();toggleLike(${id})">❤️ ${p.likes||0}</button><span>💬 ${p.reply_count||0}</span><span>👁 ${p.views||0}</span>${(p.reply_count||0)>=10?'🔥':''}${(p.views||0)>=100?'⭐':''}`}})}
 async function editPost(id){const p=posts.find(x=>x.id===id);const nc=prompt('编辑：',p?p.content:'');if(!nc)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({content:nc}),headers:{...H,Prefer:'return=minimal'}});toast('✅ 已更新');p.content=nc;showDetail(id)}catch(e){toast('❌')}}
 async function togglePin(id){const p=posts.find(x=>x.id===id);if(!p)return;try{await api('/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_pinned:!p.is_pinned}),headers:{...H,Prefer:'return=minimal'}});toast(p.is_pinned?'取消置顶':'已置顶');showDetail(id)}catch(e){}}
@@ -547,20 +549,30 @@ function getAchievements(){
     return earned;
 }
 function checkAwards(){
-    if(!me||!me.nickname)return;
+    if(!me||!me.nickname)return[];
     const earned=getAchievements();
-    let newAward=null;
+    const newList=[];
     ALL_AWARDS.forEach(a=>{
         if(!earned.find(e=>e.id===a.id)&&a.check()){
             earned.push({id:a.id,name:a.name,icon:a.icon,time:new Date().toISOString()});
-            newAward=a;
+            newList.push(a);
         }
     });
-    if(newAward){
+    if(newList.length){
         localStorage.setItem('f_awards_'+me.nickname,JSON.stringify(earned));
-        toast('🎉 恭喜您获得"'+newAward.name+'"奖牌！');
         updateMe();
     }
+    return newList;
+}
+
+function showResult(title,points,awards){
+    let ahtml='';
+    if(awards&&awards.length)ahtml='<div style="margin-top:8px;font-size:14px">🏅 '+awards.map(a=>a.icon+a.name).join(' ')+'</div>';
+    const div=document.createElement('div');
+    div.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#fff;padding:20px 32px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;text-align:center;animation:popIn .4s ease;max-width:320px';
+    div.innerHTML=`<div style="font-size:40px;margin-bottom:8px">🎉</div><div style="font-size:18px;font-weight:700;color:var(--navy)">${title}</div><div style="font-size:16px;color:var(--gold);font-weight:700;margin:8px 0">${points}</div>${ahtml}`;
+    document.body.appendChild(div);
+    setTimeout(()=>{div.style.animation='popOut .3s ease forwards';setTimeout(()=>div.remove(),300)},2500);
 }
 
 function updateMe(){
