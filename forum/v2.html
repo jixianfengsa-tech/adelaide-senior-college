@@ -291,7 +291,12 @@ async function loadCheckin(){const today=adelaideToday();let count=0;for(let i=0
 // ==== CATEGORIES ====
 async function loadCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
     $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(function(c){return'<option value="'+c.id+'">'+c.icon+' '+c.name+'</option>'}).join('')}
-function switchCat(c){cat=c;loadPosts()}
+function switchCat(c){
+    cat=c;
+    // Highlight active category box
+    var boxes=document.querySelectorAll('.cat-box');boxes.forEach(function(b,i){b.style.border=i+1==c?'2px solid var(--gold)':'none'});
+    loadPosts();
+}
 
 // ==== TABS ====
 function switchTab(t){currentTab=t;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');loadPosts()}
@@ -336,7 +341,7 @@ async function submitPost(){
         // Reset to all and reload after a brief delay for DB sync
         cat='all';setTimeout(function(){loadPosts();loadHot();loadLB()},800);
         if(res&&res.length)setTimeout(function(){showDetail(res[0].id)},1200);
-    }catch(e){toast('❌ 发布失败，草稿已保存')}
+    }catch(e){toast('❌ 发布失败：'+e.message);$('debug').textContent='错误：'+e.message}
     submitting=false;btn.disabled=false;btn.textContent='发布';
 }
 
