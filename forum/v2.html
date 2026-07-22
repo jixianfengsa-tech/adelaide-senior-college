@@ -290,8 +290,6 @@ async function loadCheckin(){const today=adelaideToday();let count=0;for(let i=0
 
 // ==== CATEGORIES ====
 async function loadCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
-    // Always use the 6-category list above, try API as fallback only
-    try{const apiCats=await api('/categories?order=sort_order');if(apiCats&&apiCats.length>=6)cats=apiCats}catch(e){}
     $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(function(c){return'<option value="'+c.id+'">'+c.icon+' '+c.name+'</option>'}).join('')}
 function switchCat(c){cat=c;loadPosts()}
 
