@@ -175,10 +175,9 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
 <script>
 const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
-var me=null,cat='all',cats=[],posts=[],isAdmin=false,sbAuth=null,currentTab='newest',submitting=false;
+var me=null,cat='all',cats=[],posts=[],isAdmin=false,currentTab='newest',submitting=false;
 var tempAvatar=null,selectedBirthMonth=null,totalPosts=0;
 
 function $(id){return document.getElementById(id)}
@@ -188,7 +187,6 @@ function toast(m){var e=$('toast');e.textContent=m;e.style.animation='none';e.of
 function ago(d){var s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';return new Date(d).toLocaleDateString('zh-CN')}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function emoji(s){var a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'],h=0;for(var i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
-function getSB(){if(!sbAuth&&window.supabase)sbAuth=window.supabase.createClient('https://nkvavgmvbmzrnwurazgq.supabase.co',KEY);return sbAuth}
 function adelaideToday(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
 function adelaideYesterday(){var d=new Date();d.setDate(d.getDate()-1);return d.toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'})}
 
@@ -199,20 +197,25 @@ async function api(path,opt){
 
 // ==================== AUTH ====================
 async function checkGoogle(){
-    var sb=getSB();if(!sb)return;
-    try{var sess=await sb.auth.getSession();if(sess.data.session&&sess.data.session.user){
-        var u=sess.data.session.user,saved=localStorage.getItem('f_user');
-        if(saved){try{var p=JSON.parse(saved);if(p.login_type==='google'&&p.id===u.id){me=p;updateMe();return}}catch(e){}}
-        me={id:u.id,nickname:u.user_metadata.full_name||u.email.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0,total_posts:0,total_replies:0};
-        localStorage.setItem('f_user',JSON.stringify(me));updateMe();
-    }}catch(e){}
+    // Check URL for auth callback
+    if(location.hash&&location.hash.indexOf('access_token')!==-1){
+        var params=new URLSearchParams(location.hash.slice(1));
+        var token=params.get('access_token');
+        if(token){
+            // Get user info from Supabase
+            try{var r=await fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+token}});
+            if(r.ok){var u=await r.json();me={id:u.id,nickname:u.user_metadata.full_name||u.email.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0,total_posts:0,total_replies:0};
+            localStorage.setItem('f_user',JSON.stringify(me));updateMe();toast('✅ 登录成功！');location.hash='';return;}
+            }catch(e){}
+        }
+    }
+    // Check existing session from localStorage
+    var saved=localStorage.getItem('f_user');if(saved&&!me){try{me=JSON.parse(saved);checkAdmin();updateMe()}catch(e){}}
 }
-function checkAdmin(){if(me&&me.nickname==='sure')isAdmin=true}
 async function loginGoogle(){
-    var sb=getSB();if(!sb){toast('请刷新');return}
-    try{var url=location.origin+location.pathname;
-    var r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:url}});
-    if(r.error){toast('❌ '+r.error.message);$('loginModal').innerHTML+='<p><button onclick="closeM(\'loginModal\')">返回论坛</button></p>'}}catch(e){toast('❌ 网络错误，请重试')}
+    var redirectUrl=location.origin+location.pathname;
+    var authUrl='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(redirectUrl);
+    location.href=authUrl;
 }
 function doLogin(){$('loginModal').classList.add('active')}
 function loginAsGuest(){
@@ -348,7 +351,8 @@ async function submitPost(){
     if(!$('postTitle').value.trim()&&!$('postContent').value.trim()&&!$('postImage').files[0]){toast('请至少填一项');return}
     submitting=true;btn.disabled=true;btn.textContent='发布中...';closeM('postModal');toast('📨 发布中...');
     var img=null,f=$('postImage').files[0];
-    if(f)try{var sb=getSB();if(sb){var n=Date.now()+'.jpg';await sb.storage.from('posts').upload(n,f,{contentType:'image/jpeg',upsert:true});img=sb.storage.from('posts').getPublicUrl(n).data.publicUrl}}catch(e){}
+    // Store image as base64 data URL (no Supabase client needed)
+    if(f)try{if(f.size>500000){toast('图片自动压缩中...')}var rdr=new FileReader();img=await new Promise(function(resolve){rdr.onload=function(e){resolve(e.target.result)};rdr.readAsDataURL(f)})}catch(e){}
     try{
         var r=await fetch(API+'/posts',{method:'POST',body:JSON.stringify({category_id:parseInt($('postCat').value)||2,title:$('postTitle').value.trim()||'无标题',content:$('postContent').value.trim()||'.',guest_nickname:me.nickname,image_url:img}),headers:{apikey:KEY,'Content-Type':'application/json',Prefer:'return=representation'}});
         if(!r.ok)throw new Error(r.status);
