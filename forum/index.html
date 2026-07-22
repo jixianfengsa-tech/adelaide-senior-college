@@ -521,13 +521,22 @@ function loadBirthdays(){var m=new Date().getMonth()+1,bdays=[];for(var i=0;i<lo
 
 // ==================== INIT ====================
 (function(){
+    // Quick init - update UI immediately
     var s=localStorage.getItem('f_user');if(s){me=JSON.parse(s);checkAdmin();updateMe()}
-    checkGoogle().then(function(){if(!me)checkGoogle()}).catch(function(){});
     buildCats();
-    Promise.all([loadPosts(),loadHot(),loadLB(),loadCheckin(),loadBirthdays(),loadCatCounts(),loadOnline()]);
-    updateNotifyBadge();
-    // Debug marker
-    setTimeout(function(){D('V5 初始化完成 · 帖子:'+posts.length)},2000);
+    
+    // Show something immediately
+    $('postList').innerHTML='<div style="text-align:center;padding:20px"><p>✅ 论坛已就绪</p><p style="color:var(--gray);font-size:14px">正在加载数据...</p></div>';
+    
+    // Then load data asynchronously
+    setTimeout(function(){
+        checkGoogle().then(function(){if(!me)checkGoogle()}).catch(function(){});
+        loadPosts().catch(function(e){$('postList').innerHTML='<div style="text-align:center;padding:40px"><p>❌ 加载失败</p><button class="retry-btn" onclick="loadPosts()">重试</button></div>'});
+        loadHot();loadLB();loadCheckin();loadBirthdays();loadCatCounts();loadOnline();
+        updateNotifyBadge();
+    },100);
+    
+    setTimeout(function(){D('V5 就绪 · '+new Date().toLocaleTimeString())},2000);
 })();
 </script>
 </body>
