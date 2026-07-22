@@ -322,6 +322,7 @@ setInterval(saveDraft,5000);$('postTitle').addEventListener('input',saveDraft);$
 
 async function submitPost(){
     if(submitting)return;const btn=$('postSubmitBtn');
+    showResult('发布中...','请稍候',[]);
     const d={category_id:parseInt($('postCat').value),title:$('postTitle').value.trim(),content:$('postContent').value.trim(),guest_nickname:me?.nickname||'游客'};
     if(!d.title&&!d.content&&!$('postImage').files[0]){toast('请至少填写标题、内容或上传图片');return}
     submitting=true;btn.disabled=true;btn.textContent='正在发布...';closeM('postModal');toast('📨 发布中...');
