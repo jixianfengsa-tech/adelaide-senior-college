@@ -293,7 +293,21 @@ async function loadCats(){cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,nam
     $('postCat').innerHTML='<option value="">选择版块</option>'+cats.map(function(c){return'<option value="'+c.id+'">'+c.icon+' '+c.name+'</option>'}).join('')}
 function switchCat(c){
     cat=c;
-    // Highlight active category box
+    // Show category header when inside a category
+    var theCat=cats.find(function(x){return x.id==c})||{name:'综合',icon:'💬'};
+    if(c!=='all'){
+        $('postList').insertAdjacentHTML('beforebegin',
+            '<div id="catHeader" style="background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px">'+
+            '<span style="font-size:32px">'+theCat.icon+'</span>'+
+            '<div style="flex:1"><div style="font-size:20px;font-weight:800;color:var(--navy)">'+theCat.name+'</div><div style="font-size:14px;color:var(--gray)">浏览这个版块的帖子</div></div>'+
+            '<button onclick="switchCat(\'all\')" style="padding:8px 16px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer">← 返回全部</button>'+
+            '</div>');
+        $('catGrid').style.display='none';
+    }else{
+        var h=$('catHeader');if(h)h.remove();
+        $('catGrid').style.display='grid';
+    }
+    // Highlight active box
     var boxes=document.querySelectorAll('.cat-box');boxes.forEach(function(b,i){b.style.border=i+1==c?'2px solid var(--gold)':'none'});
     loadPosts();
 }
