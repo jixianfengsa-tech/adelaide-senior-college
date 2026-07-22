@@ -397,14 +397,13 @@ async function showDetail(id){
         '<button onclick="quickReply('+id+',\'😊\')" style="font-size:22px;background:none;border:none;cursor:pointer">😊</button>'+
         '<button onclick="quickReply('+id+',\'🙏\')" style="font-size:22px;background:none;border:none;cursor:pointer">🙏</button>'+
         '<button onclick="sharePost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer">🔗 分享</button>'+
-        '<button onclick="bookmarkPost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer;color:'+(isBkm?'var(--gold)':'var(--gray)' +')">'+(isBkm?'💾 已收藏':'☆ 收藏')+'</button>'+
+        '<button onclick="bookmarkPost('+id+')" style="font-size:13px;background:none;border:1px solid var(--warm);border-radius:15px;padding:4px 12px;cursor:pointer;color:'+(isBkm?'var(--gold)':'var(--gray)')+'">'+(isBkm?'💾 已收藏':'☆ 收藏')+'</button>'+
         (!isMine&&!isAdmin?'<button onclick="reportPost('+id+')" style="font-size:11px;background:none;border:none;color:var(--gray);cursor:pointer">🚩 举报</button>':'')+
         '</div>'+
         (isMine?'<button onclick="editPost('+id+')" style="padding:6px 14px;border:1px solid var(--navy);border-radius:8px;background:#fff;color:var(--navy);cursor:pointer;font-size:14px;margin-bottom:12px">✏️ 编辑</button>':'')+
         '<h3 style="font-size:17px;margin-bottom:10px">回复 ('+(p.reply_count||0)+')</h3>'+rh+
         (p.is_locked?'<p style="color:var(--gray);text-align:center;padding:10px">🔒 帖子已关闭，无法回复</p>':
-        '<div style="margin-top:12px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:2px solid var(--warm);border-radius:10px;font-size:15px"><button onclick="submitReply('+id+')" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">回复</button></div>')+
-        '<p style="font-size:11px;color:var(--gray);margin-top:4px">👆 点🌹👏😊🙏快捷回复</p>';
+        '<div style="margin-top:12px;display:flex;gap:8px"><input id="replyInput" placeholder="写回复..." style="flex:1;padding:10px;border:2px solid var(--warm);border-radius:10px;font-size:15px"><button onclick="submitReply('+id+')" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer">回复</button></div>');
     $('detailModal').classList.add('active');
 }
 
