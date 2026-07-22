@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>老年大学同学之间 - 测试版</title>
+<style>
+:root{--bg:#FFF8F0;--card:#FFF;--warm:#E8D5B7;--gold:#C4A44A;--navy:#2C3E50;--green:#6B8E6B;--text:#3D3D3D;--gray:#999}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);line-height:1.7;background:var(--bg);font-size:18px;margin:0}
+.container{max-width:700px;margin:0 auto;padding:14px}
+.header{background:linear-gradient(160deg,#5B7B6C,#6B8E6B);color:#fff;padding:16px;text-align:center;border-radius:0 0 20px 20px;margin-bottom:14px}
+.header h1{font-size:22px;margin:0}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.cat-box{background:var(--card);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);border:2px solid transparent}
+.cat-box.active{border-color:var(--gold)}
+.cat-box .c-icon{font-size:28px;display:block;margin-bottom:4px}
+.cat-box .c-name{font-size:14px;font-weight:700;color:var(--navy)}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.fab{position:fixed;bottom:24px;right:20px;background:var(--gold);color:#fff;border:none;border-radius:30px;padding:14px 24px;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(196,164,74,.4)}
+</style>
+</head>
+<body>
+<div class="header"><h1>🏫 老年大学同学之间</h1></div>
+<div class="container">
+<div class="cat-grid" id="catGrid"></div>
+<div class="card" id="postList"><p id="status">正在加载...</p></div>
+</div>
+<button class="fab" onclick="alert('发帖功能开发中')">✏️ 我要发言</button>
+
+<script>
+// Simple test
+var API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
+var cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
+
+// Build category grid
+var h='<div class="cat-box active" onclick="loadAll()"><span class="c-icon">🏠</span><span class="c-name">全部</span></div>';
+cats.forEach(function(c){h+='<div class="cat-box" onclick="loadCat('+c.id+')"><span class="c-icon">'+c.icon+'</span><span class="c-name">'+c.name+'</span></div>'});
+document.getElementById('catGrid').innerHTML=h;
+
+// Load posts
+async function loadAll(){loadCat('all')}
+async function loadCat(cat){
+    document.getElementById('status').textContent='加载中...';
+    try{
+        var q='/posts?select=*&order=created_at.desc&limit=20';
+        if(cat!=='all')q+='&category_id=eq.'+cat;
+        var r=await fetch(API+q,{headers:{apikey:KEY,'Content-Type':'application/json'}});
+        var posts=await r.json();
+        if(!posts.length){
+            document.getElementById('postList').innerHTML='<p style="text-align:center;padding:40px;color:var(--gray)">还没有帖子</p>';
+        }else{
+            document.getElementById('postList').innerHTML=posts.map(function(p){
+                var c=cats.find(function(x){return x.id===p.category_id})||{name:'??',icon:'❓'};
+                return '<div style="padding:12px;margin-bottom:8px;background:#fff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.05)"><strong>'+p.title+'</strong><br><small style="color:var(--gray)">'+p.guest_nickname+' · '+c.icon+c.name+' · 💬'+(p.reply_count||0)+'</small></div>';
+            }).join('');
+        }
+    }catch(e){
+        document.getElementById('postList').innerHTML='<p style="text-align:center;padding:40px;color:red">❌ 加载失败: '+e.message+'</p>';
+    }
+}
+
+// Init
+document.getElementById('status').textContent='✅ 页面已加载，正在获取数据...';
+loadAll();
+</script>
+</body>
+</html>
