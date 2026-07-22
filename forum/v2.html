@@ -569,12 +569,12 @@ function checkAwards(){
 
 function showResult(title,points,awards){
     let ahtml='';
-    if(awards&&awards.length)ahtml='<div style="margin-top:8px;font-size:14px">🏅 '+awards.map(a=>a.icon+a.name).join(' ')+'</div>';
-    const div=document.createElement('div');
-    div.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#fff;padding:20px 32px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;text-align:center;animation:popIn .4s ease;max-width:320px';
-    div.innerHTML=`<div style="font-size:40px;margin-bottom:8px">🎉</div><div style="font-size:18px;font-weight:700;color:var(--navy)">${title}</div><div style="font-size:16px;color:var(--gold);font-weight:700;margin:8px 0">${points}</div>${ahtml}`;
+    if(awards&&awards.length)ahtml='<div style="margin-top:6px;font-size:15px">🏅 '+awards.map(function(a){return a.icon+a.name}).join(' ')+'</div>';
+    var div=document.createElement('div');
+    div.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:24px 36px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.2);z-index:999999;text-align:center;animation:popIn .35s ease';
+    div.innerHTML='<div style="font-size:48px;margin-bottom:8px">🎉</div><div style="font-size:20px;font-weight:700;color:#2C3E50">'+title+'</div><div style="font-size:18px;color:#C4A44A;font-weight:700;margin:10px 0">'+points+'</div>'+ahtml;
     document.body.appendChild(div);
-    setTimeout(()=>{div.style.animation='popOut .3s ease forwards';setTimeout(()=>div.remove(),300)},2500);
+    setTimeout(function(){div.style.animation='popOut .25s ease forwards';setTimeout(function(){div.remove()},250)},2200);
 }
 
 function updateMe(){
