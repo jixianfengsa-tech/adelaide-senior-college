@@ -462,9 +462,11 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
         }
         me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:'🌐',points:0};
         localStorage.setItem('f_user',JSON.stringify(me));
+        history.replaceState(null,'',location.pathname+location.search);
+        updateMe();
+        // Rebuild UI immediately (don't wait for setTimeout)
+        buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
         toast('✅ 登录成功！');
-        // Reload page to properly initialize with the saved user
-        setTimeout(function(){location.href=location.pathname+location.search},800);
     }).catch(function(e){D('Google callback error: '+e.message);toast('⚠️ 登录异常，请刷新重试')});
 })();
 
