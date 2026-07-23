@@ -166,12 +166,15 @@ function saveMe(){localStorage.setItem('f_user',JSON.stringify(me));
     localStorage.setItem(ptKey,(me.points||0));updateMe()}
 function updateMe(){
     if(me){var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
-    // Auto-boost sure's points
-    if(me.nickname==='sure')me.points=Math.max(me.points||0,500);
     var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1);
     // Check moderator status
     modCats=[];isMod=false;for(var ci=1;ci<=7;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(mods.indexOf(me.nickname)!==-1){modCats.push(ci);isMod=true}}
-    // Boost mod points to 100
+    // Restore points from ID-based key (not nickname)
+    var ptKey=me.googleId?'f_pts_'+me.googleId:'f_pts_guest_'+me.nickname;
+    var savedPts=parseInt(localStorage.getItem(ptKey)||'0');
+    if(savedPts>0)me.points=savedPts;
+    // Auto-boost: sure admin = 500, mod = 100
+    if(me.nickname==='sure'&&isAdmin)me.points=Math.max(me.points||0,500);
     if(isMod&&!isAdmin)me.points=Math.max(me.points||0,100);
     $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if(me.nickname==='sure'&&isAdmin)title='👑 校长';
     $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
