@@ -143,6 +143,7 @@ function closeM(id){$(id).classList.remove('on')}
 function toast(m){var e=$('toast');e.textContent=m;e.style.animation='none';e.offsetHeight;e.style.animation='fi 2.5s ease forwards'}
 function ago(d){var s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+'分钟前';if(s<86400)return Math.floor(s/3600)+'小时前';return new Date(d).toLocaleDateString('zh-CN')}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function pAv(nick){if(me&&me.nickname===nick&&me.avatar_emoji&&me.avatar_emoji.indexOf('data:')===0)return'<img src="'+me.avatar_emoji+'" style="width:100%;height:100%;object-fit:cover">';return emoji(nick)}
 function emoji(s){var a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'],h=0;for(var i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
 
 // Categories
@@ -160,27 +161,49 @@ var cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:
 function doLogin(){$('lm').classList.add('on')}
 function loginGuest(){var n=$('gnick').value.trim();if(!n){toast('请输入昵称');return};me={nickname:n,login_type:'guest',avatar_emoji:emoji(n),points:0};saveMe();closeM('lm');toast('👋 '+n+'！')}
 function loginGoogle(){location.href='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent('https://adelaideseniorlearningcentre.org.au/forum/')}
-function saveMe(){localStorage.setItem('f_user',JSON.stringify(me));localStorage.setItem('f_user_pts_'+me.nickname,(me.points||0));updateMe()}
+function saveMe(){localStorage.setItem('f_user',JSON.stringify(me));
+    // Points key: use Google ID if available, otherwise nickname (for guest)
+    var ptKey=me.googleId?'f_pts_'+me.googleId:'f_pts_guest_'+me.nickname;
+    localStorage.setItem(ptKey,(me.points||0));
+    // Save profile per Google ID (preserve nickname + avatar across logins)
+    if(me.googleId)localStorage.setItem('f_profile_'+me.googleId,JSON.stringify({nickname:me.nickname,avatar_emoji:me.avatar_emoji}));
+    updateMe()}
 function updateMe(){
     if(me){var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
-    // Auto-boost sure's points
-    if(me.nickname==='sure')me.points=Math.max(me.points||0,500);
     var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1);
     // Check moderator status
     modCats=[];isMod=false;for(var ci=1;ci<=7;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(mods.indexOf(me.nickname)!==-1){modCats.push(ci);isMod=true}}
-    // Boost mod points to 100
+    // Restore points from ID-based key (not nickname)
+    var ptKey=me.googleId?'f_pts_'+me.googleId:'f_pts_guest_'+me.nickname;
+    var savedPts=parseInt(localStorage.getItem(ptKey)||'0');
+    if(savedPts>0)me.points=savedPts;
+    // Auto-boost: sure admin = 500, mod = 100
+    if(me.nickname==='sure'&&isAdmin)me.points=Math.max(me.points||0,500);
     if(isMod&&!isAdmin)me.points=Math.max(me.points||0,100);
     $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if(me.nickname==='sure'&&isAdmin)title='👑 校长';
-    $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
+    $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){
+        // Clear Google session by redirecting to Supabase logout
+        fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/logout',{method:'POST',headers:{apikey:KEY}}).catch(function(){});
+        me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')
+    };$('lbtn').className='btn btn-g'}
     else{isAdmin=false;isMod=false;modCats=[];$('uav').textContent='🐼';$('unm').textContent='游客';$('umt').textContent='';$('lbtn').textContent='登录';$('lbtn').onclick=doLogin;$('lbtn').className='btn btn-y'}
 }
 
 // ====== PROFILE ======
 function editProfile(){if(!me)return;$('pnick').value=me.nickname||'';
+    // Weekly change limit: under 200 points = once per week
+    if((me.points||0)<200&&!isAdmin){
+        var lastChange=parseInt(localStorage.getItem('f_lastChange_'+me.nickname)||'0');
+        var daysSince=(Date.now()-lastChange)/86400000;
+        if(daysSince<7){var remain=Math.ceil(7-daysSince);toast('⏳ 200分以下每周改1次，还剩'+remain+'天');$('prm').classList.add('on');return}
+    }
     var avs=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🦄','🌐'];var isPhoto=me.avatar_emoji&&me.avatar_emoji.indexOf('data:')===0;
     $('avpick').innerHTML=avs.map(function(a){return'<span onclick="me.avatar_emoji=\''+a+'\';editProfile()" style="cursor:pointer;padding:4px;border-radius:8px;background:'+(!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent')+'">'+a+'</span>'}).join('')+
+    // Photo upload: only for logged-in users with 100+ points (not guests)
+    (me.login_type==='guest'?'<p style="font-size:12px;color:var(--gray);margin-top:8px">🔒 登录后解锁照片头像</p>':
+    (me.points||0)<100?'<p style="font-size:12px;color:var(--gray);margin-top:8px">🔒 100积分后解锁照片头像</p>':
     (isPhoto?'<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px;margin-top:8px">📷 当前照片 <span onclick="me.avatar_emoji=\'🐼\';editProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>':
-    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer" onclick="pickAvatar()"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>');
+    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer" onclick="pickAvatar()"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>'));
     if(isAdmin){$('adminPanel').style.display='block';showAdminList()}else{$('adminPanel').style.display='none'}
     $('prm').classList.add('on');
 }
@@ -196,7 +219,10 @@ function pickAvatar(){var el=document.getElementById('avfile');if(el)el.click()}
 function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
     $('avpick').innerHTML='<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="'+tempAvatar+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><div style="font-size:14px;color:var(--gray);margin-bottom:8px">头像预览</div><button onclick="confirmAvatar()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer;margin-right:8px">✅ 确认使用</button><button onclick="tempAvatar=null;editProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer">取消</button></div>'};r.readAsDataURL(f)}
 function confirmAvatar(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;editProfile()}}
-function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');toast('✅ 已保存')}
+function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');
+    // Track change time for users under 200 points
+    if((me.points||0)<200&&!isAdmin)localStorage.setItem('f_lastChange_'+me.nickname,Date.now());
+    toast('✅ 已保存')}
 
 // ====== CATEGORIES & TABS ======
 function setCat(c){cat=c;var boxes=document.querySelectorAll('.cbox');boxes.forEach(function(b){b.classList.remove('sel')});if(c=='all')boxes[0].classList.add('sel');else{var el=$('cb'+c);if(el)el.classList.add('sel')}loadPosts()}
@@ -218,7 +244,7 @@ async function loadPosts(){
             var displayName=(isAnon&&!isAdmin)?'匿名':esc(p.guest_nickname||'匿名'),badges='';
             if(p.is_pinned)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(196,164,74,.15);color:var(--gold)">📌</span> ';
             if(p.is_starred)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(231,76,60,.1);color:var(--red)">⭐</span> ';
-            return '<div class="card pcard" onclick="showDetail('+p.id+')"><div class="ph"><div class="pav">'+(isAnon&&!isAdmin?'🌲':emoji(p.guest_nickname||''))+'</div><div class="pm"><div class="pa">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div>'+(canManage(p.category_id)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+'</div><div class="pti">'+esc(p.title||'无标题')+'</div><div class="pp">'+esc(p.content||'')+'</div></div>';
+            return '<div class="card pcard" onclick="showDetail('+p.id+')"><div class="ph"><div class="pav">'+(isAnon&&!isAdmin?'🌲':pAv(p.guest_nickname||''))+'</div><div class="pm"><div class="pa">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div>'+(canManage(p.category_id)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+'</div><div class="pti">'+esc(p.title||'无标题')+'</div><div class="pp">'+esc(p.content||'')+'</div></div>';
         }).join('');
         var ph='';if(totalPages>1)for(var i=1;i<=totalPages;i++)ph+='<button class="pb'+(i===page?' sel':'')+'" onclick="goPage('+i+')">'+i+'</button>';$('pag').innerHTML=ph;
     }catch(e){$('plist').innerHTML='<div style="text-align:center;padding:60px"><p>❌ 加载失败</p><p style="font-size:13px;color:var(--gray)">'+e.message+'</p><button class="btn btn-g" onclick="loadPosts()">重试</button></div>'}
@@ -257,7 +283,7 @@ async function showDetail(id){
     if(replies.length)rh=replies.map(function(x){return'<div style="padding:10px 0;border-bottom:1px solid #f0f0f0"><strong>'+esc(x.guest_nickname||'匿名')+'</strong> · '+ago(x.created_at)+'<div style="font-size:15px;white-space:pre-wrap">'+esc(x.content)+'</div></div>'}).join('')}catch(e){}
     $('dbody').innerHTML='<button class="mx" onclick="closeM(\'dm\')">✕</button>'+
         (canManage(p.category_id)?'<div style="float:right;display:flex;gap:4px;margin-right:40px"><button onclick="pinPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--gold);color:var(--navy);cursor:pointer;font-size:12px">📌 '+(p.is_pinned?'取消置顶':'置顶')+'</button><button onclick="starPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--pink);color:#fff;cursor:pointer;font-size:12px">⭐ '+(p.is_starred?'取消精华':'精华')+'</button><button onclick="lockPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--gray);color:#fff;cursor:pointer;font-size:12px">🔒 '+(p.is_locked?'解锁':'锁帖')+'</button></div>':'')+
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">'+(isAnon&&!isAdmin?'🌲':emoji(p.guest_nickname||''))+'</div><div><div style="font-weight:600;font-size:17px">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div style="font-size:13px;color:var(--gray)">'+ago(p.created_at)+' · '+c.icon+c.name+' · 👁'+p.views+'</div></div></div>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">'+(isAnon&&!isAdmin?'🌲':'<div style="width:48px;height:48px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--warm)">'+pAv(p.guest_nickname||'')+'</div>')+'</div><div><div style="font-weight:600;font-size:17px">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div style="font-size:13px;color:var(--gray)">'+ago(p.created_at)+' · '+c.icon+c.name+' · 👁'+p.views+'</div></div></div>'+
         '<h2 style="font-size:20px;margin-bottom:10px">'+esc(p.title||'无标题')+'</h2>'+
         '<div style="font-size:16px;line-height:1.9;margin-bottom:14px;white-space:pre-wrap">'+esc(p.content||'')+'</div>'+
         '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
@@ -314,11 +340,14 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
         var t=(new URLSearchParams(location.hash.slice(1))).get('access_token');
         if(t)fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(u){
             var googleId=u.id,meta=u.user_metadata||{},nickname=meta.full_name||(u.email?u.email.split('@')[0]:'Google用户');
+            // Restore saved profile for this Google ID
+            var savedProfile=localStorage.getItem('f_profile_'+googleId);
+            if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;avatar_emoji=sp.avatar_emoji||'🌐'}catch(e){}
             var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
             if(admins.length===0||nickname==='sure'||(u.email&&u.email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
-            me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
+            me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
             history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
-        }).catch(function(){toast('⚠️ 登录异常')});
+        }).catch(function(e){toast('⚠️ 登录异常，请重试');setTimeout(function(){loginGoogle()},1500)});
     }
 })();
 </script>
