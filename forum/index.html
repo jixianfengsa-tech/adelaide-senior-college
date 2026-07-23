@@ -160,7 +160,10 @@ var cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:
 function doLogin(){$('lm').classList.add('on')}
 function loginGuest(){var n=$('gnick').value.trim();if(!n){toast('请输入昵称');return};me={nickname:n,login_type:'guest',avatar_emoji:emoji(n),points:0};saveMe();closeM('lm');toast('👋 '+n+'！')}
 function loginGoogle(){location.href='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent('https://adelaideseniorlearningcentre.org.au/forum/')}
-function saveMe(){localStorage.setItem('f_user',JSON.stringify(me));localStorage.setItem('f_user_pts_'+me.nickname,(me.points||0));updateMe()}
+function saveMe(){localStorage.setItem('f_user',JSON.stringify(me));
+    // Points key: use Google ID if available, otherwise nickname (for guest)
+    var ptKey=me.googleId?'f_pts_'+me.googleId:'f_pts_guest_'+me.nickname;
+    localStorage.setItem(ptKey,(me.points||0));updateMe()}
 function updateMe(){
     if(me){var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
     // Auto-boost sure's points
@@ -179,8 +182,11 @@ function updateMe(){
 function editProfile(){if(!me)return;$('pnick').value=me.nickname||'';
     var avs=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🦄','🌐'];var isPhoto=me.avatar_emoji&&me.avatar_emoji.indexOf('data:')===0;
     $('avpick').innerHTML=avs.map(function(a){return'<span onclick="me.avatar_emoji=\''+a+'\';editProfile()" style="cursor:pointer;padding:4px;border-radius:8px;background:'+(!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent')+'">'+a+'</span>'}).join('')+
+    // Photo upload: only for logged-in users with 100+ points (not guests)
+    (me.login_type==='guest'?'<p style="font-size:12px;color:var(--gray);margin-top:8px">🔒 登录后解锁照片头像</p>':
+    (me.points||0)<100?'<p style="font-size:12px;color:var(--gray);margin-top:8px">🔒 100积分后解锁照片头像</p>':
     (isPhoto?'<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px;margin-top:8px">📷 当前照片 <span onclick="me.avatar_emoji=\'🐼\';editProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>':
-    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer" onclick="pickAvatar()"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>');
+    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer" onclick="pickAvatar()"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>'));
     if(isAdmin){$('adminPanel').style.display='block';showAdminList()}else{$('adminPanel').style.display='none'}
     $('prm').classList.add('on');
 }
