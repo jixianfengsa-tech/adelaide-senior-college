@@ -463,8 +463,8 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
         me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:'🌐',points:0};
         localStorage.setItem('f_user',JSON.stringify(me));
         history.replaceState(null,'',location.pathname+location.search);
-        updateMe();
-        buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
+        try{updateMe();buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();}
+        catch(e2){$('debug').textContent='UI错误:'+e2.message}
         toast('✅ 登录成功！');
         document.title='✅ '+nickname+' - 阿德莱德华语论坛';
     }).catch(function(e){D('Google callback error: '+e.message);toast('⚠️ 登录异常，请刷新重试')});
@@ -472,9 +472,12 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
 
 // Init - wait briefly for async Google callback to complete
 setTimeout(function(){
-    var saved=localStorage.getItem('f_user');if(saved){try{me=JSON.parse(saved);updateMe()}catch(e){}}
-    buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
-    var el=$('plist').querySelector('p');if(el)el.textContent='✅ 论坛已就绪，正在加载数据...';
+    // Skip if callback already initialized (title changed)
+    if(document.title.indexOf('✅ ')!==0){
+        var saved=localStorage.getItem('f_user');if(saved){try{me=JSON.parse(saved);updateMe()}catch(e){}}
+        buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
+    }
+    var el=$('plist').querySelector('p');if(el)el.textContent='✅ 论坛已就绪';
 },500);
 </script>
 </body>
