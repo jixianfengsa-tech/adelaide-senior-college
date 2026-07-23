@@ -347,7 +347,7 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
             if(admins.length===0||nickname==='sure'||(u.email&&u.email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
             me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
             history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
-        }).catch(function(e){toast('⚠️ 登录异常，请重试');setTimeout(function(){loginGoogle()},1500)});
+        }).catch(function(e){toast('⚠️ 登录异常：'+(e.message||e));setTimeout(function(){loginGoogle()},2000)});
     }
 })();
 </script>
