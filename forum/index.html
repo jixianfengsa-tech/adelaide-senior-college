@@ -462,10 +462,12 @@ async function loadCatCounts(){for(var i=1;i<=6;i++){try{var r=await fetch(API+'
     }
 })();
 
-// Init
-var saved=localStorage.getItem('f_user');if(saved){try{me=JSON.parse(saved);updateMe()}catch(e){}}
-buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
-$('plist').querySelector('p').textContent='✅ 论坛已就绪，正在加载数据...';
+// Init - wait briefly for async Google callback to complete
+setTimeout(function(){
+    var saved=localStorage.getItem('f_user');if(saved){try{me=JSON.parse(saved);updateMe()}catch(e){}}
+    buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
+    $('plist').querySelector('p').textContent='✅ 论坛已就绪，正在加载数据...';
+},300);
 </script>
 </body>
 </html>
