@@ -160,13 +160,14 @@ function emoji(s){var a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'
 
 // User level/title display
 function userTitle(nickname){
-    if(nickname==='sure')return'👑 校长';
+    // Only give 校长 to Google-verified admin
+    if(nickname==='sure'&&isAdmin)return'👑 校长';
     var saved=localStorage.getItem('f_user_pts_'+nickname);var pts=saved?parseInt(saved):0;
     if(pts>=1000)return'🏅 荣誉同学';if(pts>=500)return'⭐ 校园达人';if(pts>=200)return'🌳 热心同学';if(pts>=50)return'🌿 活跃同学';if(pts>=1)return'🌱 新同学';
     return'';
 }
 function userLevelIcon(nickname){
-    if(nickname==='sure')return'👑';
+    if(nickname==='sure'&&isAdmin)return'👑';
     var saved=localStorage.getItem('f_user_pts_'+nickname);var pts=saved?parseInt(saved):0;
     if(pts>=1000)return'🏅';if(pts>=500)return'⭐';if(pts>=200)return'🌳';if(pts>=50)return'🌿';if(pts>=1)return'🌱';
     return'';
@@ -198,7 +199,7 @@ function updateMe(){
     if(me){
         // Admin check
         var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
-        isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1)||(me.nickname==='sure');
+        isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1);
         // Check if user is a moderator of any category
         modCats=[];isMod=false;
         for(var ci=1;ci<=6;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(mods.indexOf(me.nickname)!==-1){modCats.push(ci);isMod=true}}
