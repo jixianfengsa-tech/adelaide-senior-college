@@ -191,8 +191,11 @@ function removeAdmin(id){var admins=JSON.parse(localStorage.getItem('f_admins')|
 function addMod(catId){var n=$('modName'+catId).value.trim();if(!n)return;var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');if(mods.length>=5){toast('每个版块最多5个版主');return}if(mods.indexOf(n)===-1){mods.push(n);localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('✅ '+n+' 成为版主，+100分');showAdminList()}else{toast('已在名单中')}}
 function removeMod(catId,name){var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');mods=mods.filter(function(m){return m!==name});localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('已移除');showAdminList()}
 function canManage(catId){return isAdmin||(modCats.indexOf(catId)!==-1)}
+var tempAvatar=null;
 function pickAvatar(){var el=document.getElementById('avfile');if(el)el.click()}
-function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){me.avatar_emoji=e.target.result;editProfile()};r.readAsDataURL(f)}
+function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
+    $('avpick').innerHTML='<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="'+tempAvatar+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><div style="font-size:14px;color:var(--gray);margin-bottom:8px">头像预览</div><button onclick="confirmAvatar()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer;margin-right:8px">✅ 确认使用</button><button onclick="tempAvatar=null;editProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer">取消</button></div>'};r.readAsDataURL(f)}
+function confirmAvatar(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;editProfile()}}
 function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');toast('✅ 已保存')}
 
 // ====== CATEGORIES & TABS ======
