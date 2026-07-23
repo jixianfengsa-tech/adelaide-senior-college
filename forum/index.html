@@ -338,16 +338,24 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
     // Google callback
     if(location.hash&&location.hash.indexOf('access_token')!==-1){
         var t=(new URLSearchParams(location.hash.slice(1))).get('access_token');
-        if(t)fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(u){
-            var googleId=u.id,meta=u.user_metadata||{},nickname=meta.full_name||(u.email?u.email.split('@')[0]:'Google用户');
-            // Restore saved profile for this Google ID
-            var savedProfile=localStorage.getItem('f_profile_'+googleId);
-            if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;avatar_emoji=sp.avatar_emoji||'🌐'}catch(e){}
-            var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
-            if(admins.length===0||nickname==='sure'||(u.email&&u.email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
-            me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
-            history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
-        }).catch(function(e){toast('⚠️ 登录异常：'+(e.message||e));setTimeout(function(){loginGoogle()},2000)});
+        if(t){
+            // Try to get user info from token JWT (decode payload)
+            try{
+                var parts=t.split('.');
+                var payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+                var googleId=payload.sub||payload.id;
+                var email=payload.email||'';
+                var nickname=(payload.user_metadata||{}).full_name||email.split('@')[0]||'Google用户';
+            }catch(e){}
+            if(!googleId)toast('⚠️ 登录失败');else{
+                var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
+                if(admins.length===0||nickname==='sure'||(email&&email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+                var savedProfile=localStorage.getItem('f_profile_'+googleId);
+                if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;avatar_emoji=sp.avatar_emoji||'🌐'}catch(e){}
+                me={id:googleId,googleId:googleId,email:email,nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
+                history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
+            }
+        }
     }
 })();
 </script>
