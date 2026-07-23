@@ -194,11 +194,7 @@ function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(function(b
 // Auth
 function doLogin(){$('lm').classList.add('on')}
 function loginGuest(){var n=$('gnick').value.trim();if(!n){toast('请输入昵称');return};me={nickname:n,login_type:'guest',avatar_emoji:emoji(n),points:0};localStorage.setItem('f_user',JSON.stringify(me));updateMe();closeM('lm');toast('👋 '+n+'！')}
-function loginGoogle(){
-    var url='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent('https://adelaideseniorlearningcentre.org.au/forum/');
-    toast('🌐 正在跳转到Google...');
-    setTimeout(function(){location.href=url},500);
-}
+function loginGoogle(){location.href='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent('https://adelaideseniorlearningcentre.org.au/forum/')}
 function updateMe(){
     if(me){
         // Admin check
