@@ -128,10 +128,13 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <div id="avpick" style="font-size:30px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px"></div>
     <input id="pnick" placeholder="昵称" maxlength="20" style="text-align:center;font-size:18px">
     <div id="adminPanel" style="display:none;margin:12px 0;padding:12px;background:rgba(196,164,74,.1);border-radius:12px;font-size:14px;text-align:left">
-        <h3 style="color:var(--navy);margin-bottom:8px">🛡️ 管理员设置</h3>
-        <p style="color:var(--gray);font-size:13px">管理员名单（Google ID）：</p>
+        <h3 style="color:var(--navy);margin-bottom:8px">🛡️ 超级管理员</h3>
+        <p style="color:var(--gray);font-size:13px">全局管理员（Google ID）：</p>
         <div id="adminList" style="margin:8px 0"></div>
-        <div style="display:flex;gap:6px"><input id="newAdminId" placeholder="输入Google用户ID" style="flex:1;font-size:13px;padding:8px"><button onclick="addAdmin()" style="padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">添加</button></div>
+        <div style="display:flex;gap:6px;margin-bottom:12px"><input id="newAdminId" placeholder="Google用户ID" style="flex:1;font-size:13px;padding:8px"><button onclick="addAdmin()" style="padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">添加</button></div>
+        <h3 style="color:var(--navy);margin-bottom:8px">📋 版块管理员</h3>
+        <p style="color:var(--gray);font-size:13px">每个版块最多3个管理员（昵称）：</p>
+        <div id="modList"></div>
     </div>
     <button class="bs" onclick="saveProfile()">保存</button>
 </div></div>
@@ -146,7 +149,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <script>
 var API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
-var me=null,cat='all',curTab='new',posts=[],page=1,totalPages=1,isAdmin=false;
+var me=null,cat='all',curTab='new',posts=[],page=1,totalPages=1,isAdmin=false,isMod=false,modCats=[];
 
 function $(id){return document.getElementById(id)}
 function closeM(id){$(id).classList.remove('on')}
@@ -196,14 +199,17 @@ function updateMe(){
         // Admin check
         var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
         isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1)||(me.nickname==='sure');
+        // Check if user is a moderator of any category
+        modCats=[];isMod=false;
+        for(var ci=1;ci<=6;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(mods.indexOf(me.nickname)!==-1){modCats.push(ci);isMod=true}}
         // Save points to shared key so other users can see
         localStorage.setItem('f_user_pts_'+me.nickname,(me.points||0));
         var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
     $('unm').textContent=me.nickname+(isAdmin?' 👑':'');
     var title=userTitle(me.nickname);
-    $('umt').textContent=title+' · '+(me.points||0)+'分'+(isAdmin?' · 🛡️管理员':'');
-    $('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
-    else{isAdmin=false;$('uav').textContent='🐼';$('unm').textContent='游客';$('umt').textContent='';$('lbtn').textContent='登录';$('lbtn').onclick=doLogin;$('lbtn').className='btn btn-y'}
+    $('umt').textContent=title+' · '+(me.points||0)+'分'+(isAdmin?' · 🛡️管理员':'')+(isMod?' · 📋版主':'');
+    $('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
+    else{isAdmin=false;isMod=false;modCats=[];$('uav').textContent='🐼';$('unm').textContent='游客';$('umt').textContent='';$('lbtn').textContent='登录';$('lbtn').onclick=doLogin;$('lbtn').className='btn btn-y'}
 }
 
 // Profile
@@ -219,7 +225,23 @@ function editProfile(){if(!me)return;$('pnick').value=me.nickname||'';
     if(isAdmin){$('adminPanel').style.display='block';showAdminList()}else{$('adminPanel').style.display='none'}
     $('prm').classList.add('on');
 }
-function showAdminList(){var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');$('adminList').innerHTML=admins.map(function(id){return'<div style="padding:4px 0;font-size:13px">🛡️ '+id.slice(0,20)+'... <button onclick="removeAdmin(\''+id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px">✕ 移除</button></div>'}).join('')||'<p style="color:var(--gray)">暂无其他管理员</p>'}
+function showAdminList(){
+    var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
+    $('adminList').innerHTML=admins.map(function(id){return'<div style="padding:4px 0;font-size:13px">🛡️ '+id.slice(0,20)+'... <button onclick="removeAdmin(\''+id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px">✕ 移除</button></div>'}).join('')||'<p style="color:var(--gray)">暂无</p>';
+    // Per-category mod list
+    var mh='';
+    cats.forEach(function(c){
+        var mods=JSON.parse(localStorage.getItem('f_mods_'+c.id)||'[]');
+        mh+='<div style="margin:4px 0;padding:4px 8px;background:#fff;border-radius:6px"><strong>'+c.icon+' '+c.name+'</strong> ('+mods.length+'/3)<br>';
+        mods.forEach(function(m){mh+='<span style="font-size:12px;margin-right:4px">📋 '+m+' <button onclick="removeMod('+c.id+',\''+m+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px">✕</button></span>'});
+        if(mods.length<3)mh+='<div style="display:flex;gap:4px;margin-top:2px"><input id="modName'+c.id+'" placeholder="昵称" style="flex:1;font-size:12px;padding:4px"><button onclick="addMod('+c.id+')" style="padding:4px 8px;background:var(--green);color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer">+</button></div>';
+        mh+='</div>';
+    });
+    $('modList').innerHTML=mh;
+}
+function addMod(catId){var n=$('modName'+catId).value.trim();if(!n)return;var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');if(mods.length>=3){toast('每个版块最多3个版主');return};if(mods.indexOf(n)===-1){mods.push(n);localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('✅ 已添加');showAdminList()}else{toast('已在名单中')}}
+function removeMod(catId,name){var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');mods=mods.filter(function(m){return m!==name});localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('已移除');showAdminList()}
+function canManage(catId){return isAdmin||(modCats.indexOf(catId)!==-1)}
 function addAdmin(){var id=$('newAdminId').value.trim();if(!id)return;var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');if(admins.indexOf(id)===-1){admins.push(id);localStorage.setItem('f_admins',JSON.stringify(admins));toast('✅ 已添加');showAdminList()}else{toast('已在名单中')}}
 function removeAdmin(id){var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');admins=admins.filter(function(a){return a!==id});localStorage.setItem('f_admins',JSON.stringify(admins));toast('已移除');showAdminList()}
 function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){me.avatar_emoji=e.target.result;editProfile()};r.readAsDataURL(f)}
@@ -252,7 +274,7 @@ async function loadPosts(){
                 '<div class="ph"><div class="pav">'+pAv(p.guest_nickname||'')+'</div>'+
                 '<div class="pm"><div class="pa">'+esc(p.guest_nickname||'匿名')+(lv?' <span style="font-size:13px">'+lv+'</span>':'')+(isMine?' <small style="color:var(--gold)">·我</small>':'')+'</div>'+
                 '<div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+(title?'<span style="font-size:12px;color:var(--gold)">'+title+'</span> ':'')+badges+'</div></div>'+
-                ((isAdmin||isMine)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+
+                ((isAdmin||isMine||(modCats.indexOf(p.category_id)!==-1))?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+
                 '</div>'+
                 '<div class="pti">'+esc(p.title||'无标题')+'</div>'+
                 '<div class="pp">'+esc(p.content||'')+'</div>'+
@@ -315,7 +337,7 @@ async function showDetail(id){
     try{var rr=await fetch(API+'/replies?post_id=eq.'+id+'&order=created_at',{headers:{apikey:KEY}});var replies=await rr.json();
     if(replies.length)rh=replies.map(function(x){return'<div style="padding:10px 0;border-bottom:1px solid #f0f0f0"><strong>'+esc(x.guest_nickname||'匿名')+'</strong> · '+ago(x.created_at)+'<div style="font-size:15px;white-space:pre-wrap">'+esc(x.content)+'</div></div>'}).join('')}catch(e){}
     $('dbody').innerHTML='<button class="mx" onclick="closeM(\'dm\')">✕</button>'+
-        (isAdmin?'<div style="float:right;display:flex;gap:4px;margin-right:40px">'+
+        (canManage(p.category_id)?'<div style="float:right;display:flex;gap:4px;margin-right:40px">'+
         '<button onclick="pinPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--gold);color:var(--navy);cursor:pointer;font-size:12px;font-weight:600">📌 '+(p.is_pinned?'取消置顶':'置顶')+'</button>'+
         '<button onclick="starPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--pink);color:#fff;cursor:pointer;font-size:12px;font-weight:600">⭐ '+(p.is_starred?'取消精华':'精华')+'</button>'+
         '<button onclick="lockPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--gray);color:#fff;cursor:pointer;font-size:12px;font-weight:600">🔒 '+(p.is_locked?'解锁':'锁帖')+'</button>'+
@@ -380,10 +402,18 @@ function updateScroll(){
     // Also fetch from Supabase
     fetch(API.replace('/rest/v1','')+'/rest/v1/checkins?select=nickname,mood&check_date=eq.'+today+'&order=created_at.desc&limit=100',{headers:{apikey:KEY}}).then(function(r){return r.json()}).then(function(data){
         data.forEach(function(d){if(names.indexOf(d.nickname)===-1)names.push(d.nickname)});
-        // Add random filler names with random moods
-        var fillerNames=['岁月静好','清风徐来','春暖花开','往事如梦','未来可期','云淡风轻','夕阳红','快乐时光','平安是福','知足常乐','梅花香','柳暗花明','家和万事兴','心有阳光','秋水伊人','南山松','幽兰','翠竹','金菊','白梅'];
-        var fillerMoods=['😊','😌','🥰','🌹','😄','🎉','💖','✨'];
-        fillerNames.forEach(function(f){if(names.indexOf(f)===-1&&names.length<50)names.push(f)});
+        // Mixed filler names: poetic + common + single-char + English
+        var allFillers=[
+            '岁月静好','清风徐来','往事如梦','云淡风轻','春暖花开','知足常乐','秋水伊人','梅花香',
+            '王阿姨','李叔叔','张老师','陈奶奶','刘伯伯',
+            '风','云','雨','雪','花','月','星','梦','静','安',
+            'Amy','John','Lisa','David','Anna','Mike'
+        ];
+        // Shuffle and pick 20 random
+        for(var i=allFillers.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=allFillers[i];allFillers[i]=allFillers[j];allFillers[j]=tmp}
+        var picked=allFillers.slice(0,20);
+        var fillerMoods=['😊','😌','🥰','🌹','😄','🎉','💖','✨','🙏','👏','💪','🌞'];
+        picked.forEach(function(f){if(names.indexOf(f)===-1)names.push(f)});
         $('cscroll').textContent=names.length?names.map(function(n){
             var mood=data.find(function(d){return d.nickname===n});
             return (mood&&mood.mood?mood.mood:fillerMoods[Math.floor(Math.random()*fillerMoods.length)])+' '+n;
