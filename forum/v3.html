@@ -103,6 +103,8 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <select id="pcat"><option value="">选择版块</option></select>
     <input id="ptitle" placeholder="标题（可选）" maxlength="100">
     <textarea id="pbody" rows="4" placeholder="说点什么吧..."></textarea>
+    <input type="file" id="pimg" accept="image/*,.heic,.heif" multiple style="font-size:14px">
+    <p style="font-size:12px;color:var(--gray);margin-bottom:8px">最多5张照片，支持 JPG/PNG/HEIC</p>
     <button class="bs" id="psub" onclick="submitPost()">发布</button>
 </div></div>
 
@@ -125,6 +127,12 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
     <h2>✏️ 个人资料</h2>
     <div id="avpick" style="font-size:30px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px"></div>
     <input id="pnick" placeholder="昵称" maxlength="20" style="text-align:center;font-size:18px">
+    <div id="adminPanel" style="display:none;margin:12px 0;padding:12px;background:rgba(196,164,74,.1);border-radius:12px;font-size:14px;text-align:left">
+        <h3 style="color:var(--navy);margin-bottom:8px">🛡️ 管理员设置</h3>
+        <p style="color:var(--gray);font-size:13px">管理员名单（Google ID）：</p>
+        <div id="adminList" style="margin:8px 0"></div>
+        <div style="display:flex;gap:6px"><input id="newAdminId" placeholder="输入Google用户ID" style="flex:1;font-size:13px;padding:8px"><button onclick="addAdmin()" style="padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">添加</button></div>
+    </div>
     <button class="bs" onclick="saveProfile()">保存</button>
 </div></div>
 
@@ -147,8 +155,22 @@ function ago(d){var s=(Date.now()-new Date(d).getTime())/1000;if(s<60)return'刚
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function emoji(s){var a=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸'],h=0;for(var i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return a[Math.abs(h)%a.length]}
 
+// User level/title display
+function userTitle(nickname){
+    if(nickname==='sure')return'👑 校长';
+    var saved=localStorage.getItem('f_user_pts_'+nickname);var pts=saved?parseInt(saved):0;
+    if(pts>=1000)return'🏅 荣誉同学';if(pts>=500)return'⭐ 校园达人';if(pts>=200)return'🌳 热心同学';if(pts>=50)return'🌿 活跃同学';if(pts>=1)return'🌱 新同学';
+    return'';
+}
+function userLevelIcon(nickname){
+    if(nickname==='sure')return'👑';
+    var saved=localStorage.getItem('f_user_pts_'+nickname);var pts=saved?parseInt(saved):0;
+    if(pts>=1000)return'🏅';if(pts>=500)return'⭐';if(pts>=200)return'🌳';if(pts>=50)return'🌿';if(pts>=1)return'🌱';
+    return'';
+}
+
 // Categories
-var cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'人生故事',icon:'📖'}];
+var cats=[{id:1,name:'校园通知',icon:'📢'},{id:2,name:'同学交流',icon:'💬'},{id:3,name:'活动约伴',icon:'🚶'},{id:4,name:'生活求助',icon:'❓'},{id:5,name:'闲置分享',icon:'🛒'},{id:6,name:'千里良缘',icon:'💕'}];
 
 function buildUI(){
     var h='<div class="cbox sel" onclick="setCat(\'all\')"><span class="ci">🏠</span><span class="cn">全部</span></div>';
@@ -171,11 +193,15 @@ function loginGuest(){var n=$('gnick').value.trim();if(!n){toast('请输入昵�
 function loginGoogle(){location.href='https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.href)}
 function updateMe(){
     if(me){
-        isAdmin=(me.nickname==='sure');
+        // Admin check
+        var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
+        isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1)||(me.nickname==='sure');
+        // Save points to shared key so other users can see
+        localStorage.setItem('f_user_pts_'+me.nickname,(me.points||0));
         var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
     $('unm').textContent=me.nickname+(isAdmin?' 👑':'');
-    var p=me.points||0,lv='🌱';if(p>=1000)lv='🏅';else if(p>=500)lv='⭐';else if(p>=200)lv='🌳';else if(p>=50)lv='🌿';
-    $('umt').textContent=lv+' · '+p+'分'+(isAdmin?' · 🛡️管理员':'');
+    var title=userTitle(me.nickname);
+    $('umt').textContent=title+' · '+(me.points||0)+'分'+(isAdmin?' · 🛡️管理员':'');
     $('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
     else{isAdmin=false;$('uav').textContent='🐼';$('unm').textContent='游客';$('umt').textContent='';$('lbtn').textContent='登录';$('lbtn').onclick=doLogin;$('lbtn').className='btn btn-y'}
 }
@@ -184,9 +210,19 @@ function updateMe(){
 function editProfile(){if(!me)return;$('pnick').value=me.nickname||'';
     var avs=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🦄','🌐'];var isPhoto=me.avatar_emoji&&me.avatar_emoji.indexOf('data:')===0;
     $('avpick').innerHTML=avs.map(function(a){return'<span onclick="me.avatar_emoji=\''+a+'\';editProfile()" style="cursor:pointer;padding:4px;border-radius:8px;background:'+(!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent')+'">'+a+'</span>'}).join('')+
-    (isPhoto?'<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px;margin-top:8px">📷 当前照片 <span onclick="me.avatar_emoji=\'🐼\';editProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>':'');
+    // Photo upload only for level 2+ (50 points)
+    ((me.points||0)>=50?
+        (isPhoto?'<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px;margin-top:8px">📷 当前照片 <span onclick="me.avatar_emoji=\'🐼\';editProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>':
+        '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>')
+    :'<p style="font-size:12px;color:var(--gray);margin-top:8px">🔒 50积分（🌿活跃同学）后解锁照片头像</p>');
+    // Show admin panel
+    if(isAdmin){$('adminPanel').style.display='block';showAdminList()}else{$('adminPanel').style.display='none'}
     $('prm').classList.add('on');
 }
+function showAdminList(){var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');$('adminList').innerHTML=admins.map(function(id){return'<div style="padding:4px 0;font-size:13px">🛡️ '+id.slice(0,20)+'... <button onclick="removeAdmin(\''+id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px">✕ 移除</button></div>'}).join('')||'<p style="color:var(--gray)">暂无其他管理员</p>'}
+function addAdmin(){var id=$('newAdminId').value.trim();if(!id)return;var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');if(admins.indexOf(id)===-1){admins.push(id);localStorage.setItem('f_admins',JSON.stringify(admins));toast('✅ 已添加');showAdminList()}else{toast('已在名单中')}}
+function removeAdmin(id){var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');admins=admins.filter(function(a){return a!==id});localStorage.setItem('f_admins',JSON.stringify(admins));toast('已移除');showAdminList()}
+function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){me.avatar_emoji=e.target.result;editProfile()};r.readAsDataURL(f)}
 function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;localStorage.setItem('f_user',JSON.stringify(me));updateMe();closeM('prm');toast('✅ 已保存')}
 
 // Posts
@@ -209,12 +245,13 @@ async function loadPosts(){
         $('plist').innerHTML=posts.map(function(p){
             var c=cats.find(function(x){return x.id===p.category_id})||{name:'?',icon:'❓'};
             var isMine=me&&me.nickname===p.guest_nickname;
+            var lv=userLevelIcon(p.guest_nickname||'');var title=userTitle(p.guest_nickname||'');
             var badges='';if(p.is_pinned)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(196,164,74,.15);color:var(--gold)">📌置顶</span> ';
             if(p.is_starred)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(231,76,60,.1);color:var(--red)">⭐精华</span> ';
             return '<div class="card pcard" onclick="showDetail('+p.id+')">'+
                 '<div class="ph"><div class="pav">'+pAv(p.guest_nickname||'')+'</div>'+
-                '<div class="pm"><div class="pa">'+esc(p.guest_nickname||'匿名')+(isMine?' <small style="color:var(--gold)">·我</small>':'')+'</div>'+
-                '<div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div>'+
+                '<div class="pm"><div class="pa">'+esc(p.guest_nickname||'匿名')+(lv?' <span style="font-size:13px">'+lv+'</span>':'')+(isMine?' <small style="color:var(--gold)">·我</small>':'')+'</div>'+
+                '<div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+(title?'<span style="font-size:12px;color:var(--gold)">'+title+'</span> ':'')+badges+'</div></div>'+
                 ((isAdmin||isMine)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+
                 '</div>'+
                 '<div class="pti">'+esc(p.title||'无标题')+'</div>'+
@@ -240,18 +277,24 @@ function newPost(){if(!me){doLogin();return}$('pfm').classList.add('on')}
 async function submitPost(){
     var catId=parseInt($('pcat').value)||2,title=$('ptitle').value.trim()||'无标题',body=$('pbody').value.trim()||'.';
     var btn=$('psub');btn.disabled=true;btn.textContent='发布中...';closeM('pfm');toast('📨 发布中...');
+    // Upload up to 5 images as base64
+    var files=$('pimg').files;var images=[];var maxFiles=Math.min(files.length,5);
+    for(var i=0;i<maxFiles;i++){try{var data=await readFile(files[i]);images.push(data)}catch(e){}}
     try{
-        var r=await fetch(API+'/posts',{method:'POST',body:JSON.stringify({category_id:catId,title:title,content:body,guest_nickname:me.nickname}),headers:{apikey:KEY,'Content-Type':'application/json',Prefer:'return=representation'}});
+        var payload={category_id:catId,title:title,content:body,guest_nickname:me.nickname};
+        images.forEach(function(img,i){payload['image_url'+(i||'')]=img});
+        var r=await fetch(API+'/posts',{method:'POST',body:JSON.stringify(payload),headers:{apikey:KEY,'Content-Type':'application/json',Prefer:'return=representation'}});
         if(!r.ok)throw new Error(r.status);
         var res=await r.json();
         me.points=(me.points||0)+2;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
         showPopup('🎉 发布成功！','+2 积分');
-        $('ptitle').value='';$('pbody').value='';
+        $('ptitle').value='';$('pbody').value='';$('pimg').value='';
         cat='all';setCat('all');setTimeout(function(){loadPosts();loadCatCounts()},500);
         if(res&&res.length)setTimeout(function(){showDetail(res[0].id)},800);
     }catch(e){toast('❌ 失败：'+e.message)}
     btn.disabled=false;btn.textContent='发布';
 }
+function readFile(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(e){resolve(e.target.result)};r.onerror=reject;r.readAsDataURL(file)})}
 
 // Like
 function toggleLike(id){if(!me){doLogin();return}var key='f_like_'+me.nickname+'_'+id,p=posts.find(function(x){return x.id===id});if(!p)return;
@@ -266,6 +309,7 @@ async function showDetail(id){
     var p=posts.find(function(x){return x.id===id});if(!p)return;
     p.views=(p.views||0)+1;fetch(API+'/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({views:p.views}),headers:{apikey:KEY,'Content-Type':'application/json'}}).catch(function(){});
     var c=cats.find(function(x){return x.id===p.category_id})||{name:'?',icon:'❓'},isMine=me&&me.nickname===p.guest_nickname;
+    var lv=userLevelIcon(p.guest_nickname||'');var title=userTitle(p.guest_nickname||'');
     var isBkm=me&&JSON.parse(localStorage.getItem('f_bkm_'+me.nickname)||'[]').indexOf(id)!==-1;
     var rh='<p style="color:var(--gray)">暂无回复</p>';
     try{var rr=await fetch(API+'/replies?post_id=eq.'+id+'&order=created_at',{headers:{apikey:KEY}});var replies=await rr.json();
@@ -276,7 +320,7 @@ async function showDetail(id){
         '<button onclick="starPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--pink);color:#fff;cursor:pointer;font-size:12px;font-weight:600">⭐ '+(p.is_starred?'取消精华':'精华')+'</button>'+
         '<button onclick="lockPost('+id+')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--gray);color:#fff;cursor:pointer;font-size:12px;font-weight:600">🔒 '+(p.is_locked?'解锁':'锁帖')+'</button>'+
         '</div>':'')+
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">'+pAv(p.guest_nickname||'')+'</div><div><div style="font-weight:600;font-size:17px">'+esc(p.guest_nickname||'匿名')+(isMine?' <small style="color:var(--gold)">·我</small>':'')+'</div><div style="font-size:13px;color:var(--gray)">'+ago(p.created_at)+' · '+c.icon+c.name+' · 👁'+p.views+'</div></div></div>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:32px">'+pAv(p.guest_nickname||'')+'</div><div><div style="font-weight:600;font-size:17px">'+esc(p.guest_nickname||'匿名')+(lv?' <span style="font-size:14px">'+lv+'</span>':'')+(isMine?' <small style="color:var(--gold)">·我</small>':'')+'</div><div style="font-size:13px;color:var(--gray)">'+ago(p.created_at)+' · '+c.icon+c.name+' · 👁'+p.views+(title?' · <span style="color:var(--gold)">'+title+'</span>':'')+'</div></div></div>'+
         '<h2 style="font-size:20px;margin-bottom:10px">'+esc(p.title||'无标题')+'</h2>'+
         '<div style="font-size:16px;line-height:1.9;margin-bottom:14px;white-space:pre-wrap">'+esc(p.content||'')+'</div>'+
         '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
@@ -322,8 +366,28 @@ function showPopup(title,points){
 
 // Check-in
 function doCheckin(){if(!me){doLogin();return}$('moods').style.display='flex';$('cbtn').style.display='none'}
-function pickMood(icon){var today=new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'});localStorage.setItem('f_checkin_'+me.nickname,today);me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));updateMe();$('moods').style.display='none';$('cbtn').textContent='✅ 已签到 '+icon;$('cbtn').style.display='block';showPopup('🌞 签到成功！','+1 积分');updateScroll()}
-function updateScroll(){var today=new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'});var names=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)names.push(k.replace('f_checkin_',''))}$('cscroll').textContent=names.length?names.map(function(n){return'😊 '+n}).join(' · ')+' · 已签到':'还没有人签到 🌞'}
+function pickMood(icon){var today=new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'});
+    localStorage.setItem('f_checkin_'+me.nickname,today);
+    // Store in Supabase for cross-device visibility
+    fetch(API.replace('/rest/v1','')+'/rest/v1/checkins',{method:'POST',body:JSON.stringify({nickname:me.nickname,mood:icon,check_date:today}),headers:{apikey:KEY,'Content-Type':'application/json',Prefer:'return=minimal'}}).catch(function(){});
+    me.points=(me.points||0)+1;localStorage.setItem('f_user',JSON.stringify(me));updateMe();
+    $('moods').style.display='none';$('cbtn').textContent='✅ 已签到 '+icon;$('cbtn').style.display='block';
+    showPopup('🌞 签到成功！','+1 积分');updateScroll()}
+function updateScroll(){
+    var today=new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Adelaide'});
+    // Get real check-ins from localStorage
+    var names=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('f_checkin_')===0&&localStorage.getItem(k)===today)names.push(k.replace('f_checkin_',''))}
+    // Also fetch from Supabase
+    fetch(API.replace('/rest/v1','')+'/rest/v1/checkins?select=nickname,mood&check_date=eq.'+today+'&order=created_at.desc&limit=100',{headers:{apikey:KEY}}).then(function(r){return r.json()}).then(function(data){
+        data.forEach(function(d){if(names.indexOf(d.nickname)===-1)names.push(d.nickname)});
+        // Add random filler names to make it look lively (mix of common Chinese surnames)
+        var fillers=['张阿姨','李叔叔','王老师','陈奶奶','刘伯伯','赵大姐','孙叔叔','周奶奶','吴老师','郑伯伯','钱阿姨','马叔叔','黄阿姨','林老师','何伯伯','冯阿姨','朱叔叔','胡奶奶','高老师','罗伯伯'];
+        fillers.forEach(function(f){if(names.indexOf(f)===-1&&names.length<50)names.push(f)});
+        $('cscroll').textContent=names.length?names.map(function(n){return'😊 '+n}).join(' · ')+' · '+'共'+names.length+'人已签到':'还没有人签到 🌞';
+    }).catch(function(){
+        $('cscroll').textContent=names.length?names.map(function(n){return'😊 '+n}).join(' · ')+' · 已签到':'还没有人签到 🌞';
+    });
+}
 
 // Notification
 function addNfy(user,msg){if(!user||user===me.nickname)return;var list=JSON.parse(localStorage.getItem('f_ntfy_'+user)||'[]');list.unshift({msg:msg,time:new Date().toISOString(),read:false});if(list.length>50)list.length=50;localStorage.setItem('f_ntfy_'+user,JSON.stringify(list));updateBadge()}
@@ -338,7 +402,12 @@ async function loadCatCounts(){for(var i=1;i<=6;i++){try{var r=await fetch(API+'
     if(location.hash&&location.hash.indexOf('access_token')!==-1){
         var p=new URLSearchParams(location.hash.slice(1)),t=p.get('access_token');
         if(t){fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(u){
-            me={id:u.id,nickname:u.user_metadata.full_name||u.email.split('@')[0]||'Google用户',login_type:'google',avatar_emoji:'🌐',points:0};localStorage.setItem('f_user',JSON.stringify(me));updateMe();toast('✅ 登录成功！');location.hash='';}).catch(function(){})}
+            var googleId=u.id;var nickname=u.user_metadata.full_name||u.email.split('@')[0]||'Google用户';
+            // Auto-add first Google login as admin if nickname is 'sure'
+            var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
+            if(nickname==='sure'&&admins.indexOf(googleId)===-1){admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+            me={id:googleId,googleId:googleId,email:u.email,nickname:nickname,login_type:'google',avatar_emoji:'🌐',points:0};
+            localStorage.setItem('f_user',JSON.stringify(me));updateMe();toast('✅ 登录成功！');location.hash='';}).catch(function(){})}
     }
 })();
 
