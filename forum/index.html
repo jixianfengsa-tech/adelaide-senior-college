@@ -441,8 +441,9 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
 
 // Check Google redirect
 (function(){
+    $('debug').textContent='🔍 hash='+(location.hash?location.hash.slice(0,80):'无')+' search='+(location.search?location.search.slice(0,80):'无');
     if(!location.hash||location.hash.indexOf('access_token')===-1){
-        if(location.hash)$('debug').textContent='🔍 无token, hash='+location.hash.slice(0,30);
+        if(!location.hash&&!location.search)$('debug').textContent='🔍 正常加载，无登录回调';
         return;
     }
     var t=(new URLSearchParams(location.hash.slice(1))).get('access_token');
