@@ -180,7 +180,7 @@ function editProfile(){if(!me)return;$('pnick').value=me.nickname||'';
     var avs=['🐼','🐱','🐶','🐰','🦊','🐨','🐯','🐸','🐵','🦄','🌐'];var isPhoto=me.avatar_emoji&&me.avatar_emoji.indexOf('data:')===0;
     $('avpick').innerHTML=avs.map(function(a){return'<span onclick="me.avatar_emoji=\''+a+'\';editProfile()" style="cursor:pointer;padding:4px;border-radius:8px;background:'+(!isPhoto&&me.avatar_emoji===a?'var(--gold)':'transparent')+'">'+a+'</span>'}).join('')+
     (isPhoto?'<div style="padding:8px;background:var(--gold);border-radius:8px;font-size:14px;margin-top:8px">📷 当前照片 <span onclick="me.avatar_emoji=\'🐼\';editProfile()" style="cursor:pointer;margin-left:8px">✕</span></div>':
-    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>');
+    '<div style="padding:8px;border:2px dashed var(--warm);border-radius:8px;font-size:14px;margin-top:8px;cursor:pointer" onclick="pickAvatar()"><input type="file" id="avfile" accept="image/*" style="display:none" onchange="uploadAv(this)">📷 上传照片</div>');
     if(isAdmin){$('adminPanel').style.display='block';showAdminList()}else{$('adminPanel').style.display='none'}
     $('prm').classList.add('on');
 }
@@ -191,6 +191,7 @@ function removeAdmin(id){var admins=JSON.parse(localStorage.getItem('f_admins')|
 function addMod(catId){var n=$('modName'+catId).value.trim();if(!n)return;var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');if(mods.length>=5){toast('每个版块最多5个版主');return}if(mods.indexOf(n)===-1){mods.push(n);localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('✅ '+n+' 成为版主，+100分');showAdminList()}else{toast('已在名单中')}}
 function removeMod(catId,name){var mods=JSON.parse(localStorage.getItem('f_mods_'+catId)||'[]');mods=mods.filter(function(m){return m!==name});localStorage.setItem('f_mods_'+catId,JSON.stringify(mods));toast('已移除');showAdminList()}
 function canManage(catId){return isAdmin||(modCats.indexOf(catId)!==-1)}
+function pickAvatar(){var el=document.getElementById('avfile');if(el)el.click()}
 function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){me.avatar_emoji=e.target.result;editProfile()};r.readAsDataURL(f)}
 function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');toast('✅ 已保存')}
 
