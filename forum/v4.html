@@ -439,9 +439,12 @@ async function loadCatCounts(){for(var i=1;i<=6;i++){try{var r=await fetch(API+'
         var p=new URLSearchParams(location.hash.slice(1)),t=p.get('access_token');
         if(t){fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(u){
             var googleId=u.id;var nickname=u.user_metadata.full_name||u.email.split('@')[0]||'Google用户';
-            // Auto-add first Google login as admin if nickname is 'sure'
+            // Auto-set as admin: if no admins exist yet, first Google user becomes admin
+            // OR if nickname/email matches 'sure'
             var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
-            if(nickname==='sure'&&admins.indexOf(googleId)===-1){admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+            if(admins.length===0||nickname==='sure'||u.email.indexOf('sure')!==-1){
+                if(admins.indexOf(googleId)===-1){admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+            }
             me={id:googleId,googleId:googleId,email:u.email,nickname:nickname,login_type:'google',avatar_emoji:'🌐',points:0};
             localStorage.setItem('f_user',JSON.stringify(me));updateMe();toast('✅ 登录成功！');location.hash='';}).catch(function(){})}
     }
