@@ -380,10 +380,14 @@ function updateScroll(){
     // Also fetch from Supabase
     fetch(API.replace('/rest/v1','')+'/rest/v1/checkins?select=nickname,mood&check_date=eq.'+today+'&order=created_at.desc&limit=100',{headers:{apikey:KEY}}).then(function(r){return r.json()}).then(function(data){
         data.forEach(function(d){if(names.indexOf(d.nickname)===-1)names.push(d.nickname)});
-        // Add random filler names to make it look lively (mix of common Chinese surnames)
-        var fillers=['张阿姨','李叔叔','王老师','陈奶奶','刘伯伯','赵大姐','孙叔叔','周奶奶','吴老师','郑伯伯','钱阿姨','马叔叔','黄阿姨','林老师','何伯伯','冯阿姨','朱叔叔','胡奶奶','高老师','罗伯伯'];
-        fillers.forEach(function(f){if(names.indexOf(f)===-1&&names.length<50)names.push(f)});
-        $('cscroll').textContent=names.length?names.map(function(n){return'😊 '+n}).join(' · ')+' · '+'共'+names.length+'人已签到':'还没有人签到 🌞';
+        // Add random filler names with random moods
+        var fillerNames=['岁月静好','清风徐来','春暖花开','往事如梦','未来可期','云淡风轻','夕阳红','快乐时光','平安是福','知足常乐','梅花香','柳暗花明','家和万事兴','心有阳光','秋水伊人','南山松','幽兰','翠竹','金菊','白梅'];
+        var fillerMoods=['😊','😌','🥰','🌹','😄','🎉','💖','✨'];
+        fillerNames.forEach(function(f){if(names.indexOf(f)===-1&&names.length<50)names.push(f)});
+        $('cscroll').textContent=names.length?names.map(function(n){
+            var mood=data.find(function(d){return d.nickname===n});
+            return (mood&&mood.mood?mood.mood:fillerMoods[Math.floor(Math.random()*fillerMoods.length)])+' '+n;
+        }).join(' · ')+' · '+'共'+names.length+'人已签到':'还没有人签到 🌞';
     }).catch(function(){
         $('cscroll').textContent=names.length?names.map(function(n){return'😊 '+n}).join(' · ')+' · 已签到':'还没有人签到 🌞';
     });
