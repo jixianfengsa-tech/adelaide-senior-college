@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>老年大学同学之间</title>
+<title>阿德莱德华语论坛</title>
 <style>
 :root{--bg:#FFF8F0;--card:#FFF;--warm:#E8D5B7;--gold:#C4A44A;--navy:#2C3E50;--green:#6B8E6B;--text:#3D3D3D;--gray:#999;--red:#E74C3C}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -57,7 +57,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <body>
 
 <div class="header">
-    <h1>🏫 老年大学同学之间</h1>
+    <h1>🏫 阿德莱德华语论坛</h1>
     <a href="/">← 返回主页</a>
     <button class="nfy" onclick="showNfy()">🔔<span class="nfy-badge" id="nbadge">0</span></button>
 </div>
@@ -133,7 +133,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
         <div id="adminList" style="margin:8px 0"></div>
         <div style="display:flex;gap:6px;margin-bottom:12px"><input id="newAdminId" placeholder="Google用户ID" style="flex:1;font-size:13px;padding:8px"><button onclick="addAdmin()" style="padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">添加</button></div>
         <h3 style="color:var(--navy);margin-bottom:8px">📋 版块管理员</h3>
-        <p style="color:var(--gray);font-size:13px">每个版块最多3个管理员（昵称）：</p>
+        <p style="color:var(--gray);font-size:13px">每个版块最多3个管理员（Google ID）：</p>
         <div id="modList"></div>
     </div>
     <button class="bs" onclick="saveProfile()">保存</button>
@@ -202,7 +202,7 @@ function updateMe(){
         isAdmin=(me.googleId&&admins.indexOf(me.googleId)!==-1);
         // Check if user is a moderator of any category
         modCats=[];isMod=false;
-        for(var ci=1;ci<=6;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(mods.indexOf(me.nickname)!==-1){modCats.push(ci);isMod=true}}
+        for(var ci=1;ci<=6;ci++){var mods=JSON.parse(localStorage.getItem('f_mods_'+ci)||'[]');if(me.googleId&&mods.indexOf(me.googleId)!==-1){modCats.push(ci);isMod=true}}
         // Save points to shared key so other users can see
         localStorage.setItem('f_user_pts_'+me.nickname,(me.points||0));
         var av=me.avatar_emoji||emoji(me.nickname);if(av.indexOf('data:')===0)$('uav').innerHTML='<img src="'+av+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover">';else $('uav').textContent=av;
@@ -236,7 +236,7 @@ function showAdminList(){
         var mods=JSON.parse(localStorage.getItem('f_mods_'+c.id)||'[]');
         mh+='<div style="margin:4px 0;padding:4px 8px;background:#fff;border-radius:6px"><strong>'+c.icon+' '+c.name+'</strong> ('+mods.length+'/3)<br>';
         mods.forEach(function(m){mh+='<span style="font-size:12px;margin-right:4px">📋 '+m+' <button onclick="removeMod('+c.id+',\''+m+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px">✕</button></span>'});
-        if(mods.length<3)mh+='<div style="display:flex;gap:4px;margin-top:2px"><input id="modName'+c.id+'" placeholder="昵称" style="flex:1;font-size:12px;padding:4px"><button onclick="addMod('+c.id+')" style="padding:4px 8px;background:var(--green);color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer">+</button></div>';
+        if(mods.length<3)mh+='<div style="display:flex;gap:4px;margin-top:2px"><input id="modName'+c.id+'" placeholder="Google ID" style="flex:1;font-size:12px;padding:4px"><button onclick="addMod('+c.id+')" style="padding:4px 8px;background:var(--green);color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer">+</button></div>';
         mh+='</div>';
     });
     $('modList').innerHTML=mh;
