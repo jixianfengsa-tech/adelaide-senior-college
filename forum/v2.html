@@ -176,6 +176,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 <div id="toast"></div>
 
 <script>
+try{
 const API='https://nkvavgmvbmzrnwurazgq.supabase.co/rest/v1',KEY='sb_publishable_fOyq5agLNbcFEJ-LrpYa_w_C6rjQGxZ';
 var me=null,cat='all',cats=[],posts=[],isAdmin=false,currentTab='newest',submitting=false;
 var tempAvatar=null,selectedBirthMonth=null,totalPosts=0;
@@ -541,6 +542,7 @@ function loadBirthdays(){var m=new Date().getMonth()+1,bdays=[];for(var i=0;i<lo
     
     setTimeout(function(){D('V5 就绪 · '+new Date().toLocaleTimeString())},2000);
 })();
+}catch(e){document.getElementById('postList').innerHTML='<div style="text-align:center;padding:40px;color:red"><h2>❌ JS错误</h2><p>'+e.message+'</p><p style="font-size:13px">行号: '+e.lineNumber+'</p></div>';document.getElementById('debug').textContent='FATAL: '+e.message}
 </script>
 </body>
 </html>
