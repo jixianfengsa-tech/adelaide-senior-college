@@ -464,9 +464,9 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
         localStorage.setItem('f_user',JSON.stringify(me));
         history.replaceState(null,'',location.pathname+location.search);
         updateMe();
-        // Rebuild UI immediately (don't wait for setTimeout)
         buildUI();loadPosts();loadCatCounts();updateScroll();updateBadge();
         toast('✅ 登录成功！');
+        document.title='✅ '+nickname+' - 阿德莱德华语论坛';
     }).catch(function(e){D('Google callback error: '+e.message);toast('⚠️ 登录异常，请刷新重试')});
 })();
 
