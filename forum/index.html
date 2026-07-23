@@ -181,7 +181,11 @@ function updateMe(){
     if(me.nickname==='sure'&&isAdmin)me.points=Math.max(me.points||0,500);
     if(isMod&&!isAdmin)me.points=Math.max(me.points||0,100);
     $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if(me.nickname==='sure'&&isAdmin)title='👑 校长';
-    $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')};$('lbtn').className='btn btn-g'}
+    $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){
+        // Clear Google session by redirecting to Supabase logout
+        fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/logout',{method:'POST',headers:{apikey:KEY}}).catch(function(){});
+        me=null;isAdmin=false;isMod=false;modCats=[];localStorage.removeItem('f_user');updateMe();toast('已退出')
+    };$('lbtn').className='btn btn-g'}
     else{isAdmin=false;isMod=false;modCats=[];$('uav').textContent='🐼';$('unm').textContent='游客';$('umt').textContent='';$('lbtn').textContent='登录';$('lbtn').onclick=doLogin;$('lbtn').className='btn btn-y'}
 }
 
@@ -343,7 +347,7 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
             if(admins.length===0||nickname==='sure'||(u.email&&u.email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
             me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
             history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
-        }).catch(function(){toast('⚠️ 登录异常')});
+        }).catch(function(e){toast('⚠️ 登录异常，请重试');setTimeout(function(){loginGoogle()},1500)});
     }
 })();
 </script>
