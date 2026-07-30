@@ -178,9 +178,9 @@ function updateMe(){
     var savedPts=parseInt(localStorage.getItem(ptKey)||'0');
     if(savedPts>0)me.points=savedPts;
     // Auto-boost: sure admin = 500, mod = 100
-    if((me.nickname==='sure'||me.nickname==='danceshow')&&isAdmin)me.points=Math.max(me.points||0,500);
+    if((me.nickname==='sure'||me.nickname==='dancesure')&&isAdmin)me.points=Math.max(me.points||0,500);
     if(isMod&&!isAdmin)me.points=Math.max(me.points||0,100);
-    $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if((me.nickname==='sure'||me.nickname==='danceshow')&&isAdmin)title='👑 校长';
+    $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if((me.nickname==='sure'||me.nickname==='dancesure')&&isAdmin)title='👑 校长';
     $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){
         // Clear Google session by redirecting to Supabase logout
         fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/logout',{method:'POST',headers:{apikey:KEY}}).catch(function(){});
@@ -355,12 +355,12 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
             }catch(e){}
             if(!googleId){toast('⚠️ Token解析失败');return}
             var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
-            // Only auto-admin for specific accounts: sure or danceshow
-            if(nickname==='sure'||nickname==='danceshow'||(email&&(email.indexOf('sure')!==-1||email.indexOf('danceshow')!==-1))){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+            // Only auto-admin for specific accounts: sure or dancesure
+            if(nickname==='sure'||nickname==='dancesure'||(email&&(email.indexOf('sure')!==-1||email.indexOf('dancesure')!==-1))){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
             var savedProfile=localStorage.getItem('f_profile_'+googleId);
             var savedAv='🌐';
             if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;savedAv=sp.avatar_emoji||'🌐'}catch(e){}
-            me={id:googleId,googleId:googleId,email:email,nickname:nickname,login_type:'google',avatar_emoji:savedAv,points:(nickname==='sure'||nickname==='danceshow')?500:0};
+            me={id:googleId,googleId:googleId,email:email,nickname:nickname,login_type:'google',avatar_emoji:savedAv,points:(nickname==='sure'||nickname==='dancesure')?500:0};
             saveMe();
             // Update UI immediately - no page reload needed
             location.hash='';
