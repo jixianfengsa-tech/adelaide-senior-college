@@ -216,10 +216,16 @@ function removeMod(catId,name){var mods=JSON.parse(localStorage.getItem('f_mods_
 function canManage(catId){return isAdmin||(modCats.indexOf(catId)!==-1)}
 var tempAvatar=null;
 function pickAvatar(){var el=document.getElementById('avfile');if(el)el.click()}
-function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
+function uploadAv(input){var f=input.files[0];if(!f||f.size>5000000){toast('照片小于5MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
     $('avpick').innerHTML='<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="'+tempAvatar+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><div style="font-size:14px;color:var(--gray);margin-bottom:8px">头像预览</div><button onclick="confirmAvatar()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer;margin-right:8px">✅ 确认使用</button><button onclick="tempAvatar=null;editProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer">取消</button></div>'};r.readAsDataURL(f)}
 function confirmAvatar(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;editProfile()}}
-function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');
+function saveProfile(){var n=$('pnick').value.trim();
+    if(n&&n!==me.nickname){
+        if(!me.oldNames)me.oldNames=[];
+        if(me.oldNames.indexOf(me.nickname)===-1)me.oldNames.push(me.nickname);
+        me.nickname=n;
+    }
+    saveMe();closeM('prm');
     // Track change time for users under 200 points
     if((me.points||0)<200&&!isAdmin)localStorage.setItem('f_lastChange_'+me.nickname,Date.now());
     toast('✅ 已保存')}
@@ -235,7 +241,11 @@ async function loadPosts(){
         var col='created_at';if(curTab=='hot')col='reply_count';
         var q='/posts?select=*&order=is_pinned.desc,'+col+'.desc&limit=20&offset='+((page-1)*20);
         if(cat!=='all')q+='&category_id=eq.'+cat;
-        if(curTab=='mine'&&me)q+='&guest_nickname=eq.'+encodeURIComponent(me.nickname);
+        if(curTab=='mine'&&me){
+            var names=[me.nickname];
+            if(me.oldNames)names=names.concat(me.oldNames);
+            q+='&or=('+names.map(function(n){return'guest_nickname.eq.'+encodeURIComponent(n)}).join(',')+')';
+        }
         var r=await fetch(API+q,{headers:{apikey:KEY}});var data=await r.json();posts=data||[];
         try{var cr=await fetch(API+'/posts?select=count'+(cat!=='all'?'&category_id=eq.'+cat:''),{headers:{apikey:KEY}});var cj=await cr.json();totalPages=Math.ceil(cj[0].count/20)}catch(e){totalPages=1}
         if(!posts.length){$('plist').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子</p></div>';$('pag').innerHTML='';return}
@@ -252,11 +262,20 @@ async function loadPosts(){
 function goPage(p){page=p;loadPosts();window.scrollTo(0,$('plist').offsetTop-100)}
 
 // ====== NEW POST ======
-function newPost(){if(!me){doLogin();return}$('pfm').classList.add('on')}
+function newPost(){
+    // Save draft before any login prompt
+    var draft={cat:$('pcat').value,title:$('ptitle').value,body:$('pbody').value};
+    localStorage.setItem('f_draft',JSON.stringify(draft));
+    if(!me){doLogin();return}
+    // Restore draft
+    var savedDraft=localStorage.getItem('f_draft');
+    if(savedDraft)try{var d=JSON.parse(savedDraft);if(d.title)$('ptitle').value=d.title;if(d.body)$('pbody').value=d.body;if(d.cat)$('pcat').value=d.cat}catch(e){}
+    $('pfm').classList.add('on')
+}
 async function submitPost(){
     var catId=parseInt($('pcat').value)||2,title=$('ptitle').value.trim()||'无标题',body=$('pbody').value.trim()||'.',btn=$('psub');
     btn.disabled=true;btn.textContent='发布中...';closeM('pfm');toast('📨 发布中...');
-    var images=[];for(var i=0;i<Math.min(($('pimg').files||[]).length,5);i++){try{var d=await readFile($('pimg').files[i]);images.push(d)}catch(e){}}
+    var images=[];for(var i=0;i<Math.min(($('pimg').files||[]).length,5);i++){try{var d=await compressImg($('pimg').files[i]);images.push(d)}catch(e){}}
     try{
         var payload={category_id:catId,title:title,content:body,guest_nickname:catId===7?'匿名':me.nickname};
         images.forEach(function(img,i){payload['image_url'+(i||'')]=img});
@@ -270,6 +289,14 @@ async function submitPost(){
     btn.disabled=false;btn.textContent='发布';
 }
 function readFile(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(e){resolve(e.target.result)};r.onerror=reject;r.readAsDataURL(file)})}
+function compressImg(file){return new Promise(function(resolve,reject){
+    if(file.size<5000000&&(file.type==='image/jpeg'||file.type==='image/png')){var r=new FileReader();r.onload=function(e){resolve(e.target.result)};r.readAsDataURL(file);return}
+    var img=new Image();img.onload=function(){
+        var c=document.createElement('canvas'),max=1200;
+        var w=img.width,h=img.height;if(w>max||h>max){if(w>h){h*=max/w;w=max}else{w*=max/h;h=max}}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',0.7));
+    };img.onerror=reject;img.src=URL.createObjectURL(file)})}
 
 // ====== DETAIL ======
 async function showDetail(id){
