@@ -1173,13 +1173,20 @@
     const total = 108;
     const grid = document.getElementById('galleryGrid');
     if(!grid) return;
-    for(let i=1;i<=total;i++){
+    // Show only first 6 photos on homepage, plus "View All" button
+    for(let i=1;i<=6;i++){
         const num = String(i).padStart(2,'0');
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="ACSC Activity Photo ${i}" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
+        div.innerHTML = `<img src="gallery/gallery-${num}.jpg" alt="ACSC Activity Photo" loading="lazy" onclick="event.stopPropagation();openLightbox(${i})">`;
         grid.appendChild(div);
     }
+    // Add "View All" button
+    const viewAll = document.createElement('div');
+    viewAll.style.cssText = 'display:flex;align-items:center;justify-content:center;grid-column:span 1;border:2px dashed var(--border);border-radius:12px;cursor:pointer;min-height:180px;background:#fff';
+    viewAll.innerHTML = '<div style="text-align:center"><div style="font-size:36px;margin-bottom:6px">📸</div><div style="font-size:15px;font-weight:700;color:var(--navy)">View All Photos</div><div style="font-size:13px;color:var(--gray)">'+total+' photos</div></div>';
+    viewAll.onclick = function(){window.location.href='gallery/'};
+    grid.appendChild(viewAll);
 })();
 
 let currentPhoto = 1;
