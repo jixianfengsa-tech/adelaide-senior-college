@@ -55,7 +55,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:
 
 <div class="header">
     <h1>🏫 阿德莱德华语论坛</h1>
-    <a href="/">← 返回主页</a>
+    <a href="/" style="color:rgba(255,255,255,.9);font-size:18px;font-weight:700;text-decoration:none;display:inline-block;padding:6px 0">← 返回主页</a>
 </div>
 
 <div class="container">
@@ -178,9 +178,9 @@ function updateMe(){
     var savedPts=parseInt(localStorage.getItem(ptKey)||'0');
     if(savedPts>0)me.points=savedPts;
     // Auto-boost: sure admin = 500, mod = 100
-    if(me.nickname==='sure'&&isAdmin)me.points=Math.max(me.points||0,500);
+    if((me.nickname==='sure'||me.nickname==='dancesure')&&isAdmin)me.points=Math.max(me.points||0,500);
     if(isMod&&!isAdmin)me.points=Math.max(me.points||0,100);
-    $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if(me.nickname==='sure'&&isAdmin)title='👑 校长';
+    $('unm').textContent=me.nickname+(isAdmin?' 👑':'');var p=me.points||0;var title='🌱';if(p>=1000)title='🏅';else if(p>=500)title='⭐';else if(p>=200)title='🌳';else if(p>=50)title='🌿';if((me.nickname==='sure'||me.nickname==='dancesure')&&isAdmin)title='👑 校长';
     $('umt').textContent=title+' · '+p+'分'+(isAdmin?' 🛡️':'')+(isMod?' 📋':'');$('lbtn').textContent='退出';$('lbtn').onclick=function(){
         // Clear Google session by redirecting to Supabase logout
         fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/logout',{method:'POST',headers:{apikey:KEY}}).catch(function(){});
@@ -216,17 +216,23 @@ function removeMod(catId,name){var mods=JSON.parse(localStorage.getItem('f_mods_
 function canManage(catId){return isAdmin||(modCats.indexOf(catId)!==-1)}
 var tempAvatar=null;
 function pickAvatar(){var el=document.getElementById('avfile');if(el)el.click()}
-function uploadAv(input){var f=input.files[0];if(!f||f.size>1000000){toast('照片小于1MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
+function uploadAv(input){var f=input.files[0];if(!f||f.size>5000000){toast('照片小于5MB');return};var r=new FileReader();r.onload=function(e){tempAvatar=e.target.result;
     $('avpick').innerHTML='<div style="text-align:center;padding:8px;background:rgba(196,164,74,.1);border-radius:12px"><img src="'+tempAvatar+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:6px"><div style="font-size:14px;color:var(--gray);margin-bottom:8px">头像预览</div><button onclick="confirmAvatar()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:16px;font-weight:700;cursor:pointer;margin-right:8px">✅ 确认使用</button><button onclick="tempAvatar=null;editProfile()" style="padding:10px 24px;background:var(--warm);color:var(--navy);border:none;border-radius:20px;font-size:14px;cursor:pointer">取消</button></div>'};r.readAsDataURL(f)}
 function confirmAvatar(){if(tempAvatar){me.avatar_emoji=tempAvatar;tempAvatar=null;editProfile()}}
-function saveProfile(){var n=$('pnick').value.trim();if(n)me.nickname=n;saveMe();closeM('prm');
+function saveProfile(){var n=$('pnick').value.trim();
+    if(n&&n!==me.nickname){
+        if(!me.oldNames)me.oldNames=[];
+        if(me.oldNames.indexOf(me.nickname)===-1)me.oldNames.push(me.nickname);
+        me.nickname=n;
+    }
+    saveMe();closeM('prm');
     // Track change time for users under 200 points
     if((me.points||0)<200&&!isAdmin)localStorage.setItem('f_lastChange_'+me.nickname,Date.now());
     toast('✅ 已保存')}
 
 // ====== CATEGORIES & TABS ======
 function setCat(c){cat=c;var boxes=document.querySelectorAll('.cbox');boxes.forEach(function(b){b.classList.remove('sel')});if(c=='all')boxes[0].classList.add('sel');else{var el=$('cb'+c);if(el)el.classList.add('sel')}loadPosts()}
-function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('sel')});event.target.classList.add('sel');cat='all';setCat('all')}
+function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('sel')});t.target?t.target.classList.add('sel'):event.target.classList.add('sel');cat='all';setCat('all')}
 
 // ====== POSTS ======
 async function loadPosts(){
@@ -235,7 +241,11 @@ async function loadPosts(){
         var col='created_at';if(curTab=='hot')col='reply_count';
         var q='/posts?select=*&order=is_pinned.desc,'+col+'.desc&limit=20&offset='+((page-1)*20);
         if(cat!=='all')q+='&category_id=eq.'+cat;
-        if(curTab=='mine'&&me)q+='&guest_nickname=eq.'+encodeURIComponent(me.nickname);
+        if(curTab=='mine'&&me){
+            var names=[me.nickname];
+            if(me.oldNames)names=names.concat(me.oldNames);
+            q+='&or=('+names.map(function(n){return'guest_nickname.eq.'+encodeURIComponent(n)}).join(',')+')';
+        }
         var r=await fetch(API+q,{headers:{apikey:KEY}});var data=await r.json();posts=data||[];
         try{var cr=await fetch(API+'/posts?select=count'+(cat!=='all'?'&category_id=eq.'+cat:''),{headers:{apikey:KEY}});var cj=await cr.json();totalPages=Math.ceil(cj[0].count/20)}catch(e){totalPages=1}
         if(!posts.length){$('plist').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子</p></div>';$('pag').innerHTML='';return}
@@ -244,19 +254,45 @@ async function loadPosts(){
             var displayName=(isAnon&&!isAdmin)?'匿名':esc(p.guest_nickname||'匿名'),badges='';
             if(p.is_pinned)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(196,164,74,.15);color:var(--gold)">📌</span> ';
             if(p.is_starred)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(231,76,60,.1);color:var(--red)">⭐</span> ';
-            return '<div class="card pcard" onclick="showDetail('+p.id+')"><div class="ph"><div class="pav">'+(isAnon&&!isAdmin?'🌲':pAv(p.guest_nickname||''))+'</div><div class="pm"><div class="pa">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div>'+(canManage(p.category_id)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+'</div><div class="pti">'+esc(p.title||'无标题')+'</div><div class="pp">'+esc(p.content||'')+'</div></div>';
+            return '<div class="card pcard" onclick="showDetail('+p.id+')"><div class="ph"><div class="pav">'+(isAnon&&!isAdmin?'🌲':pAv(p.guest_nickname||''))+'</div><div class="pm"><div class="pa" onclick="event.stopPropagation();viewUserPosts(\''+esc(p.guest_nickname||'')+'\')" style="cursor:pointer">'+displayName+(isMine&&!isAnon?' <small style="color:var(--gold)">·我</small>':'')+'</div><div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div>'+(canManage(p.category_id)?'<button onclick="event.stopPropagation();deletePost('+p.id+')" style="float:right;background:none;border:none;font-size:16px;cursor:pointer">🗑</button>':'')+'</div><div class="pti">'+esc(p.title||'无标题')+'</div><div class="pp">'+esc(p.content||'')+'</div></div>';
         }).join('');
-        var ph='';if(totalPages>1)for(var i=1;i<=totalPages;i++)ph+='<button class="pb'+(i===page?' sel':'')+'" onclick="goPage('+i+')">'+i+'</button>';$('pag').innerHTML=ph;
+        var ph='';if(totalPages>1){
+            ph+='<button class="pb" onclick="prevPage()" '+(page<=1?'disabled style="opacity:.3"':'')+'>‹ 上一页</button>';
+            for(var i=Math.max(1,page-2);i<=Math.min(totalPages,page+2);i++)ph+='<button class="pb'+(i===page?' sel':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+            ph+='<button class="pb" onclick="nextPage()" '+(page>=totalPages?'disabled style="opacity:.3"':'')+'>下一页 ›</button>';
+        }$('pag').innerHTML=ph;
     }catch(e){$('plist').innerHTML='<div style="text-align:center;padding:60px"><p>❌ 加载失败</p><p style="font-size:13px;color:var(--gray)">'+e.message+'</p><button class="btn btn-g" onclick="loadPosts()">重试</button></div>'}
 }
 function goPage(p){page=p;loadPosts();window.scrollTo(0,$('plist').offsetTop-100)}
+function prevPage(){if(page>1){page--;loadPosts();window.scrollTo(0,$('plist').offsetTop-100)}}
+function nextPage(){if(page<totalPages){page++;loadPosts();window.scrollTo(0,$('plist').offsetTop-100)}}
+function viewUserPosts(name){if(!name)return;page=1;cat='all';curTab='new';$('plist').innerHTML='<p style="text-align:center;color:var(--gray);padding:30px">🔍 查看…</p>';
+    fetch(API+'/posts?select=*&order=created_at.desc&guest_nickname=eq.'+encodeURIComponent(name),{headers:{apikey:KEY}}).then(function(r){return r.json()}).then(function(data){posts=data||[];totalPages=1;
+        if(!posts.length){$('plist').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:48px">📝</div><p>还没有帖子</p></div>';$('pag').innerHTML='';toast('🔍 暂无帖子');return}
+        $('plist').innerHTML=posts.map(function(p){
+            var c=cats.find(function(x){return x.id===p.category_id})||{name:'?',icon:'❓'};
+            var displayName=esc(p.guest_nickname||'匿名'),badges='';
+            if(p.is_pinned)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(196,164,74,.15);color:var(--gold)">📌</span> ';
+            if(p.is_starred)badges+='<span style="padding:2px 6px;border-radius:6px;font-size:11px;background:rgba(231,76,60,.1);color:var(--red)">⭐</span> ';
+            return '<div class="card pcard" onclick="showDetail('+p.id+')"><div class="ph"><div class="pav">'+emoji(p.guest_nickname||'')+'</div><div class="pm"><div class="pa">'+displayName+(me&&me.nickname===p.guest_nickname?' <small style="color:var(--gold)">·我</small>':'')+'</div><div class="pt">'+ago(p.created_at)+' · '+c.icon+c.name+' '+badges+'</div></div><button onclick="event.stopPropagation();loadPosts()" style="float:right;background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px">← 返回</button></div><div class="pti">'+esc(p.title||'无标题')+'</div><div class="pp">'+esc(p.content||'')+'</div></div>';
+        }).join('');$('pag').innerHTML='';toast('🔍 '+name+' 的帖子');
+    }).catch(function(){toast('❌ 加载失败')})}
 
 // ====== NEW POST ======
-function newPost(){if(!me){doLogin();return}$('pfm').classList.add('on')}
+function newPost(){
+    // Save draft before any login prompt
+    var draft={cat:$('pcat').value,title:$('ptitle').value,body:$('pbody').value};
+    localStorage.setItem('f_draft',JSON.stringify(draft));
+    if(!me){doLogin();return}
+    // Restore draft
+    var savedDraft=localStorage.getItem('f_draft');
+    if(savedDraft)try{var d=JSON.parse(savedDraft);if(d.title)$('ptitle').value=d.title;if(d.body)$('pbody').value=d.body;if(d.cat)$('pcat').value=d.cat}catch(e){}
+    $('pfm').classList.add('on')
+}
 async function submitPost(){
     var catId=parseInt($('pcat').value)||2,title=$('ptitle').value.trim()||'无标题',body=$('pbody').value.trim()||'.',btn=$('psub');
     btn.disabled=true;btn.textContent='发布中...';closeM('pfm');toast('📨 发布中...');
-    var images=[];for(var i=0;i<Math.min(($('pimg').files||[]).length,5);i++){try{var d=await readFile($('pimg').files[i]);images.push(d)}catch(e){}}
+    var images=[];for(var i=0;i<Math.min(($('pimg').files||[]).length,5);i++){try{var d=await compressImg($('pimg').files[i]);images.push(d)}catch(e){}}
     try{
         var payload={category_id:catId,title:title,content:body,guest_nickname:catId===7?'匿名':me.nickname};
         images.forEach(function(img,i){payload['image_url'+(i||'')]=img});
@@ -270,6 +306,14 @@ async function submitPost(){
     btn.disabled=false;btn.textContent='发布';
 }
 function readFile(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(e){resolve(e.target.result)};r.onerror=reject;r.readAsDataURL(file)})}
+function compressImg(file){return new Promise(function(resolve,reject){
+    if(file.size<5000000&&(file.type==='image/jpeg'||file.type==='image/png')){var r=new FileReader();r.onload=function(e){resolve(e.target.result)};r.readAsDataURL(file);return}
+    var img=new Image();img.onload=function(){
+        var c=document.createElement('canvas'),max=1200;
+        var w=img.width,h=img.height;if(w>max||h>max){if(w>h){h*=max/w;w=max}else{w*=max/h;h=max}}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',0.7));
+    };img.onerror=reject;img.src=URL.createObjectURL(file)})}
 
 // ====== DETAIL ======
 async function showDetail(id){
@@ -298,19 +342,23 @@ async function showDetail(id){
     $('dm').classList.add('on');
 }
 
-function toggleLike(id){if(!me){doLogin();return}var key='f_like_'+me.nickname+'_'+id,p=posts.find(function(x){return x.id===id});if(!p)return;
-    if(localStorage.getItem(key)){localStorage.removeItem(key);p.likes=Math.max(0,(p.likes||0)-1)}else{localStorage.setItem(key,'1');p.likes=(p.likes||0)+1}
+function toggleLike(id){if(!me){doLogin();return}
+    if(!me.liked)me.liked=[];var idx=me.liked.indexOf(id);
+    var p=posts.find(function(x){return x.id===id});if(!p)return;
+    if(idx!==-1){me.liked.splice(idx,1);p.likes=Math.max(0,(p.likes||0)-1)}else{me.liked.push(id);p.likes=(p.likes||0)+1}
+    saveMe();
     fetch(API+'/posts?id=eq.'+id,{method:'PATCH',body:JSON.stringify({likes:p.likes}),headers:{apikey:KEY,'Content-Type':'application/json'}}).catch(function(){});loadPosts()}
-function isLiked(id){return me&&localStorage.getItem('f_like_'+me.nickname+'_'+id)}
+function isLiked(id){return me&&me.liked&&me.liked.indexOf(id)!==-1}
 
 async function submitReply(pid){var c=$('rinput').value.trim();if(!c)return;closeM('dm');toast('📨 发送中...');
     var p=posts.find(function(x){return x.id===pid}),isAnon=p&&p.category_id===7,name=isAnon?'匿名':me.nickname;
     try{await fetch(API+'/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:c,guest_nickname:name}),headers:{apikey:KEY,'Content-Type':'application/json'}});
         me.points=(me.points||0)+1;saveMe();showPopup('✅ 回复成功！','+1 积分');loadPosts()}catch(e){toast('❌ 失败')}
 }
-async function quickEmoji(pid,e){closeM('dm');toast(e+' 已发送！');var p=posts.find(function(x){return x.id===pid}),isAnon=p&&p.category_id===7,name=isAnon?'匿名':me.nickname;
+async function quickEmoji(pid,e){closeM('dm');var p=posts.find(function(x){return x.id===pid}),isAnon=p&&p.category_id===7,name=isAnon?'匿名':me.nickname;
     try{await fetch(API+'/replies',{method:'POST',body:JSON.stringify({post_id:pid,content:e,guest_nickname:name}),headers:{apikey:KEY,'Content-Type':'application/json'}});
-        me.points=(me.points||0)+1;saveMe();loadPosts()}catch(e){toast('❌')}
+        me.points=(me.points||0)+1;saveMe();
+        showPopup('🌹 '+e,'已发送！+1积分');loadPosts()}catch(e){toast('❌')}
 }
 
 function bookmark(id){if(!me){doLogin();return}var bkm=JSON.parse(localStorage.getItem('f_bkm_'+me.nickname)||'[]'),i=bkm.indexOf(id);if(i!==-1){bkm.splice(i,1);toast('已取消收藏')}else{bkm.push(id);toast('⭐ 已收藏')}localStorage.setItem('f_bkm_'+me.nickname,JSON.stringify(bkm));showDetail(id)}
@@ -335,19 +383,38 @@ async function loadCatCounts(){for(var i=1;i<=7;i++){try{var r=await fetch(API+'
 (function(){
     var saved=localStorage.getItem('f_user');if(saved)try{me=JSON.parse(saved);updateMe();}catch(e){}
     loadPosts();loadCatCounts();updateScroll();
-    // Google callback
+    // Google callback - process access_token from URL hash
     if(location.hash&&location.hash.indexOf('access_token')!==-1){
         var t=(new URLSearchParams(location.hash.slice(1))).get('access_token');
-        if(t)fetch('https://nkvavgmvbmzrnwurazgq.supabase.co/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(u){
-            var googleId=u.id,meta=u.user_metadata||{},nickname=meta.full_name||(u.email?u.email.split('@')[0]:'Google用户');
-            // Restore saved profile for this Google ID
-            var savedProfile=localStorage.getItem('f_profile_'+googleId);
-            if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;avatar_emoji=sp.avatar_emoji||'🌐'}catch(e){}
+        if(t){
+            // Decode JWT locally (works on all browsers)
+            var googleId=null,email='',nickname='';
+            try{
+                var parts=t.split('.');
+                if(parts.length>=2){
+                    var raw=parts[1].replace(/-/g,'+').replace(/_/g,'/');
+                    while(raw.length%4)raw+='=';
+                    var payload=JSON.parse(decodeURIComponent(escape(atob(raw))));
+                    googleId=payload.sub||payload.id;
+                    email=payload.email||'';
+                    // Try multiple metadata fields for nickname
+                    nickname=(payload.user_metadata||{}).full_name||(payload.user_metadata||{}).name||payload.email||email.split('@')[0]||'Google用户';
+                }
+            }catch(e){}
+            if(!googleId){toast('⚠️ Token解析失败');return}
             var admins=JSON.parse(localStorage.getItem('f_admins')||'[]');
-            if(admins.length===0||nickname==='sure'||(u.email&&u.email.indexOf('sure')!==-1)){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
-            me={id:googleId,googleId:googleId,email:u.email||'',nickname:nickname,login_type:'google',avatar_emoji:avatar_emoji||'🌐',points:nickname==='sure'?500:0};saveMe();updateMe();loadPosts();
-            history.replaceState(null,'',location.pathname);toast('✅ 登录成功！');
-        }).catch(function(e){toast('⚠️ 登录异常，请重试');setTimeout(function(){loginGoogle()},1500)});
+            // Only auto-admin for specific accounts: sure or dancesure
+            if(nickname==='sure'||nickname==='dancesure'||(email&&(email.indexOf('sure')!==-1||email.indexOf('dancesure')!==-1))){if(admins.indexOf(googleId)===-1)admins.push(googleId);localStorage.setItem('f_admins',JSON.stringify(admins))}
+            var savedProfile=localStorage.getItem('f_profile_'+googleId);
+            var savedAv='🌐';
+            if(savedProfile)try{var sp=JSON.parse(savedProfile);nickname=sp.nickname;savedAv=sp.avatar_emoji||'🌐'}catch(e){}
+            me={id:googleId,googleId:googleId,email:email,nickname:nickname,login_type:'google',avatar_emoji:savedAv,points:(nickname==='sure'||nickname==='dancesure')?500:0};
+            saveMe();
+            // Update UI immediately - no page reload needed
+            location.hash='';
+            updateMe();loadPosts();loadCatCounts();updateScroll();
+            toast('✅ 登录成功！');
+        }
     }
 })();
 </script>
