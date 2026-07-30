@@ -1,19 +1,104 @@
 [
   {
+    "id": "cross-talk-2026",
+    "date": "2026-07-29",
+    "title": "Cross-Talk & Stand-Up Comedy Show",
+    "summary": "Adelaide Senior Learning Centre partnered with the City of Adelaide to present a cross-talk (相声) and stand-up comedy performance for the community.",
+    "image": "gallery/cross-talk-01.jpg",
+    "images": [
+      "gallery/cross-talk-01.jpg",
+      "gallery/cross-talk-02.jpg",
+      "gallery/cross-talk-03.jpg"
+    ],
+    "content": "<p>Adelaide Senior Learning Centre, in partnership with the Adelaide City Council, presented a wonderful cross-talk and stand-up comedy event that brought laughter and joy to the community.</p><p>Our members showcased their talent in traditional Chinese cross-talk and modern stand-up comedy, entertaining a full house. The event was a celebration of humour, culture and community connection.</p><p>Thank you to everyone who attended and performed — your energy made this a truly memorable afternoon!</p>"
+  },
+  {
+    "id": "elizabeth-chorus-2026",
+    "date": "2026-07-27",
+    "title": "Choir Performance Invited by Elizabeth City Council",
+    "summary": "Our choir was honoured to perform at a community event hosted by the City of Elizabeth, showcasing the talents of our senior members.",
+    "image": "gallery/elizabeth-concert-01.jpg",
+    "images": [
+      "gallery/elizabeth-concert-01.jpg",
+      "gallery/elizabeth-concert-02.jpg",
+      "gallery/elizabeth-concert-03.jpg",
+      "gallery/elizabeth-concert-04.jpg"
+    ],
+    "content": "<p>We are proud to share that our choir was invited by the City of Elizabeth to perform at a community event. Our members delivered a powerful choral performance that was warmly received by the audience.</p><p>This invitation from the Elizabeth City Council is a wonderful recognition of our members' talent and dedication. It also reflects the growing reputation of Adelaide Senior Learning Centre as a vibrant community organisation contributing to multicultural community events across South Australia.</p><p>Congratulations to all choir members and their conductor!</p>"
+  },
+  {
+    "id": "tai-chi-marion-2026",
+    "date": "2026-07-25",
+    "title": "Tai Chi Promotion at Marion Council",
+    "summary": "Our Tai Chi group was invited by the City of Marion to demonstrate and promote Tai Chi as part of community health and wellness initiatives.",
+    "image": "gallery/tai-chi-marion.jpg",
+    "images": [
+      "gallery/tai-chi-marion.jpg"
+    ],
+    "content": "<p>Our Tai Chi group had the honour of being invited by the City of Marion to promote Tai Chi at a community event. Members demonstrated the graceful movements and health benefits of this traditional Chinese practice.</p><p>Tai Chi is one of our most popular programs, helping seniors improve balance, flexibility and mental wellbeing. The Marion community showed great interest, and many attendees signed up to learn more about our programs.</p><p>We look forward to continuing our collaboration with the City of Marion in promoting healthy ageing through traditional wellness practices.</p>"
+  },
+  {
+    "id": "road-safety-2026",
+    "date": "2026-07-23",
+    "title": "Road Safety Awareness Event",
+    "summary": "Adelaide Senior Learning Centre hosted a road safety awareness session for seniors, covering pedestrian safety, public transport tips and safe driving practices.",
+    "image": "gallery/road-safety.jpg",
+    "images": [
+      "gallery/road-safety.jpg"
+    ],
+    "content": "<p>We hosted a Road Safety Awareness event for our members, aimed at promoting safe mobility for seniors in the community.</p><p>The session covered practical tips on pedestrian safety, using public transport confidently, and safe driving practices for older adults. The event was well attended and sparked many useful discussions among members.</p><p>Thank you to everyone who participated and shared their experiences. Stay safe, stay mobile!</p>"
+  },
+  {
+    "id": "fishing-trip-2026",
+    "date": "2026-07-22",
+    "title": "Community Fishing Trip",
+    "summary": "Members enjoyed a relaxing outdoor fishing trip — a wonderful opportunity to connect with nature and each other.",
+    "image": "gallery/fishing-trip.jpg",
+    "images": [
+      "gallery/fishing-trip.jpg"
+    ],
+    "content": "<p>Our members headed outdoors for a community fishing trip — a relaxing day by the water, enjoying fresh air, good company and the simple joy of fishing.</p><p>Events like this are an important part of our social connection programs. Spending time outdoors, learning new skills and sharing stories with friends all contribute to healthy ageing and wellbeing.</p><p>Whether it was their first time fishing or they were seasoned anglers, everyone had a wonderful time. More outdoor activities are being planned — stay tuned!</p>"
+  },
+  {
+    "id": "ai-video-editing-2026",
+    "date": "2026-07-20",
+    "title": "AI Video Editing & Recognition Workshop",
+    "summary": "A new workshop introduced members to AI-powered video editing tools and image recognition technology for short-form content creation.",
+    "image": "gallery/ai-video-workshop.jpg",
+    "images": [
+      "gallery/ai-video-workshop.jpg"
+    ],
+    "content": "<p>We launched a new workshop on AI-powered video editing and image recognition technology. Members learned how to use AI tools to edit short videos, add effects, and organise photos automatically.</p><p>This workshop is part of our ongoing digital literacy program, helping seniors stay up to date with modern technology. The response was fantastic — members were amazed at how easy AI tools make video creation!</p><p>More AI workshops are planned. No prior experience needed — just bring your smartphone!</p>"
+  },
+  {
+    "id": "photography-ai-2026",
+    "date": "2026-07-19",
+    "title": "Photography & Smartphone AI Workshop",
+    "summary": "A hands-on workshop teaching smartphone photography techniques and AI-powered editing tools for seniors.",
+    "image": "gallery/photography-ai.jpg",
+    "images": [
+      "gallery/photography-ai.jpg"
+    ],
+    "content": "<p>Our Photography and AI for Smartphones workshop was a hit! Members learned how to take better photos using their phones, and explored AI-powered editing tools that make photo enhancement easy.</p><p>From composition basics to one-tap AI enhancements, participants gained practical skills they can use every day to capture and share special moments.</p><p>This workshop reflects our commitment to digital inclusion — ensuring seniors have the skills and confidence to use modern technology.</p>"
+  },
+  {
+    "id": "zoo-outing-2026",
+    "date": "2026-07-17",
+    "title": "Adelaide Zoo Group Outing",
+    "summary": "Members enjoyed a group outing to Adelaide Zoo — a fun day of wildlife, walking and social connection.",
+    "image": "gallery/zoo-outing.jpg",
+    "images": [
+      "gallery/zoo-outing.jpg"
+    ],
+    "content": "<p>What a fantastic day at Adelaide Zoo! Our members enjoyed a group outing filled with wildlife encounters, scenic walks and wonderful company.</p><p>Group outings like this are a highlight of our social program. They provide opportunities for members to connect outside the classroom, enjoy Adelaide's attractions, and create lasting memories together.</p><p>Thank you to everyone who joined. More excursions are being planned — watch this space!</p>"
+  },
+  {
     "id": "mens-health-mccsa-2026",
     "date": "2026-07-30",
     "title": "Supporting Men's Health in Partnership with MCCSA",
     "summary": "Adelaide Senior Learning Centre is proud to support men's health initiatives in partnership with the Multicultural Communities Council of South Australia (MCCSA).",
     "image": "gallery/mens-health-event.jpg",
     "content": "<p>Adelaide Senior Learning Centre is proud to support men's health initiatives in partnership with the Multicultural Communities Council of South Australia (MCCSA).</p><p>We believe that healthy ageing involves not only physical wellbeing, but also mental health, social connection and active community participation. Through community education, health promotion and collaborative events, we aim to encourage older adults to stay informed, connected and engaged.</p><p>We sincerely thank MCCSA for their ongoing collaboration and look forward to working together on future community health and wellbeing initiatives.</p>"
-  },
-  {
-    "id": "childrens-hearing-2026",
-    "date": "2026-07-28",
-    "title": "Supporting Children's Hearing Health in Our Community",
-    "summary": "Adelaide Senior Learning Centre is proud to support community initiatives that promote children's health, wellbeing and early intervention.",
-    "image": "gallery/gallery-23.jpg",
-    "content": "<p>Adelaide Senior Learning Centre is proud to support community initiatives that promote children's health, wellbeing and early intervention.</p><p>Hearing plays a vital role in every child's language development, learning and social connection. We are pleased to support community awareness activities that encourage early hearing screening and provide families with access to reliable information and professional support.</p><p>By working together with community organisations, we hope to help build a more inclusive and caring community for children and families across South Australia.</p>"
   },
   {
     "id": "term3-2026",
